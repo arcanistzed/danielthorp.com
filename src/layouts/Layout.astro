@@ -1,22 +1,32 @@
+---
+const {
+	title = "Daniel Thorp",
+	description = "Daniel Thorp's personal website",
+} = Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+		<title>{title}</title>
+
+		<link rel="stylesheet" href="/styles/tokens.css" />
+		<link rel="stylesheet" href="/styles/base.css" />
 	</head>
+
 	<body>
-		<slot />
+		<!-- Global background -->
+		<!-- <Background /> -->
+
+		<main id="content">
+			<slot />
+		</main>
 	</body>
 </html>
-
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
-</style>
