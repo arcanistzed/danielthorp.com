@@ -1,8 +1,18 @@
 ---
+import Footer from "../components/Footer.astro";
+
+interface Props {
+	title?: string;
+	description?: string;
+}
+
 const {
 	title = "Daniel Thorp",
-	description = "Daniel Thorp's personal website",
+	description = "Fourth-year Software Engineering student. Law school next.",
 } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, "https://danielthorp.com");
+const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 ---
 
 <!doctype html>
@@ -13,20 +23,37 @@ const {
 		<meta name="description" content={description} />
 		<meta name="generator" content={Astro.generator} />
 
+		<!-- Canonical URL -->
+		<link rel="canonical" href={canonicalURL} />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
-		<title>{title}</title>
+		<title>{pageTitle}</title>
 
 		<link rel="stylesheet" href="/styles/tokens.css" />
 		<link rel="stylesheet" href="/styles/base.css" />
+		<script is:inline>
+			document.documentElement.classList.add("js");
+		</script>
 	</head>
 
 	<body>
-		<!-- Global background -->
-		<!-- <Background /> -->
-
+		<a href="#content" class="skip-link">Skip to content</a>
 		<main id="content">
 			<slot />
 		</main>
+
+		<Footer />
 	</body>
 </html>

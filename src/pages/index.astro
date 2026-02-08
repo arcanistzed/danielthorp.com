@@ -1,8 +1,516 @@
 ---
-import IndexComponent from "../components/index.astro";
 import Layout from "../layouts/Layout.astro";
+
+interface FeedItem {
+	title: string;
+	link: string;
+	pubDate: string;
+	description?: string;
+}
+
+let posts: FeedItem[] = [];
+let fetchError = false;
+
+try {
+	const response = await fetch("https://arcanistzed.substack.com/feed");
+	const xml = await response.text();
+
+	const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+
+	posts = items.slice(0, 5).map(item => {
+		const title =
+			item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/)?.[1] ||
+			item.match(/<title>(.*?)<\/title>/)?.[1] ||
+			"Untitled";
+		const link = item.match(/<link>(.*?)<\/link>/)?.[1] || "#";
+		const pubDate = item.match(/<pubDate>(.*?)<\/pubDate>/)?.[1] || "";
+		const description =
+			item.match(
+				/<description><!\[CDATA\[(.*?)\]\]><\/description>/,
+			)?.[1] ||
+			item.match(/<description>(.*?)<\/description>/)?.[1] ||
+			"";
+
+		return {
+			title: decodeEntities(title),
+			link,
+			pubDate,
+			description,
+		};
+	});
+} catch (e) {
+	fetchError = true;
+}
+
+function formatDate(dateString: string): string {
+	try {
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-US", {
+			month: "long",
+			day: "numeric",
+		});
+	} catch {
+		return "";
+	}
+}
+
+function stripHtml(html: string): string {
+	return html
+		.replace(/<[^>]*>/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function decodeEntities(text: string): string {
+	return text
+		.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
+			String.fromCharCode(Number.parseInt(hex, 16)),
+		)
+		.replace(/&#(\d+);/g, (_, num) =>
+			String.fromCharCode(Number.parseInt(num, 10)),
+		)
+		.replace(/&quot;/g, '"')
+		.replace(/&apos;|&#39;/g, "'")
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&nbsp;/g, " ");
+}
+
+function excerpt(text?: string): string {
+	if (!text) return "";
+	const clean = decodeEntities(stripHtml(text));
+	return clean.length > 180 ? `${clean.slice(0, 180)}…` : clean;
+}
 ---
 
 <Layout>
-	<IndexComponent />
+	<div class="home">
+		<h1 class="name">Daniel Thorp</h1>
+		<nav class="socials" aria-label="Socials">
+			<a
+				title="Email"
+				href="mailto:daniel@danielthorp.com"
+				aria-label="Email"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 8.67v8.58a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V8.67l-8.928 5.493a3 3 0 0 1-3.144 0L1.5 8.67Z"/><path d="M22.5 6.908V6.75a3 3 0 0 0-3-3h-15a3 3 0 0 0-3 3v.158l9.714 5.978a1.5 1.5 0 0 0 1.572 0L22.5 6.908Z"/></svg>
+			</a>
+			<a
+				title="GitHub"
+				href="https://github.com/arcanistzed"
+				rel="noreferrer"
+				aria-label="GitHub"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+			</a>
+			<a
+				title="Bluesky"
+				href="https://bsky.app/profile/danielthorp.bsky.social"
+				rel="noreferrer"
+				aria-label="Bluesky"
+			>
+				<svg viewBox="0 0 568 501" fill="currentColor"><path d="M123.121 33.6637C188.241 82.5526 258.281 181.681 284 234.873C309.719 181.681 379.759 82.5526 444.879 33.6637C491.866 -1.61183 568 -28.9064 568 57.9464C568 75.2916 558.055 189.033 552.222 210.29C534.606 275.79 462.794 291.398 397.936 280.461C513.281 299.67 541.977 363.361 467.111 427.052C326.505 546.153 276.362 399.632 265.649 368.281C263.26 361.471 262.167 358.2 284 358.2C305.833 358.2 304.74 361.471 302.351 368.281C291.638 399.632 241.495 546.153 100.889 427.052C26.0225 363.361 54.7186 299.67 170.064 280.461C105.206 291.398 33.3943 275.79 15.7781 210.29C9.94524 189.033 0 75.2916 0 57.9464C0 -28.9064 76.1339 -1.61183 123.121 33.6637Z"/></svg>
+			</a>
+			<a
+				title="LinkedIn"
+				href="https://www.linkedin.com/in/daniel-a-thorp/"
+				rel="noreferrer"
+				aria-label="LinkedIn"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+			</a>
+			<a
+				title="Discord"
+				href="https://discord.com/users/455117777745870860"
+				rel="noreferrer"
+				aria-label="Discord"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+			</a>
+			<a
+				title="Instagram"
+				href="https://instagram.com/daniel.a.thorp"
+				rel="noreferrer"
+				aria-label="Instagram"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+			</a>
+			<a
+				title="YouTube"
+				href="https://youtube.com/@arcanistzed"
+				rel="noreferrer"
+				aria-label="YouTube"
+			>
+				<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+			</a>
+		</nav>
+
+		<section aria-label="Introduction">
+			<p>
+				I’m a fourth-year Software Engineering student at the University
+				of Ottawa.
+			</p>
+			<p>
+				I’m drawn to the intersection of technology, law, and public
+				policy, especially where better systems can produce better
+				outcomes.
+			</p>
+			<p>
+				This site brings together what I’m building, what I’m writing,
+				and what I’m working on right now.
+			</p>
+		</section>
+
+		<section aria-labelledby="focus">
+			<h2 id="focus">Current areas of focus</h2>
+			<ul class="focus" role="list">
+				<li>
+					Running for President of the University of Ottawa Students’
+					Union
+				</li>
+				<li>
+					Working in Student Affairs Communications, writing and
+					publishing for the campus community
+				</li>
+
+				<li>
+					Leading the uOttawa Digital Policy Association, focused on
+					responsible technology and digital rights
+				</li>
+				<li>
+					Serving on the OpenMedia Board of Directors, helping guide
+					strategy at a national digital rights organization
+				</li>
+				<li>
+					Advocating for stronger accountability and transparency on
+					campus
+				</li>
+				<li>
+					Studying firewalls and networking, discrete structures,
+					environmental science, and software construction
+				</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="recent-writing">
+			<h2 id="recent-writing">Recent writing</h2>
+			{
+				fetchError ? (
+					<p>
+						Writing is published on{" "}
+						<a
+							href="https://arcanistzed.substack.com"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Substack
+						</a>
+						.
+					</p>
+				) : posts.length === 0 ? (
+					<p>
+						No posts available. Visit{" "}
+						<a
+							href="https://arcanistzed.substack.com"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
+							Substack
+						</a>
+						.
+					</p>
+				) : (
+					<ul class="posts" role="list">
+						{posts.map(post => (
+							<li>
+								<a
+									href={post.link}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<h3>{post.title}</h3>
+									{post.pubDate && (
+										<time datetime={post.pubDate}>
+											{formatDate(post.pubDate)}
+										</time>
+									)}
+									{post.description && (
+										<p>{excerpt(post.description)}</p>
+									)}
+								</a>
+							</li>
+						))}
+					</ul>
+				)
+			}
+		</section>
+	</div>
 </Layout>
+
+<script is:inline>
+	const revealItems = Array.from(
+		document.querySelectorAll(".home :where(h1, h2, h3, p, li)"),
+	);
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+
+	if (revealItems.length) {
+		if (prefersReducedMotion) {
+			revealItems.forEach(el => {
+				el.style.transition = "none";
+				el.style.transform = "none";
+				el.style.opacity = 1;
+			});
+		} else {
+			let previousY = window.scrollY;
+			const callback = entries => {
+				const currentY = window.scrollY;
+				entries.forEach(entry => {
+					const { isIntersecting, target: el } = entry;
+					if (!isIntersecting) {
+						return;
+					}
+
+					const index = revealItems.indexOf(el);
+					const delay = Math.max(0, index) * 40;
+					if (currentY >= previousY) {
+						el.style.transition = "1s";
+						el.style.transitionDelay = `${delay}ms`;
+					} else {
+						el.style.transition = "none";
+						el.style.transitionDelay = "0ms";
+					}
+					el.style.transform = "none";
+					el.style.opacity = 1;
+					observer.unobserve(el);
+				});
+
+				previousY = currentY;
+			};
+
+			const observer = new IntersectionObserver(callback, {
+				root: null,
+				rootMargin: "0px",
+				threshold: 0,
+			});
+
+			revealItems.forEach(el => observer.observe(el));
+		}
+	}
+</script>
+
+<style>
+	.home {
+		max-width: 52rem;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		font-size: 1.05rem;
+		line-height: 1.8;
+	}
+
+	.home section {
+		display: grid;
+		gap: var(--space-4);
+		padding-top: var(--space-7);
+	}
+
+	.name {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 7vw, 4.5rem);
+		font-weight: 600;
+		margin: 0 0 var(--space-3);
+		line-height: 1.03;
+		letter-spacing: -0.02em;
+	}
+
+	@supports (-webkit-background-clip: text) {
+		.name {
+			background: linear-gradient(
+				110deg,
+				rgba(236, 238, 246, 1),
+				rgba(210, 132, 122, 1),
+				rgba(250, 250, 252, 1)
+			);
+			background-size: 220% 220%;
+			background-position: 20% 50%;
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+			text-shadow: 0 1px 18px rgba(108, 70, 64, 0.28);
+			animation: hero-gradient-drift 24s ease-in-out infinite;
+		}
+	}
+
+	@keyframes hero-gradient-drift {
+		0% {
+			background-position: 20% 50%;
+		}
+		50% {
+			background-position: 80% 50%;
+		}
+		100% {
+			background-position: 20% 50%;
+		}
+	}
+
+	.posts time,
+	.posts p {
+		color: var(--color-muted);
+	}
+
+	.posts p {
+		margin: 0 0 var(--space-2);
+		line-height: 1.6;
+		max-width: 32rem;
+	}
+
+	.home :where(h2, h3) {
+		letter-spacing: -0.015em;
+		text-wrap: balance;
+	}
+
+	.home h2 {
+		font-family: var(--font-display);
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.home section :where(p, ul, nav) {
+		max-width: 65ch;
+		margin: 0;
+	}
+
+	.home section :where(p, ul) + :where(p, ul) {
+		margin-top: var(--space-3);
+	}
+
+	.home section p a {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 3px;
+	}
+
+	:global(.js) .home :where(h1, h2, h3, p, li) {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+
+	.socials {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+
+	.socials a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: var(--radius-round);
+		color: var(--color-text);
+		text-decoration: none;
+		background: var(--color-surface);
+		transition: opacity var(--dur-2) var(--ease-out);
+	}
+
+	.socials a:hover {
+		opacity: 0.85;
+	}
+
+	.socials svg {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.focus {
+		margin: 0;
+		padding-left: 1.25rem;
+	}
+
+	.focus li {
+		margin: 0 0 var(--space-3);
+		line-height: 1.6;
+	}
+
+	.focus li:last-child {
+		margin-bottom: 0;
+	}
+
+	.posts {
+		list-style: none;
+		padding: 0;
+		margin: var(--space-4) 0 0;
+	}
+
+	.posts li {
+		border-bottom: 1px solid var(--color-surface);
+	}
+
+	.posts li:last-child {
+		border-bottom: none;
+	}
+
+	.posts a {
+		display: block;
+		padding: var(--space-4) 0;
+		text-decoration: none;
+		transition: opacity var(--dur-2) var(--ease-out);
+	}
+
+	.home a:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 3px;
+	}
+
+	.posts a:hover {
+		opacity: 0.9;
+	}
+
+	.posts h3 {
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin: 0 0 var(--space-2);
+		color: var(--color-text);
+	}
+
+	.posts time {
+		display: block;
+		font-size: 0.9rem;
+		margin-bottom: var(--space-2);
+	}
+
+	.posts p {
+		margin: 0;
+		line-height: 1.6;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.posts a {
+			transition: none;
+		}
+		.name {
+			animation: none;
+			filter: none;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.name {
+			font-size: 2.4rem;
+		}
+
+		.socials a {
+			width: 2.2rem;
+			height: 2.2rem;
+		}
+
+		.socials i {
+			font-size: 1.2rem;
+		}
+	}
+</style>

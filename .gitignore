@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# LLM context
+context/
+.github/copilot-instructions.md
