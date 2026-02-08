@@ -1,0 +1,89 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Page Not Found" description="The page you're looking for doesn't exist.">
+	<div class="not-found">
+		<h1>404</h1>
+		<p class="subtitle">Page Not Found</p>
+		<p>The page you're looking for doesn't exist or has been moved.</p>
+		<a href="/" class="home-link">Return Home</a>
+	</div>
+</Layout>
+
+<style>
+	.not-found {
+		max-width: 42rem;
+		margin: 0 auto;
+		text-align: center;
+		padding: var(--space-9) var(--space-5);
+		min-height: 50vh;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: var(--space-4);
+	}
+
+	.not-found h1 {
+		font-family: var(--font-display);
+		font-size: clamp(4rem, 12vw, 8rem);
+		font-weight: 700;
+		margin: 0;
+		line-height: 1;
+		letter-spacing: -0.03em;
+		background: linear-gradient(
+			120deg,
+			rgba(236, 238, 246, 1),
+			rgba(210, 132, 122, 1),
+			rgba(250, 250, 252, 1)
+		);
+		background-size: 200% 200%;
+		background-position: 0% 50%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.subtitle {
+		font-size: 1.5rem;
+		font-weight: 600;
+		margin: 0;
+		color: var(--color-text);
+	}
+
+	.not-found p {
+		margin: 0;
+		color: var(--color-muted);
+		line-height: 1.7;
+	}
+
+	.home-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: var(--space-3) var(--space-6);
+		margin-top: var(--space-4);
+		background: var(--color-accent);
+		color: white;
+		text-decoration: none;
+		font-weight: 600;
+		border-radius: var(--radius-1);
+		transition: opacity var(--dur-2) var(--ease-out);
+	}
+
+	.home-link:hover {
+		opacity: 0.9;
+	}
+
+	.home-link:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 3px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.home-link {
+			transition: none;
+		}
+	}
+</style>
