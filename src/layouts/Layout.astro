@@ -13,7 +13,8 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, "https://danielthorp.com");
 const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
-const ogImage = new URL("/og-image.png", "https://danielthorp.com");
+// TODO: Create og-image.png (1200x630px) - see public/OG-IMAGE-README.md
+// const ogImage = new URL("/og-image.png", "https://danielthorp.com");
 ---
 
 <!doctype html>
@@ -34,16 +35,40 @@ const ogImage = new URL("/og-image.png", "https://danielthorp.com");
 		<meta property="og:url" content={canonicalURL} />
 		<meta property="og:title" content={pageTitle} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content={ogImage} />
 		<meta property="og:site_name" content="Daniel Thorp" />
+		<!-- TODO: Add og:image once og-image.png is created -->
 
 		<!-- Twitter Card -->
-		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:card" content="summary" />
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={ogImage} />
+		<!-- TODO: Add twitter:image once og-image.png is created -->
 
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="manifest" href="/manifest.json" />
+
+		<!-- Structured Data -->
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "Person",
+				"name": "Daniel Thorp",
+				"url": "https://danielthorp.com",
+				"email": "daniel@danielthorp.com",
+				"jobTitle": "Software Engineering Student",
+				"alumniOf": {
+					"@type": "CollegeOrUniversity",
+					"name": "University of Ottawa"
+				},
+				"sameAs": [
+					"https://github.com/arcanistzed",
+					"https://bsky.app/profile/danielthorp.bsky.social",
+					"https://www.linkedin.com/in/daniel-a-thorp/",
+					"https://instagram.com/daniel.a.thorp",
+					"https://youtube.com/@arcanistzed"
+				]
+			}
+		</script>
 
 		<title>{pageTitle}</title>
 
