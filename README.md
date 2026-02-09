@@ -1,14 +1,14 @@
 # Daniel Thorp
 
-This repository contains the source code for my personal website.
-
-<https://danielthorp.com>
+Personal website at <https://danielthorp.com>. Built with [Astro](https://astro.build).
 
 ## Development
 
 ```bash
 npm install
-npm run dev
+npm run dev      # Start dev server
+npm run build    # Generate images + production build
+npm run preview  # Preview production build locally
 ```
 
 ## License
