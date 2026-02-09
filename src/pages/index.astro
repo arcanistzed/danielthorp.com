@@ -576,11 +576,22 @@ function excerpt(text?: string): string {
 
 	@media (max-width: 640px) {
 		.name {
-			font-size: 2.4rem;
+			font-size: clamp(3rem, 14vw, 3.5rem);
+			letter-spacing: 0.01em;
 		}
 
 		.socials {
-			gap: var(--space-3);
+			gap: var(--space-2);
+		}
+
+		.socials a {
+			width: 2.25rem;
+			height: 2.25rem;
+		}
+
+		.socials svg {
+			width: 1.1rem;
+			height: 1.1rem;
 		}
 	}
 </style>
