@@ -1,0 +1,17 @@
+{
+	"name": "Daniel Thorp",
+	"short_name": "Daniel Thorp",
+	"description": "Daniel Thorp's personal website. Software engineering student at the University of Ottawa. Sharing thoughts on technology, public policy, and life.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0a0b0d",
+	"theme_color": "#0a0b0d",
+	"icons": [
+		{
+			"src": "/favicon.svg",
+			"sizes": "any",
+			"type": "image/svg+xml",
+			"purpose": "any maskable"
+		}
+	]
+}

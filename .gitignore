@@ -24,5 +24,6 @@ pnpm-debug.log*
 .idea/
 
 # LLM context
+.playwright-mcp/
 context/
 .github/copilot-instructions.md

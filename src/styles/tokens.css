@@ -1,5 +1,7 @@
 :root {
-	/* Colors - Dark mode */
+	color-scheme: dark light;
+
+	/* Colors */
 	--color-bg: #0a0b0d;
 	--color-surface: rgba(255, 255, 255, 0.05);
 	--color-text: rgba(255, 255, 255, 0.92);
@@ -7,19 +9,18 @@
 	--color-accent: #6366f1;
 
 	/* Typography */
-	--font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+	--font-sans:
+		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 		"Helvetica Neue", Arial, sans-serif;
-	--font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
-		Palatino, "Times New Roman", serif;
-	--font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono",
-		Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+	--font-display:
+		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino,
+		"Times New Roman", serif;
 
 	/* Sizing */
 	--content-max: 48rem;
 	--page-max: 72rem;
 
-	/* Spacing scale (8px baseline) */
-	--space-1: 0.25rem;
+	/* Spacing scale */
 	--space-2: 0.5rem;
 	--space-3: 0.75rem;
 	--space-4: 1rem;
@@ -31,19 +32,11 @@
 
 	/* Radius */
 	--radius-1: 0.5rem;
-	--radius-2: 1rem;
 	--radius-round: 9999px;
-
-	/* Shadows */
-	--shadow-1: 0 2px 8px rgba(0, 0, 0, 0.15);
-	--shadow-2: 0 8px 24px rgba(0, 0, 0, 0.25);
 
 	/* Motion */
 	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-	--ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
-	--dur-1: 120ms;
 	--dur-2: 200ms;
-	--dur-3: 350ms;
 }
 
 @media (prefers-color-scheme: light) {
@@ -53,8 +46,5 @@
 		--color-text: rgba(0, 0, 0, 0.9);
 		--color-muted: rgba(0, 0, 0, 0.62);
 		--color-accent: #4f46e5;
-
-		--shadow-1: 0 2px 8px rgba(0, 0, 0, 0.08);
-		--shadow-2: 0 8px 24px rgba(0, 0, 0, 0.12);
 	}
 }

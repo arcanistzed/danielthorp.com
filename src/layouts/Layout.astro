@@ -1,5 +1,7 @@
 ---
 import Footer from "../components/Footer.astro";
+import "../styles/tokens.css";
+import "../styles/base.css";
 
 interface Props {
 	title?: string;
@@ -8,7 +10,7 @@ interface Props {
 
 const {
 	title = "Daniel Thorp",
-	description = "Fourth-year Software Engineering student. Law school next.",
+	description = "Daniel Thorp's personal website. Software engineering student at the University of Ottawa. Sharing thoughts on technology, public policy, and life.",
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, "https://danielthorp.com");
@@ -21,6 +23,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
+		<meta name="author" content="Daniel Thorp" />
 		<meta name="generator" content={Astro.generator} />
 
 		<!-- Canonical URL -->
@@ -31,21 +34,83 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 		<meta property="og:url" content={canonicalURL} />
 		<meta property="og:title" content={pageTitle} />
 		<meta property="og:description" content={description} />
+		<meta property="og:site_name" content="Daniel Thorp" />
+		<meta
+			property="og:image"
+			content="https://danielthorp.com/og-image.png"
+		/>
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
 
 		<!-- Twitter Card -->
-		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
+		<meta
+			name="twitter:image"
+			content="https://danielthorp.com/og-image.png"
+		/>
 
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/manifest.json" />
+		<link
+			rel="alternate"
+			type="application/rss+xml"
+			title="Daniel Thorp"
+			href="https://arcanistzed.substack.com/feed"
+		/>
+
+		<!-- Theme color -->
+		<meta
+			name="theme-color"
+			content="#0a0b0d"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta
+			name="theme-color"
+			content="#ffffff"
+			media="(prefers-color-scheme: light)"
+		/>
+
+		<!-- Structured data -->
+		<script
+			type="application/ld+json"
+			set:html={JSON.stringify({
+				"@context": "https://schema.org",
+				"@type": "WebSite",
+				name: "Daniel Thorp",
+				url: "https://danielthorp.com",
+				author: {
+					"@type": "Person",
+					name: "Daniel Thorp",
+					url: "https://danielthorp.com",
+					email: "daniel@danielthorp.com",
+					jobTitle: "Software Engineering Student",
+					sameAs: [
+						"https://github.com/arcanistzed",
+						"https://www.linkedin.com/in/daniel-a-thorp/",
+						"https://bsky.app/profile/danielthorp.bsky.social",
+						"https://instagram.com/daniel.a.thorp",
+						"https://youtube.com/@arcanistzed",
+					],
+				},
+			})}
+		/>
 
 		<title>{pageTitle}</title>
 
-		<link rel="stylesheet" href="/styles/tokens.css" />
-		<link rel="stylesheet" href="/styles/base.css" />
 		<script is:inline>
 			document.documentElement.classList.add("js");
 		</script>
+		<noscript>
+			<style>
+				.home :where(h1, h2, h3, p, li) {
+					opacity: 1 !important;
+					transform: none !important;
+				}
+			</style>
+		</noscript>
 	</head>
 
 	<body>
