@@ -257,16 +257,16 @@ video {
 		background-image:
 			linear-gradient(
 				120deg,
-				rgba(250, 249, 252, 1),
-				rgba(244, 240, 252, 1) 45%,
-				rgba(252, 249, 247, 1)
+				rgba(240, 234, 255, 1),
+				rgba(228, 216, 252, 1) 45%,
+				rgba(252, 240, 232, 1)
 			),
 			linear-gradient(
 				115deg,
-				rgba(99, 102, 241, 0.04) 0%,
-				rgba(99, 102, 241, 0.01) 30%,
-				rgba(182, 92, 66, 0.04) 60%,
-				rgba(99, 102, 241, 0.01) 100%
+				rgba(110, 74, 186, 0.1) 0%,
+				rgba(110, 74, 186, 0.03) 30%,
+				rgba(182, 92, 66, 0.1) 60%,
+				rgba(110, 74, 186, 0.03) 100%
 			),
 			repeating-linear-gradient(
 				135deg,
@@ -295,19 +295,24 @@ video {
 		animation: sheen-drift 70s ease-in-out infinite;
 	}
 
+	body::before,
+	body::after {
+		filter: blur(50px);
+	}
+
 	body::before {
 		background:
 			radial-gradient(
 				60% 60% at 25% 25%,
-				rgba(99, 102, 241, 0.12),
+				rgba(110, 74, 186, 0.52),
 				transparent 70%
 			),
 			radial-gradient(
 				50% 50% at 75% 35%,
-				rgba(182, 92, 66, 0.1),
+				rgba(182, 92, 66, 0.40),
 				transparent 70%
 			);
-		opacity: 0.6;
+		opacity: 0.55;
 		mix-blend-mode: multiply;
 	}
 
@@ -315,15 +320,15 @@ video {
 		background:
 			radial-gradient(
 				55% 55% at 70% 65%,
-				rgba(216, 118, 78, 0.08),
+				rgba(216, 118, 78, 0.30),
 				transparent 70%
 			),
 			radial-gradient(
 				60% 60% at 30% 75%,
-				rgba(99, 102, 241, 0.1),
+				rgba(146, 108, 214, 0.44),
 				transparent 72%
 			);
-		opacity: 0.5;
+		opacity: 0.48;
 		mix-blend-mode: multiply;
 	}
 }
