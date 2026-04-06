@@ -448,6 +448,17 @@ function excerpt(text?: string): string {
 
 	.home a {
 		color: var(--color-text);
+		transition:
+			color var(--dur-2) var(--ease-out),
+			text-decoration-color var(--dur-2) var(--ease-out),
+			text-decoration-thickness var(--dur-2) var(--ease-out),
+			background-color var(--dur-2) var(--ease-out),
+			border-color var(--dur-2) var(--ease-out),
+			box-shadow var(--dur-2) var(--ease-out),
+			transform var(--dur-2) var(--ease-out);
+	}
+
+	.home section :is(p, li) a {
 		text-decoration-line: underline;
 		text-decoration-color: color-mix(
 			in srgb,
@@ -456,18 +467,11 @@ function excerpt(text?: string): string {
 		);
 		text-decoration-thickness: 1px;
 		text-underline-offset: 0.16em;
-		transition:
-			color var(--dur-2) var(--ease-out),
-			text-decoration-color var(--dur-2) var(--ease-out),
-			background-color var(--dur-2) var(--ease-out),
-			border-color var(--dur-2) var(--ease-out),
-			box-shadow var(--dur-2) var(--ease-out),
-			transform var(--dur-2) var(--ease-out);
 	}
 
-	.home a:hover {
-		color: var(--color-accent);
+	.home section :is(p, li) a:hover {
 		text-decoration-color: currentColor;
+		text-decoration-thickness: 2px;
 	}
 
 	.home a:focus-visible {
@@ -591,6 +595,23 @@ function excerpt(text?: string): string {
 		font-weight: 600;
 		margin: 0 0 var(--space-2);
 		color: var(--color-text);
+		text-decoration-line: underline;
+		text-decoration-color: transparent;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.2em;
+		transition:
+			text-decoration-color var(--dur-2) var(--ease-out),
+			text-decoration-thickness var(--dur-2) var(--ease-out);
+	}
+
+	.posts li:hover h3,
+	.posts li:focus-within h3 {
+		text-decoration-color: color-mix(
+			in srgb,
+			currentColor 68%,
+			transparent
+		);
+		text-decoration-thickness: 2px;
 	}
 
 	.posts time {
