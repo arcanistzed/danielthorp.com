@@ -226,16 +226,16 @@ function excerpt(text?: string): string {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						uODPA
-					</a>
+						uODPA</a
+					>
 					and
 					<a
 						href="https://openmedia.org/"
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						OpenMedia
-					</a>.
+						OpenMedia</a
+					>.
 				</li>
 				<li>
 					Seeking opportunities in software engineering, DevOps, and
@@ -388,37 +388,17 @@ function excerpt(text?: string): string {
 		.name {
 			background: linear-gradient(
 				110deg,
-				rgba(236, 238, 246, 1),
-				rgba(210, 132, 122, 1),
-				rgba(250, 250, 252, 1)
+				var(--color-hero-start),
+				var(--color-hero-mid),
+				var(--color-hero-end)
 			);
 			background-size: 220% 220%;
 			background-position: 20% 50%;
 			-webkit-background-clip: text;
 			background-clip: text;
 			color: transparent;
-			text-shadow: 0 1px 18px rgba(108, 70, 64, 0.28);
+			text-shadow: 0 1px 18px var(--color-hero-shadow);
 			animation: hero-gradient-drift 24s ease-in-out infinite;
-		}
-	}
-
-	@media (prefers-color-scheme: light) {
-		@supports (background-clip: text) or (-webkit-background-clip: text) {
-			.name {
-				background: linear-gradient(
-					110deg,
-					rgba(30, 28, 46, 1),
-					rgba(120, 50, 40, 1),
-					rgba(20, 18, 36, 1)
-				);
-				background-size: 220% 220%;
-				background-position: 20% 50%;
-				-webkit-background-clip: text;
-				background-clip: text;
-				color: transparent;
-				text-shadow: none;
-				animation: hero-gradient-drift 24s ease-in-out infinite;
-			}
 		}
 	}
 
@@ -466,10 +446,34 @@ function excerpt(text?: string): string {
 		margin-top: var(--space-3);
 	}
 
-	.home section p a {
-		text-decoration: underline;
+	.home a {
+		color: var(--color-text);
+		text-decoration-line: underline;
+		text-decoration-color: color-mix(
+			in srgb,
+			currentColor 42%,
+			transparent
+		);
 		text-decoration-thickness: 1px;
-		text-underline-offset: 3px;
+		text-underline-offset: 0.16em;
+		transition:
+			color var(--dur-2) var(--ease-out),
+			text-decoration-color var(--dur-2) var(--ease-out),
+			background-color var(--dur-2) var(--ease-out),
+			border-color var(--dur-2) var(--ease-out),
+			box-shadow var(--dur-2) var(--ease-out),
+			transform var(--dur-2) var(--ease-out);
+	}
+
+	.home a:hover {
+		color: var(--color-accent);
+		text-decoration-color: currentColor;
+	}
+
+	.home a:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 3px;
+		text-decoration-color: currentColor;
 	}
 
 	:global(.js) .home :where(h1, h2, h3, p, li) {
@@ -493,12 +497,31 @@ function excerpt(text?: string): string {
 		border-radius: var(--radius-round);
 		color: var(--color-text);
 		text-decoration: none;
+		border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
 		background: var(--color-surface);
-		transition: opacity var(--dur-2) var(--ease-out);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+		text-decoration-thickness: 0;
+		text-underline-offset: 0;
+		transition:
+			background-color var(--dur-2) var(--ease-out),
+			border-color var(--dur-2) var(--ease-out),
+			color var(--dur-2) var(--ease-out),
+			box-shadow var(--dur-2) var(--ease-out),
+			transform var(--dur-2) var(--ease-out);
 	}
 
 	.socials a:hover {
-		opacity: 0.85;
+		background: color-mix(
+			in srgb,
+			var(--color-surface) 72%,
+			var(--color-text) 8%
+		);
+		border-color: color-mix(in srgb, var(--color-text) 22%, transparent);
+		transform: translateY(-1px);
+	}
+
+	.socials a:focus-visible {
+		transform: translateY(-1px);
 	}
 
 	.socials svg {
@@ -521,33 +544,46 @@ function excerpt(text?: string): string {
 	}
 
 	.posts {
+		display: grid;
+		gap: var(--space-3);
 		list-style: none;
 		padding: 0;
 		margin: var(--space-4) 0 0;
 	}
 
 	.posts li {
-		border-bottom: 1px solid var(--color-surface);
-	}
-
-	.posts li:last-child {
-		border-bottom: none;
+		border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+		border-radius: calc(var(--radius-1) + 0.25rem);
+		background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+		transition:
+			background-color var(--dur-2) var(--ease-out),
+			border-color var(--dur-2) var(--ease-out),
+			transform var(--dur-2) var(--ease-out),
+			box-shadow var(--dur-2) var(--ease-out);
 	}
 
 	.posts a {
 		display: block;
-		padding: var(--space-4) 0;
+		padding: var(--space-4);
 		text-decoration: none;
-		transition: opacity var(--dur-2) var(--ease-out);
+		transition: inherit;
 	}
 
-	.home a:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 3px;
+	.posts li:hover,
+	.posts li:focus-within {
+		background: color-mix(
+			in srgb,
+			var(--color-surface) 58%,
+			var(--color-text) 4%
+		);
+		border-color: color-mix(in srgb, var(--color-text) 18%, transparent);
+		transform: translateY(-1px);
+		box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
 	}
 
 	.posts a:hover {
-		opacity: 0.9;
+		color: var(--color-text);
 	}
 
 	.posts h3 {
@@ -569,6 +605,7 @@ function excerpt(text?: string): string {
 	}
 
 	@media (prefers-reduced-motion: reduce) {
+		.home a,
 		.posts a {
 			transition: none;
 		}
@@ -577,6 +614,10 @@ function excerpt(text?: string): string {
 			filter: none;
 		}
 		.socials a {
+			transition: none;
+		}
+
+		.posts li {
 			transition: none;
 		}
 	}
@@ -599,6 +640,10 @@ function excerpt(text?: string): string {
 		.socials svg {
 			width: 1.1rem;
 			height: 1.1rem;
+		}
+
+		.posts a {
+			padding: var(--space-3);
 		}
 	}
 </style>

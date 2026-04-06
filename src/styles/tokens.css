@@ -8,6 +8,53 @@
 	--color-muted: rgba(255, 255, 255, 0.65);
 	--color-accent: #6366e8;
 
+	/* Decorative palette */
+	--color-hero-start: rgba(236, 238, 246, 1);
+	--color-hero-mid: rgba(210, 132, 122, 1);
+	--color-hero-end: rgba(250, 250, 252, 1);
+	--color-hero-shadow: rgba(108, 70, 64, 0.28);
+
+	--color-bg-art-dark-base-1: #07070b;
+	--color-bg-art-dark-base-2: #0f0b17;
+	--color-bg-art-dark-base-3: #08070d;
+	--color-bg-art-dark-violet: #8a5de3;
+	--color-bg-art-dark-amber: #c45f42;
+	--color-bg-art-dark-pink: #d17ca5;
+	--color-bg-art-dark-edge: #7b5bd9;
+	--color-bg-art-dark-texture: #ffffff;
+
+	--color-bg-art-light-base-1: #f4efff;
+	--color-bg-art-light-base-2: #eadfff;
+	--color-bg-art-light-base-3: #fcf2ea;
+	--color-bg-art-light-violet: #6d4dc9;
+	--color-bg-art-light-amber: #b35a42;
+	--color-bg-art-light-rose: #a86c8e;
+	--color-bg-art-light-edge: #8f72e5;
+	--color-bg-art-light-texture: #000000;
+
+	--color-bg-atmo-dark-base-1: rgba(8, 7, 12, 1);
+	--color-bg-atmo-dark-base-2: rgba(16, 11, 22, 1);
+	--color-bg-atmo-dark-base-3: rgba(9, 7, 14, 1);
+	--color-bg-atmo-dark-sheen-1: rgba(255, 255, 255, 0.04);
+	--color-bg-atmo-dark-sheen-2: rgba(255, 255, 255, 0.015);
+	--color-bg-atmo-dark-sheen-3: rgba(255, 255, 255, 0.06);
+	--color-bg-atmo-dark-stripe-1: rgba(255, 255, 255, 0.03);
+	--color-bg-atmo-dark-stripe-2: rgba(255, 255, 255, 0.02);
+	--color-bg-atmo-dark-stripe-clear: rgba(255, 255, 255, 0);
+	--color-bg-atmo-dark-highlight: rgba(255, 255, 255, 0.12);
+
+	--color-bg-atmo-light-base-1: rgba(240, 234, 255, 1);
+	--color-bg-atmo-light-base-2: rgba(228, 216, 252, 1);
+	--color-bg-atmo-light-base-3: rgba(252, 240, 232, 1);
+	--color-bg-atmo-light-sheen-1: rgba(110, 74, 186, 0.1);
+	--color-bg-atmo-light-sheen-2: rgba(110, 74, 186, 0.03);
+	--color-bg-atmo-light-sheen-3: rgba(182, 92, 66, 0.1);
+	--color-bg-atmo-light-stripe-1: rgba(0, 0, 0, 0.025);
+	--color-bg-atmo-light-stripe-2: rgba(0, 0, 0, 0.015);
+	--color-bg-atmo-light-stripe-clear: rgba(0, 0, 0, 0);
+	--color-bg-atmo-light-highlight: rgba(255, 255, 255, 0.5);
+	--color-bg-atmo-light-highlight-clear: rgba(255, 255, 255, 0);
+
 	/* Typography */
 	--font-sans:
 		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
@@ -46,5 +93,10 @@
 		--color-text: rgba(0, 0, 0, 0.9);
 		--color-muted: rgba(0, 0, 0, 0.62);
 		--color-accent: #4f46e5;
+
+		--color-hero-start: rgba(30, 28, 46, 1);
+		--color-hero-mid: rgba(120, 50, 40, 1);
+		--color-hero-end: rgba(20, 18, 36, 1);
+		--color-hero-shadow: transparent;
 	}
 }
