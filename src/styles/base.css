@@ -123,7 +123,7 @@ body {
 	width: 100%;
 	height: 100%;
 	opacity: 0;
-	transition: opacity var(--dur-2) var(--ease-out);
+	transition: opacity var(--dur-2);
 }
 
 .page-background-art--dark {
@@ -154,22 +154,31 @@ video {
 	display: block;
 }
 
+a {
+	color: var(--color-muted);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	transition: color var(--dur-4);
+}
+
+a:hover {
+	color: var(--color-text);
+}
+
 #content {
 	flex: 1;
-	max-width: var(--page-max);
 	margin: 0 auto;
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
 }
 
 .site-footer {
-	margin-top: auto;
-	padding: var(--space-7) 0;
+	padding: var(--space-6) 0;
 	border-top: 1px solid
 		color-mix(in srgb, var(--color-muted) 30%, transparent);
 }
 
 .site-footer p {
-	max-width: var(--content-max);
 	margin: 0 auto;
 	padding: 0 var(--space-5);
 	text-align: center;
@@ -187,7 +196,7 @@ video {
 	font-weight: 600;
 	text-decoration: none;
 	z-index: 100;
-	transition: top var(--dur-2) var(--ease-out);
+	transition: top var(--dur-2);
 }
 
 .skip-link:focus {

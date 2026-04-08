@@ -130,61 +130,68 @@ function excerpt(text?: string): string {
 
 <Layout>
 	<div class="home">
-		<h1 class="name">Daniel Thorp</h1>
-		<nav class="socials" aria-label="Socials">
-			<a
-				title="Email"
-				href="mailto:daniel@danielthorp.com"
-				aria-label="Send an email to Daniel Thorp"
-			>
-				<EmailIcon />
-			</a>
-			<a
-				title="GitHub"
-				href="https://github.com/arcanistzed"
-				target="_blank"
-				rel="noopener noreferrer me"
-				aria-label="View Daniel Thorp's GitHub profile (opens in new tab)"
-			>
-				<GitHubIcon />
-			</a>
-			<a
-				title="Bluesky"
-				href="https://bsky.app/profile/danielthorp.bsky.social"
-				target="_blank"
-				rel="noopener noreferrer me"
-				aria-label="View Daniel Thorp's Bluesky profile (opens in new tab)"
-			>
-				<BlueskyIcon />
-			</a>
-			<a
-				title="LinkedIn"
-				href="https://www.linkedin.com/in/daniel-a-thorp/"
-				target="_blank"
-				rel="noopener noreferrer me"
-				aria-label="View Daniel Thorp's LinkedIn profile (opens in new tab)"
-			>
-				<LinkedInIcon />
-			</a>
-			<a
-				title="Discord"
-				href="https://discord.com/users/455117777745870860"
-				target="_blank"
-				rel="noopener noreferrer"
-				aria-label="View Daniel Thorp's Discord profile (opens in new tab)"
-			>
-				<DiscordIcon />
-			</a>
-			<a
-				title="Instagram"
-				href="https://instagram.com/daniel.a.thorp"
-				target="_blank"
-				rel="noopener noreferrer me"
-				aria-label="View Daniel Thorp's Instagram profile (opens in new tab)"
-			>
-				<InstagramIcon />
-			</a>
-			<!-- <a
+		<section aria-label="Header">
+			<h1 class="name">Daniel Thorp</h1>
+			<nav class="socials" aria-label="Socials">
+				<a
+					class="social-email"
+					title="Email"
+					href="mailto:daniel@danielthorp.com"
+					aria-label="Send an email to Daniel Thorp"
+				>
+					<EmailIcon />
+				</a>
+				<a
+					class="social-github"
+					title="GitHub"
+					href="https://github.com/arcanistzed"
+					target="_blank"
+					rel="noopener noreferrer me"
+					aria-label="View Daniel Thorp's GitHub profile (opens in new tab)"
+				>
+					<GitHubIcon />
+				</a>
+				<a
+					class="social-bluesky"
+					title="Bluesky"
+					href="https://bsky.app/profile/danielthorp.bsky.social"
+					target="_blank"
+					rel="noopener noreferrer me"
+					aria-label="View Daniel Thorp's Bluesky profile (opens in new tab)"
+				>
+					<BlueskyIcon />
+				</a>
+				<a
+					class="social-linkedin"
+					title="LinkedIn"
+					href="https://www.linkedin.com/in/daniel-a-thorp/"
+					target="_blank"
+					rel="noopener noreferrer me"
+					aria-label="View Daniel Thorp's LinkedIn profile (opens in new tab)"
+				>
+					<LinkedInIcon />
+				</a>
+				<a
+					class="social-discord"
+					title="Discord"
+					href="https://discord.com/users/455117777745870860"
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="View Daniel Thorp's Discord profile (opens in new tab)"
+				>
+					<DiscordIcon />
+				</a>
+				<a
+					class="social-instagram"
+					title="Instagram"
+					href="https://instagram.com/daniel.a.thorp"
+					target="_blank"
+					rel="noopener noreferrer me"
+					aria-label="View Daniel Thorp's Instagram profile (opens in new tab)"
+				>
+					<InstagramIcon />
+				</a>
+				<!-- <a
 				title="YouTube"
 				href="https://youtube.com/@arcanistzed"
 				target="_blank"
@@ -193,7 +200,8 @@ function excerpt(text?: string): string {
 			>
 				<YouTubeIcon />
 			</a> -->
-		</nav>
+			</nav>
+		</section>
 
 		<section aria-label="Introduction">
 			<p>
@@ -303,55 +311,76 @@ function excerpt(text?: string): string {
 	</div>
 
 	<script is:inline>
+		const clearRevealStartStyles = el => {
+			el.style.removeProperty("transform");
+			el.style.removeProperty("opacity");
+		};
+
+		const clearRevealStyles = el => {
+			clearRevealStartStyles(el);
+			el.style.removeProperty("transition");
+		};
+
 		const revealItems = Array.from(
-			document.querySelectorAll(".home :where(h1, h2, h3, p, li)"),
+			document.querySelectorAll(
+				".home :where(h1, h2, h3, p, a, time, li)",
+			),
 		);
 		const prefersReducedMotion = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
 		).matches;
 
-		if (revealItems.length) {
-			if (prefersReducedMotion) {
-				revealItems.forEach(el => {
-					el.style.transition = "none";
-					el.style.transform = "none";
-					el.style.opacity = 1;
+		if (revealItems.length && !prefersReducedMotion) {
+			revealItems.forEach(el => {
+				el.style.transform = "translateY(1rem)";
+				el.style.opacity = 0;
+			});
+
+			let previousY = window.scrollY;
+			const callback = entries => {
+				const currentY = window.scrollY;
+				entries.forEach(entry => {
+					const { isIntersecting, target: el } = entry;
+					if (!isIntersecting) {
+						return;
+					}
+					const index = revealItems.indexOf(el);
+					const delay = currentY === 0 ? Math.max(0, index) * 40 : 0;
+					const shouldAnimate = currentY >= previousY;
+					if (shouldAnimate) {
+						el.style.transition = `transform 320ms ease ${delay}ms, opacity 320ms ease ${delay}ms`;
+					}
+					if (shouldAnimate) {
+						const onRevealEnd = event => {
+							if (event.propertyName !== "opacity") {
+								return;
+							}
+							el.removeEventListener(
+								"transitionend",
+								onRevealEnd,
+							);
+							clearRevealStyles(el);
+						};
+
+						el.addEventListener("transitionend", onRevealEnd);
+					}
+					clearRevealStartStyles(el);
+					if (!shouldAnimate) {
+						clearRevealStyles(el);
+					}
+					observer.unobserve(el);
 				});
-			} else {
-				let previousY = window.scrollY;
-				const callback = entries => {
-					const currentY = window.scrollY;
-					entries.forEach(entry => {
-						const { isIntersecting, target: el } = entry;
-						if (!isIntersecting) {
-							return;
-						}
 
-						const index = revealItems.indexOf(el);
-						const delay = Math.max(0, index) * 40;
-						if (currentY >= previousY) {
-							el.style.transition = "1s";
-							el.style.transitionDelay = `${delay}ms`;
-						} else {
-							el.style.transition = "none";
-							el.style.transitionDelay = "0ms";
-						}
-						el.style.transform = "none";
-						el.style.opacity = 1;
-						observer.unobserve(el);
-					});
+				previousY = currentY;
+			};
 
-					previousY = currentY;
-				};
+			const observer = new IntersectionObserver(callback, {
+				root: null,
+				rootMargin: "0px",
+				threshold: 0,
+			});
 
-				const observer = new IntersectionObserver(callback, {
-					root: null,
-					rootMargin: "0px",
-					threshold: 0,
-				});
-
-				revealItems.forEach(el => observer.observe(el));
-			}
+			revealItems.forEach(el => observer.observe(el));
 		}
 	</script>
 </Layout>
@@ -362,7 +391,7 @@ function excerpt(text?: string): string {
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-4);
+		gap: var(--space-7);
 		font-size: 1.05rem;
 		line-height: 1.8;
 	}
@@ -370,7 +399,6 @@ function excerpt(text?: string): string {
 	.home section {
 		display: grid;
 		gap: var(--space-4);
-		padding-top: var(--space-7);
 	}
 
 	.name {
@@ -417,6 +445,7 @@ function excerpt(text?: string): string {
 	.posts time,
 	.posts p {
 		color: var(--color-muted);
+		transition: color var(--dur-4);
 	}
 
 	.posts p {
@@ -442,90 +471,57 @@ function excerpt(text?: string): string {
 		margin: 0;
 	}
 
-	.home section :where(p, ul) + :where(p, ul) {
-		margin-top: var(--space-3);
-	}
-
-	.home a {
-		color: var(--color-text);
-		transition:
-			color var(--dur-2) var(--ease-out),
-			text-decoration-color var(--dur-2) var(--ease-out),
-			text-decoration-thickness var(--dur-2) var(--ease-out),
-			background-color var(--dur-2) var(--ease-out),
-			border-color var(--dur-2) var(--ease-out),
-			box-shadow var(--dur-2) var(--ease-out),
-			transform var(--dur-2) var(--ease-out);
-	}
-
-	.home section :is(p, li) a {
-		text-decoration-line: underline;
-		text-decoration-color: color-mix(
-			in srgb,
-			currentColor 42%,
-			transparent
-		);
-		text-decoration-thickness: 1px;
-		text-underline-offset: 0.16em;
-	}
-
-	.home section :is(p, li) a:hover {
-		text-decoration-color: currentColor;
-		text-decoration-thickness: 2px;
-	}
-
-	.home a:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 3px;
-		text-decoration-color: currentColor;
-	}
-
-	:global(.js) .home :where(h1, h2, h3, p, li) {
-		opacity: 0;
-		transform: translateY(12px);
-	}
-
 	.socials {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
-		gap: var(--space-4);
+		align-items: center;
+		gap: var(--space-6);
 	}
 
 	.socials a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
+		--social-color: var(--color-muted);
 		width: 2.5rem;
-		height: 2.5rem;
-		border-radius: var(--radius-round);
-		color: var(--color-text);
-		text-decoration: none;
-		border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
-		background: var(--color-surface);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
-		text-decoration-thickness: 0;
-		text-underline-offset: 0;
+		color: var(--social-color);
 		transition:
-			background-color var(--dur-2) var(--ease-out),
-			border-color var(--dur-2) var(--ease-out),
-			color var(--dur-2) var(--ease-out),
-			box-shadow var(--dur-2) var(--ease-out),
-			transform var(--dur-2) var(--ease-out);
+			color var(--dur-4),
+			opacity var(--dur-4);
 	}
 
 	.socials a:hover {
-		background: color-mix(
+		--social-color: color-mix(
 			in srgb,
-			var(--color-surface) 72%,
-			var(--color-text) 8%
+			var(--social-hover) 50%,
+			var(--color-text)
 		);
-		border-color: color-mix(in srgb, var(--color-text) 22%, transparent);
-		transform: translateY(-1px);
 	}
 
 	.socials a:focus-visible {
-		transform: translateY(-1px);
+		--social-color: var(--social-hover);
+	}
+
+	.social-email {
+		--social-hover: #d97a6a;
+	}
+
+	.social-github {
+		--social-hover: #fff;
+	}
+
+	.social-bluesky {
+		--social-hover: #0f73ff;
+	}
+
+	.social-linkedin {
+		--social-hover: #0b66c3;
+	}
+
+	.social-discord {
+		--social-hover: #5865f2;
+	}
+
+	.social-instagram {
+		--social-hover: #c45d9b;
 	}
 
 	.socials svg {
@@ -534,7 +530,6 @@ function excerpt(text?: string): string {
 	}
 
 	.focus {
-		margin: 0;
 		padding-left: 1.25rem;
 	}
 
@@ -543,32 +538,27 @@ function excerpt(text?: string): string {
 		line-height: 1.6;
 	}
 
-	.focus li:last-child {
-		margin-bottom: 0;
-	}
-
 	.posts {
-		display: grid;
+		display: flex;
+		flex-direction: column;
 		gap: var(--space-3);
 		list-style: none;
 		padding: 0;
-		margin: var(--space-4) 0 0;
 	}
 
 	.posts li {
 		border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
-		border-radius: calc(var(--radius-1) + 0.25rem);
+		border-radius: var(--radius-1);
 		background: color-mix(in srgb, var(--color-surface) 80%, transparent);
-		box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
 		transition:
-			background-color var(--dur-2) var(--ease-out),
-			border-color var(--dur-2) var(--ease-out),
-			transform var(--dur-2) var(--ease-out),
-			box-shadow var(--dur-2) var(--ease-out);
+			background-color var(--dur-4),
+			border-color var(--dur-4);
 	}
 
 	.posts a {
-		display: block;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
 		padding: var(--space-4);
 		text-decoration: none;
 		transition: inherit;
@@ -578,51 +568,36 @@ function excerpt(text?: string): string {
 	.posts li:focus-within {
 		background: color-mix(
 			in srgb,
-			var(--color-surface) 58%,
-			var(--color-text) 4%
+			var(--color-surface) 60%,
+			var(--color-text) 5%
 		);
-		border-color: color-mix(in srgb, var(--color-text) 18%, transparent);
-		transform: translateY(-1px);
-		box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+		border-color: color-mix(in srgb, var(--color-text) 20%, transparent);
 	}
 
-	.posts a:hover {
+	.posts li:hover p,
+	.posts li:focus-within p,
+	.posts li:hover time,
+	.posts li:focus-within time {
 		color: var(--color-text);
 	}
 
 	.posts h3 {
-		font-size: 1.1rem;
-		font-weight: 600;
-		margin: 0 0 var(--space-2);
 		color: var(--color-text);
-		text-decoration-line: underline;
+		font-size: 1.1rem;
+		margin: 0;
+		text-decoration: underline;
 		text-decoration-color: transparent;
-		text-decoration-thickness: 1px;
-		text-underline-offset: 0.2em;
-		transition:
-			text-decoration-color var(--dur-2) var(--ease-out),
-			text-decoration-thickness var(--dur-2) var(--ease-out);
+		transition: color var(--dur-4);
 	}
 
 	.posts li:hover h3,
 	.posts li:focus-within h3 {
-		text-decoration-color: color-mix(
-			in srgb,
-			currentColor 68%,
-			transparent
-		);
-		text-decoration-thickness: 2px;
+		text-decoration-color: currentColor;
 	}
 
 	.posts time {
 		display: block;
-		font-size: 0.9rem;
-		margin-bottom: var(--space-2);
-	}
-
-	.posts p {
-		margin: 0;
-		line-height: 1.6;
+		font-size: 0.8rem;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
@@ -636,6 +611,8 @@ function excerpt(text?: string): string {
 		}
 		.socials a {
 			transition: none;
+			animation: none;
+			filter: none;
 		}
 
 		.posts li {
@@ -645,8 +622,8 @@ function excerpt(text?: string): string {
 
 	@media (max-width: 640px) {
 		.name {
-			font-size: 11vw;
-			letter-spacing: 0.01em;
+			font-size: 2.5rem;
+			letter-spacing: 0;
 		}
 
 		.socials {
@@ -654,17 +631,8 @@ function excerpt(text?: string): string {
 		}
 
 		.socials a {
-			width: 2.25rem;
-			height: 2.25rem;
-		}
-
-		.socials svg {
-			width: 1.1rem;
-			height: 1.1rem;
-		}
-
-		.posts a {
-			padding: var(--space-3);
+			width: 2rem;
+			height: 2rem;
 		}
 	}
 </style>

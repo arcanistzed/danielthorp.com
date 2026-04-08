@@ -15,12 +15,10 @@ import Layout from "../layouts/Layout.astro";
 
 <style>
 	.not-found {
-		max-width: var(--content-max);
 		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-4);
-		padding-top: var(--space-9);
 	}
 
 	.not-found h1 {
@@ -34,24 +32,5 @@ import Layout from "../layouts/Layout.astro";
 	.not-found p {
 		color: var(--color-muted);
 		margin: 0;
-		max-width: 45ch;
-		line-height: 1.6;
-	}
-
-	.not-found a {
-		color: var(--color-text);
-		text-decoration: underline;
-		text-decoration-thickness: 1px;
-		text-underline-offset: 3px;
-		transition: opacity var(--dur-2) var(--ease-out);
-	}
-
-	.not-found a:hover {
-		opacity: 0.8;
-	}
-
-	.not-found a:focus-visible {
-		outline: 2px solid var(--color-accent);
-		outline-offset: 3px;
 	}
 </style>

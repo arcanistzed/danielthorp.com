@@ -61,10 +61,6 @@
 		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino,
 		"Times New Roman", serif;
 
-	/* Sizing */
-	--content-max: 48rem;
-	--page-max: 72rem;
-
 	/* Spacing scale */
 	--space-2: 0.5rem;
 	--space-3: 0.75rem;
@@ -77,11 +73,12 @@
 
 	/* Radius */
 	--radius-1: 0.5rem;
-	--radius-round: 9999px;
 
 	/* Motion */
-	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--dur-1: 100ms;
 	--dur-2: 200ms;
+	--dur-3: 360ms;
+	--dur-4: 760ms;
 }
 
 @media (prefers-color-scheme: light) {
