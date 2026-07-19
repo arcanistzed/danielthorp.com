@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@astrojs/sitemap": "^3.7.0",
-		"astro": "^6.1.10",
+		"astro": "^6.4.6",
 		"png-to-ico": "^3.0.1"
 	},
 	"devDependencies": {
