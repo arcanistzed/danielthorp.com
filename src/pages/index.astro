@@ -233,7 +233,7 @@ function excerpt(text?: string): string {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						uODPA</a
+						uODPA<span class="sr-only"> (opens in a new tab)</span></a
 					>
 					and
 					<a
@@ -241,7 +241,7 @@ function excerpt(text?: string): string {
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						OpenMedia</a
+						OpenMedia<span class="sr-only"> (opens in a new tab)</span></a
 					>.
 				</li>
 				<li>
@@ -262,7 +262,7 @@ function excerpt(text?: string): string {
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							Substack
+							Substack<span class="sr-only"> (opens in a new tab)</span>
 						</a>
 						.
 					</p>
@@ -274,7 +274,7 @@ function excerpt(text?: string): string {
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							Substack
+							Substack<span class="sr-only"> (opens in a new tab)</span>
 						</a>
 						.
 					</p>
@@ -287,7 +287,7 @@ function excerpt(text?: string): string {
 									target="_blank"
 									rel="noopener noreferrer"
 								>
-									<h3>{post.title}</h3>
+									<h3>{post.title}<span class="sr-only"> (opens in a new tab)</span></h3>
 									{post.pubDate && (
 										<time datetime={isoDate(post.pubDate)}>
 											{formatDate(post.pubDate)}
