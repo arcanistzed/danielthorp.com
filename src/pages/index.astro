@@ -286,6 +286,7 @@ function excerpt(text?: string): string {
 									href={post.link}
 									target="_blank"
 									rel="noopener noreferrer"
+									aria-label={`Read "${post.title}" (opens in new tab)`}
 								>
 									<h3>{post.title}</h3>
 									{post.pubDate && (
