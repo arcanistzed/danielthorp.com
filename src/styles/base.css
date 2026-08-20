@@ -154,6 +154,7 @@ a:hover {
 	flex: 1;
 	margin: 0 auto;
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
+	outline: none;
 }
 
 .site-footer {

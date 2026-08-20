@@ -14,6 +14,8 @@
 		"png-to-ico": "^3.0.1"
 	},
 	"devDependencies": {
-		"sharp": "^0.35.3"
+		"@astrojs/check": "^0.9.10",
+		"sharp": "^0.35.3",
+		"typescript": "^5.9.3"
 	}
 }
