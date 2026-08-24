@@ -232,6 +232,7 @@ function excerpt(text?: string): string {
 						href="https://uodpa-apnuo.org/"
 						target="_blank"
 						rel="noopener noreferrer"
+							aria-label="uODPA (opens in new tab)"
 					>
 						uODPA</a
 					>
@@ -240,6 +241,7 @@ function excerpt(text?: string): string {
 						href="https://openmedia.org/"
 						target="_blank"
 						rel="noopener noreferrer"
+							aria-label="OpenMedia (opens in new tab)"
 					>
 						OpenMedia</a
 					>.
@@ -261,6 +263,7 @@ function excerpt(text?: string): string {
 							href="https://arcanistzed.substack.com"
 							target="_blank"
 							rel="noopener noreferrer"
+								aria-label="Substack (opens in new tab)"
 						>
 							Substack
 						</a>
@@ -273,6 +276,7 @@ function excerpt(text?: string): string {
 							href="https://arcanistzed.substack.com"
 							target="_blank"
 							rel="noopener noreferrer"
+								aria-label="Substack (opens in new tab)"
 						>
 							Substack
 						</a>
@@ -296,6 +300,7 @@ function excerpt(text?: string): string {
 									{post.description && (
 										<p>{excerpt(post.description)}</p>
 									)}
+									<span class="sr-only"> (opens in new tab)</span>
 								</a>
 							</li>
 						))}
