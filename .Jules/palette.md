@@ -1,0 +1,3 @@
+## 2023-10-27 - Aria-label for inline external links vs block external links
+**Learning:** Adding `aria-label` to block-level links with rich semantic children (like lists of articles with headings and times) overrides their inner accessibility tree. `aria-label` should only be used to add screen reader context (like "(opens in new tab)") to simple inline text links or icon-only links.
+**Action:** Always verify the content of an `<a>` tag before adding an `aria-label`. For block-level links that need extra context, use visually hidden `<span class="sr-only">` tags within the link instead of an `aria-label`. For simple inline links (like uODPA or OpenMedia) opening in a new tab, `aria-label="LinkName (opens in new tab)"` is the perfect UX enhancement.
