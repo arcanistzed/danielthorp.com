@@ -571,6 +571,7 @@ function excerpt(text?: string): string {
 		padding: var(--space-4);
 		text-decoration: none;
 		transition: inherit;
+		border-radius: inherit;
 	}
 
 	.posts li:hover,
@@ -596,7 +597,9 @@ function excerpt(text?: string): string {
 		margin: 0;
 		text-decoration: underline;
 		text-decoration-color: transparent;
-		transition: color var(--dur-4);
+		transition:
+			color var(--dur-4),
+			text-decoration-color var(--dur-4);
 	}
 
 	.posts li:hover h3,
