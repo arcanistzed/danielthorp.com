@@ -1,3 +1,3 @@
-## 2026-08-23 - Accessibility for Rich External Links
-**Learning:** Adding `aria-label` to block-level links containing rich semantic children (like `<h3>`, `<time>`, `<p>`) overrides the inner accessibility tree for screen readers, hiding important structural information.
-**Action:** For simple inline/icon links opening externally, use `aria-label="[Name] (opens in new tab)"`. For rich semantic external links, append `<span class="sr-only"> (opens in new tab)</span>` instead.
+## 2025-02-18 - Block-level and Icon-only Focus Rings
+**Learning:** Keyboard navigation (focus rings) on custom block-level links (like list-item wrappers) and icon-only flex links often render sharply or non-uniformly if explicit styling isn't applied. By default, an `a` tag doesn't inherit `border-radius` from its parent, making the focus outline overlap awkwardly on rounded cards. Icon-only social links using `display: flex` might collapse to the size of the icon causing off-center or flat focus rings.
+**Action:** When implementing `:focus-visible` global styling, always verify the focus states of nested block links (`border-radius: inherit`) and ensure icon-only buttons have explicit height and alignment (e.g. `align-items: center`, `justify-content: center`) so their focus states look symmetrical and intentional.

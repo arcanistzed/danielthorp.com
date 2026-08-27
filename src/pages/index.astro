@@ -485,6 +485,10 @@ function excerpt(text?: string): string {
 		--social-color: var(--color-muted);
 		display: flex;
 		width: 2.5rem;
+		height: 2.5rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-1);
 		color: var(--social-color);
 		transition:
 			color var(--dur-4),
@@ -569,6 +573,7 @@ function excerpt(text?: string): string {
 		flex-direction: column;
 		gap: var(--space-2);
 		padding: var(--space-4);
+		border-radius: inherit;
 		text-decoration: none;
 		transition: inherit;
 	}
