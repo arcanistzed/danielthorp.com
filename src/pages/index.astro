@@ -485,10 +485,15 @@ function excerpt(text?: string): string {
 		--social-color: var(--color-muted);
 		display: flex;
 		width: 2.5rem;
+		height: 2.5rem;
+		align-items: center;
+		justify-content: center;
+		border-radius: var(--radius-1);
 		color: var(--social-color);
 		transition:
 			color var(--dur-4),
-			opacity var(--dur-4);
+			opacity var(--dur-4),
+			background-color var(--dur-4);
 	}
 
 	.socials a:hover {
@@ -497,10 +502,12 @@ function excerpt(text?: string): string {
 			var(--social-hover) 50%,
 			var(--color-text)
 		);
+		background-color: color-mix(in srgb, var(--social-hover) 10%, transparent);
 	}
 
 	.socials a:focus-visible {
 		--social-color: var(--social-hover);
+		background-color: color-mix(in srgb, var(--social-hover) 15%, transparent);
 	}
 
 	.social-email {
