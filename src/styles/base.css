@@ -156,6 +156,10 @@ a:hover {
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
 }
 
+#content:focus {
+	outline: none;
+}
+
 .site-footer {
 	padding: var(--space-6) 0;
 	border-top: 1px solid
