@@ -484,7 +484,11 @@ function excerpt(text?: string): string {
 	.socials a {
 		--social-color: var(--color-muted);
 		display: flex;
+		justify-content: center;
+		align-items: center;
 		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: var(--radius-1);
 		color: var(--social-color);
 		transition:
 			color var(--dur-4),
@@ -647,8 +651,8 @@ function excerpt(text?: string): string {
 		}
 
 		.socials a {
-			width: 2rem;
-			height: 2rem;
+			width: 2.25rem;
+			height: 2.25rem;
 		}
 	}
 </style>
