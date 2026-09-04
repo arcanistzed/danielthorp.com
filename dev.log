@@ -1,0 +1,13 @@
+
+> danielthorp.com@0.0.1 dev /app
+> astro dev
+
+17:55:33 [vite] connected.
+17:55:35 [types] Generated 1ms
+17:55:35 [vite] connected.
+17:55:35 [vite] Re-optimizing dependencies because lockfile has changed
+ astro  v7.3.1 ready in 2690 ms
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+17:55:35 watching for file changes...
+17:58:50 [200] / 187ms
