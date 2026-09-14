@@ -76,7 +76,6 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 
 		<!-- Structured data -->
 		<script
-			is:inline
 			type="application/ld+json"
 			set:html={JSON.stringify({
 				"@context": "https://schema.org",
@@ -104,7 +103,6 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 
 		<!-- Google Analytics -->
 		<script
-			is:inline
 			async
 			src="https://www.googletagmanager.com/gtag/js?id=G-PL71KBEP9H"
 		></script>
@@ -231,7 +229,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 			</svg>
 		</div>
 		<a href="#content" class="skip-link">Skip to content</a>
-		<main id="content" tabindex="-1">
+		<main id="content">
 			<slot />
 		</main>
 
