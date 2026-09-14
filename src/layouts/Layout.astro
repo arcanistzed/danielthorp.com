@@ -129,6 +129,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 	</head>
 
 	<body>
+		<a href="#content" class="skip-link">Skip to content</a>
 		<div class="page-background" aria-hidden="true">
 			<svg
 				class="page-background-art page-background-art--dark"
@@ -228,7 +229,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 				<ellipse cx="540" cy="900" rx="330" ry="240" fill="url(#light-violetGlow)" opacity="0.4" />
 			</svg>
 		</div>
-		<main id="content">
+		<main id="content" tabindex="-1">
 			<slot />
 		</main>
 
