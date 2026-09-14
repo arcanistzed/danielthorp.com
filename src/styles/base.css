@@ -169,24 +169,6 @@ a:hover {
 	color: var(--color-muted);
 }
 
-.skip-link {
-	position: absolute;
-	top: -100%;
-	left: var(--space-4);
-	padding: var(--space-2) var(--space-4);
-	background: var(--color-accent);
-	color: #fff;
-	border-radius: var(--radius-1);
-	font-weight: 600;
-	text-decoration: none;
-	z-index: 100;
-	transition: top var(--dur-4);
-}
-
-.skip-link:focus {
-	top: var(--space-4);
-}
-
 :focus-visible {
 	outline: 2px solid var(--color-accent);
 	outline-offset: 2px;
