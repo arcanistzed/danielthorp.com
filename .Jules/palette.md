@@ -1,3 +1,6 @@
 ## 2026-08-23 - Accessibility for Rich External Links
 **Learning:** Adding `aria-label` to block-level links containing rich semantic children (like `<h3>`, `<time>`, `<p>`) overrides the inner accessibility tree for screen readers, hiding important structural information.
 **Action:** For simple inline/icon links opening externally, use `aria-label="[Name] (opens in new tab)"`. For rich semantic external links, append `<span class="sr-only"> (opens in new tab)</span>` instead.
+## 2024-05-18 - Skip-to-content Link Jump Behavior
+**Learning:** Adding a visually hidden "Skip to content" link that appears on focus is critical for keyboard navigation. When jumping to an ID (e.g. `<main id="content">`), the target element must receive `tabindex="-1"` so it can programmatically receive focus in the browser without being manually focusable in the tab sequence. Additionally, removing the default outline on the target (`#content:focus { outline: none; }`) is required to prevent an unwanted visual box around the entire page content when the jump occurs.
+**Action:** Always verify that internal skip-link targets have `tabindex="-1"` and `outline: none` to ensure a smooth, screen-reader and keyboard-friendly jump without visual degradation.

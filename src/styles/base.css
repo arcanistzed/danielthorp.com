@@ -242,6 +242,34 @@ a:hover {
 	}
 }
 
+/* Skip to content link */
+.skip-to-content {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	transform: translate(-50%, -100%);
+	background: var(--color-surface);
+	color: var(--color-text);
+	padding: var(--space-3) var(--space-5);
+	font-weight: 600;
+	border-radius: 0 0 var(--radius-2) var(--radius-2);
+	border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
+	border-top: none;
+	z-index: 100;
+	text-decoration: none;
+	transition: transform var(--dur-3) ease;
+}
+
+.skip-to-content:focus {
+	transform: translate(-50%, 0);
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
+}
+
+#content:focus {
+	outline: none;
+}
+
 /* Visually hide text but keep it accessible for screen readers */
 .sr-only {
 	position: absolute;
