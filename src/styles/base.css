@@ -156,6 +156,10 @@ a:hover {
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
 }
 
+#content:focus {
+	outline: none;
+}
+
 .site-footer {
 	padding: var(--space-6) 0;
 	border-top: 1px solid
@@ -240,6 +244,27 @@ a:hover {
 		background-blend-mode: normal, screen;
 		animation: sheen-drift 70s ease-in-out infinite;
 	}
+}
+
+.skip-to-content {
+	position: absolute;
+	top: -3rem;
+	left: 50%;
+	transform: translateX(-50%);
+	background: var(--color-bg);
+	color: var(--color-text);
+	padding: var(--space-2) var(--space-4);
+	border: 2px solid var(--color-accent);
+	border-radius: var(--radius-1);
+	z-index: 100;
+	transition: top var(--dur-4);
+	text-decoration: none;
+	font-weight: 500;
+}
+
+.skip-to-content:focus {
+	top: 1rem;
+	outline: none;
 }
 
 /* Visually hide text but keep it accessible for screen readers */
