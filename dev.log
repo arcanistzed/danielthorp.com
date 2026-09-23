@@ -1,0 +1,13 @@
+
+> danielthorp.com@0.0.1 dev /app
+> astro dev
+
+17:53:46 [vite] connected.
+17:53:46 [types] Generated 1ms
+17:53:46 [vite] connected.
+17:53:46 [vite] Re-optimizing dependencies because vite config has changed
+ astro  v7.3.4 ready in 447 ms
+┃ Local    http://localhost:4321/
+┃ Network  use --host to expose
+17:53:46 watching for file changes...
+17:54:25 [200] / 154ms
