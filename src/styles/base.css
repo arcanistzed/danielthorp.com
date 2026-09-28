@@ -254,3 +254,24 @@ a:hover {
 	white-space: nowrap;
 	border-width: 0;
 }
+
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: absolute;
+	width: auto;
+	height: auto;
+	padding: var(--space-4) var(--space-5);
+	margin: var(--space-4);
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background: var(--color-bg);
+	color: var(--color-text);
+	z-index: 1000;
+	border-radius: var(--radius-1);
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+#content:focus {
+	outline: none;
+}

@@ -1,3 +1,6 @@
 ## 2026-08-23 - Accessibility for Rich External Links
 **Learning:** Adding `aria-label` to block-level links containing rich semantic children (like `<h3>`, `<time>`, `<p>`) overrides the inner accessibility tree for screen readers, hiding important structural information.
 **Action:** For simple inline/icon links opening externally, use `aria-label="[Name] (opens in new tab)"`. For rich semantic external links, append `<span class="sr-only"> (opens in new tab)</span>` instead.
+## 2024-05-18 - Avoid overbroad sr-only focus styles
+**Learning:** Applying focus styles globally to `.sr-only:focus` to reveal a skip link can unintentionally reveal other screen-reader-only elements that receive focus.
+**Action:** Use a specific class (like `.skip-link`) in addition to `.sr-only` for the skip link, and target `.skip-link:focus` to reveal it without affecting other hidden elements.
