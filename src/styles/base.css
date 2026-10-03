@@ -156,6 +156,10 @@ a:hover {
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
 }
 
+#content:focus {
+	outline: none;
+}
+
 .site-footer {
 	padding: var(--space-6) 0;
 	border-top: 1px solid
@@ -253,4 +257,25 @@ a:hover {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border-width: 0;
+}
+
+/* Skip to content link styles */
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: absolute;
+	top: var(--space-4);
+	left: var(--space-4);
+	width: auto;
+	height: auto;
+	padding: var(--space-3) var(--space-4);
+	margin: 0;
+	clip: auto;
+	white-space: normal;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	border: 2px solid var(--color-accent);
+	border-radius: var(--radius-1);
+	z-index: 100;
+	text-decoration: none;
+	font-weight: 500;
 }
