@@ -1,6 +1,7 @@
 html {
 	box-sizing: border-box;
 	-webkit-text-size-adjust: 100%;
+	scroll-behavior: smooth;
 }
 
 *,
@@ -156,6 +157,10 @@ a:hover {
 	padding: clamp(var(--space-6), 6vh, var(--space-8)) var(--space-5);
 }
 
+#content:focus {
+	outline: none;
+}
+
 .site-footer {
 	padding: var(--space-6) 0;
 	border-top: 1px solid
@@ -240,6 +245,23 @@ a:hover {
 		background-blend-mode: normal, screen;
 		animation: sheen-drift 70s ease-in-out infinite;
 	}
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: absolute;
+	width: auto;
+	height: auto;
+	padding: var(--space-3) var(--space-4);
+	margin: var(--space-4);
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	border: 2px solid var(--color-accent);
+	border-radius: var(--radius-1);
+	z-index: 100;
 }
 
 /* Visually hide text but keep it accessible for screen readers */
