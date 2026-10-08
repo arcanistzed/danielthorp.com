@@ -242,6 +242,10 @@ a:hover {
 	}
 }
 
+#content:focus {
+	outline: none;
+}
+
 /* Visually hide text but keep it accessible for screen readers */
 .sr-only {
 	position: absolute;
@@ -253,4 +257,22 @@ a:hover {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border-width: 0;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: absolute;
+	width: auto;
+	height: auto;
+	padding: var(--space-3) var(--space-4);
+	margin: var(--space-4);
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	border-radius: var(--radius-1);
+	z-index: 100;
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
 }
