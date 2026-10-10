@@ -254,3 +254,29 @@ a:hover {
 	white-space: nowrap;
 	border-width: 0;
 }
+
+/* Skip link focus styles */
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: fixed;
+	top: var(--space-4);
+	left: var(--space-4);
+	z-index: 100;
+	width: auto;
+	height: auto;
+	padding: var(--space-3) var(--space-4);
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	border: 2px solid var(--color-accent);
+	border-radius: var(--radius-1);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+#content:focus {
+	outline: none;
+}
