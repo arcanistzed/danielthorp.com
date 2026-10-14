@@ -243,7 +243,8 @@ a:hover {
 }
 
 /* Visually hide text but keep it accessible for screen readers */
-.sr-only {
+.sr-only,
+.skip-link {
 	position: absolute;
 	width: 1px;
 	height: 1px;
@@ -253,4 +254,26 @@ a:hover {
 	clip: rect(0, 0, 0, 0);
 	white-space: nowrap;
 	border-width: 0;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+	width: auto;
+	height: auto;
+	padding: var(--space-3) var(--space-4);
+	margin: var(--space-4);
+	clip: auto;
+	white-space: normal;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	border-radius: var(--radius-1);
+	z-index: 100;
+	text-decoration: none;
+	font-weight: 600;
+	border: 1px solid color-mix(in srgb, var(--color-text) 20%, transparent);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#content:focus {
+	outline: none;
 }
