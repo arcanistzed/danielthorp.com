@@ -61,6 +61,11 @@ const orbs = [
 		>
 	</div>
 
+	<!-- Keyboard and screen-reader route to replaying the intro; the name itself
+	     is decorative. Hidden until focused, and absent without JavaScript or
+	     with reduced motion. -->
+	<button type="button" class="replay" hidden>Replay introduction</button>
+
 	<button type="button" class="sound-prompt" hidden>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"></path>
@@ -365,11 +370,16 @@ const orbs = [
 		if (window.scrollY < window.innerHeight / 2) play(false);
 	});
 
-	// A small extra: clicking the name replays the intro.
-	hero.querySelector(".greeting")!.addEventListener("click", () => {
+	// A small extra: clicking the name replays the intro. The replay button
+	// offers the same thing to keyboard and screen-reader users.
+	const replay = () => {
 		if (running || reduceMotion.matches) return;
 		play(false);
-	});
+	};
+	hero.querySelector(".greeting")!.addEventListener("click", replay);
+	const replayButton = hero.querySelector<HTMLButtonElement>(".replay")!;
+	replayButton.hidden = reduceMotion.matches;
+	replayButton.addEventListener("click", replay);
 
 	// The chevron fades once the visitor has started scrolling.
 	const onScroll = () => hero.classList.toggle("scrolled", window.scrollY > 40);
@@ -699,6 +709,33 @@ const orbs = [
 	.sound-prompt:focus-visible {
 		border-color: rgba(120, 220, 255, 0.6);
 		background: rgba(20, 24, 34, 0.45);
+	}
+
+	/* Visually hidden until it receives keyboard focus. */
+	.replay {
+		position: absolute;
+		left: 50%;
+		top: 76%;
+		translate: -50% 0;
+		padding: var(--space-2) var(--space-4);
+		font: inherit;
+		font-family: var(--font-sans);
+		font-size: 0.9rem;
+		color: #e9e7ef;
+		background: rgba(10, 10, 12, 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.22);
+		border-radius: 999px;
+		cursor: pointer;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+
+	.replay:focus-visible {
+		clip-path: none;
+	}
+
+	.replay[hidden] {
+		display: none;
 	}
 
 	.sound-prompt[hidden] {
