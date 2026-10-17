@@ -40,6 +40,8 @@ interface Voice {
 
 interface Bed {
 	level: number;
+	/** How much of the bed goes to the room. */
+	reverb: number;
 	/** Duck the bed's pump bus on every beat. */
 	pump: boolean;
 	build(g: Graph, out: GainNode, pump: GainNode): Voice;
@@ -414,6 +416,7 @@ const BEDS: Record<string, Bed> = {
 	// filter sweeping across sixteen bars.
 	carbon: {
 		level: 0.75,
+		reverb: 0.35,
 		pump: true,
 		build(g, out, pump) {
 			const floor = noiseFloor(g, out, "lowpass", 420, 0.035);
@@ -451,6 +454,7 @@ const BEDS: Record<string, Bed> = {
 	// page scrolls back to it.
 	box: {
 		level: 1.8,
+		reverb: 0.45,
 		pump: false,
 		build(g, out) {
 			sendTo(g, out, 0.5);
@@ -483,6 +487,7 @@ const BEDS: Record<string, Bed> = {
 	// sixteen-bar filter sweep, a bass pulse, and a relay tick on every beat.
 	status: {
 		level: 1.7,
+		reverb: 0.18,
 		pump: true,
 		build(g, out, pump) {
 			const keep = padKeeper((start, end, chord) =>
@@ -527,6 +532,7 @@ const BEDS: Record<string, Bed> = {
 	// climb the chord and bounce back off the dotted-eighth delay.
 	tree: {
 		level: 1,
+		reverb: 0.3,
 		pump: true,
 		build(g, out, pump) {
 			const keep = padKeeper((start, end, chord) => {
@@ -577,6 +583,7 @@ const BEDS: Record<string, Bed> = {
 	// riser through the last bar of every eight.
 	matrix: {
 		level: 2.2,
+		reverb: 0.1,
 		pump: true,
 		build(g, out, pump) {
 			const GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
@@ -618,6 +625,7 @@ const BEDS: Record<string, Bed> = {
 	// closed-down filter.
 	paper: {
 		level: 1,
+		reverb: 0.28,
 		pump: false,
 		build(g, out) {
 			const { ctx } = g;
@@ -666,6 +674,7 @@ const BEDS: Record<string, Bed> = {
 	// it, and a filter that closes as the page runs out.
 	outro: {
 		level: 0.65,
+		reverb: 0.5,
 		pump: false,
 		build(g, out) {
 			const { ctx } = g;
@@ -732,6 +741,9 @@ interface Live {
 	/** The bed's own filters, swept only during a nav glide. */
 	high: BiquadFilterNode | null;
 	low: BiquadFilterNode | null;
+	/** After the filters: a steady send to the room, and an echo send for transitions. */
+	verb: GainNode | null;
+	echo: GainNode | null;
 	pump: GainNode | null;
 	voice: Voice | null;
 	weight: number;
@@ -769,6 +781,8 @@ export function installBeds() {
 			gain: null,
 			high: null,
 			low: null,
+			verb: null,
+			echo: null,
 			pump: null,
 			voice: null,
 			weight: 0,
@@ -827,6 +841,8 @@ export function installBeds() {
 			entry.gain = null;
 			entry.high = null;
 			entry.low = null;
+			entry.verb = null;
+			entry.echo = null;
 			entry.pump = null;
 			entry.audible = false;
 		}
@@ -837,31 +853,46 @@ export function installBeds() {
 	// and swaps the filters the way a DJ does: the outgoing bed is high-
 	// passed away while the incoming bed's low-pass opens. The swap lasts at
 	// least a bar so it reads as a transition even on a short glide.
-	let glide: { bed: Live; seconds: number } | null = null;
+	let glide: { bed: Live; seconds: number; at: number } | null = null;
 	// Beds on their way out keep fading slowly until the swap has finished,
 	// even after the scroll itself has stopped.
 	let slowUntil = 0;
-	function swap(target: Live, seconds: number) {
+
+	/** The audio time of the next beat, so a change lands in time. */
+	function nextBeat() {
+		const g = audio();
+		if (!g) return 0;
+		if (!timer) return g.ctx.currentTime + 0.02;
+		return nextTime + ((4 - (step % 4)) % 4) * STEP;
+	}
+
+	function swap(target: Live, seconds: number, at: number) {
 		const g = audio();
 		if (!g) return;
-		const now = g.ctx.currentTime;
 		const length = Math.max(seconds, BAR * STEP);
 		for (const entry of live.values()) {
-			if (!entry.high || !entry.low) continue;
+			if (!entry.high || !entry.low || !entry.echo) continue;
 			const high = entry.high.frequency;
 			const low = entry.low.frequency;
-			high.cancelScheduledValues(now);
-			low.cancelScheduledValues(now);
+			const echo = entry.echo.gain;
+			high.cancelScheduledValues(at);
+			low.cancelScheduledValues(at);
+			echo.cancelScheduledValues(at);
 			if (entry === target) {
-				high.setTargetAtTime(20, now, 0.05);
-				low.setValueAtTime(entry.audible ? 16000 : 220, now);
-				low.exponentialRampToValueAtTime(16000, now + length);
+				high.setTargetAtTime(20, at, 0.05);
+				low.setValueAtTime(entry.audible ? 16000 : 220, at);
+				low.exponentialRampToValueAtTime(16000, at + length);
+				echo.setTargetAtTime(0, at, 0.1);
 			} else if (entry.audible) {
-				low.setTargetAtTime(16000, now, 0.05);
-				// The bass leaves first, while the bed is still clearly audible.
-				high.setValueAtTime(Math.max(20, high.value), now);
-				high.exponentialRampToValueAtTime(2400, now + length * 0.55);
-				high.setTargetAtTime(20, now + length + 0.5, 0.3);
+				low.setTargetAtTime(16000, at, 0.05);
+				// The bass leaves first, while the bed is still clearly audible,
+				// and its last notes trail off into echoes.
+				high.setValueAtTime(Math.max(20, high.value), at);
+				high.exponentialRampToValueAtTime(2400, at + length * 0.55);
+				high.setTargetAtTime(20, at + length + 0.5, 0.3);
+				echo.setValueAtTime(0, at);
+				echo.linearRampToValueAtTime(0.6, at + length * 0.45);
+				echo.linearRampToValueAtTime(0, at + length + 0.3);
 			}
 		}
 	}
@@ -882,11 +913,17 @@ export function installBeds() {
 			}
 		}
 		if (!best) return;
-		glide = { bed: best, seconds: duration / 1000 };
-		slowUntil = performance.now() + Math.max(glide.seconds, BAR * STEP) * 1000;
-		// The incoming bed's filter must exist before the swap starts.
+		const g = audio();
+		if (!g) return;
+		// The incoming bed's chain must exist before the swap, and the swap
+		// waits for the next beat so the change lands in time.
 		apply(0.3, best);
-		swap(best, glide.seconds);
+		const at = nextBeat();
+		const seconds = duration / 1000;
+		glide = { bed: best, seconds, at };
+		slowUntil =
+			performance.now() + (at - g.ctx.currentTime + Math.max(seconds, BAR * STEP)) * 1000;
+		swap(best, seconds, at);
 		holdOpen();
 		measure();
 	});
@@ -909,7 +946,7 @@ export function installBeds() {
 		const fadeOut = Math.max(0.35, (slowUntil - performance.now()) / 2200);
 		if (glide) {
 			for (const entry of live.values()) entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
-			apply(0.3, null, fadeOut);
+			apply(0.3, null, fadeOut, glide.at);
 			return;
 		}
 		const endness = Math.max(
@@ -934,10 +971,15 @@ export function installBeds() {
 		apply(0.35, null, fadeOut);
 	}
 
-	function apply(smoothing = 0.35, build: Live | null = null, fadeOut = smoothing) {
+	function apply(
+		smoothing = 0.35,
+		build: Live | null = null,
+		fadeOut = smoothing,
+		at = 0,
+	) {
 		const g = audio();
 		if (!g) return;
-		const now = g.ctx.currentTime;
+		const now = Math.max(at, g.ctx.currentTime);
 		let any = false;
 		for (const entry of live.values()) {
 			const audible = entry.weight > 0.002;
@@ -955,6 +997,14 @@ export function installBeds() {
 				entry.gain.connect(entry.high);
 				entry.high.connect(entry.low);
 				entry.low.connect(g.music);
+				entry.verb = g.ctx.createGain();
+				entry.verb.gain.value = entry.bed.reverb;
+				entry.low.connect(entry.verb);
+				entry.verb.connect(g.reverbSend);
+				entry.echo = g.ctx.createGain();
+				entry.echo.gain.value = 0;
+				entry.low.connect(entry.echo);
+				entry.echo.connect(g.delaySend);
 				entry.pump = g.ctx.createGain();
 				entry.pump.connect(entry.gain);
 				entry.voice = entry.bed.build(g, entry.gain, entry.pump);
@@ -1017,7 +1067,7 @@ export function installBeds() {
 	if (import.meta.env.DEV) {
 		const dev = window as unknown as {
 			__beds: () => Record<string, number>;
-			__bedGains: () => Record<string, number>;
+			__bedGains: () => Record<string, string | number>;
 		};
 		dev.__beds = () => {
 			measure();
@@ -1025,7 +1075,10 @@ export function installBeds() {
 		};
 		dev.__bedGains = () =>
 			Object.fromEntries(
-				[...live].map(([name, entry]) => [name, +(entry.gain?.gain.value ?? 0).toFixed(3)]),
+				[...live].map(([name, entry]) => [
+					name,
+					+(entry.gain?.gain.value ?? 0).toFixed(3) + (entry.echo?.gain.value ? ` echo ${entry.echo.gain.value.toFixed(2)}` : ""),
+				]),
 			);
 	}
 

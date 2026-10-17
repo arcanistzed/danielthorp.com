@@ -12,6 +12,7 @@ export type Pref = "on" | "off" | null;
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let delaySend: GainNode | null = null;
+let reverbSend: GainNode | null = null;
 let music: GainNode | null = null;
 let musicFilter: BiquadFilterNode | null = null;
 let enabled = false;
@@ -82,8 +83,8 @@ export function isEnabled() {
 
 /** The graph for longer-running music, or null while sound is off. */
 export function audio() {
-	if (!isEnabled() || !ctx || !master || !delaySend || !music) return null;
-	return { ctx, master, delaySend, music };
+	if (!isEnabled() || !ctx || !master || !delaySend || !reverbSend || !music) return null;
+	return { ctx, master, delaySend, reverbSend, music };
 }
 
 /** Call from a click, tap or key handler so the browser lets audio start. */
@@ -134,6 +135,22 @@ function ensureContext() {
 	feedback.connect(delay);
 	tone.connect(master);
 
+	// A room, from a generated impulse: two and a half seconds of noise that
+	// dies away, darkened so the tail sits behind the music rather than on it.
+	const convolver = ctx.createConvolver();
+	convolver.buffer = impulse(ctx, 2.5, 3.4);
+	const damp = ctx.createBiquadFilter();
+	damp.type = "lowpass";
+	damp.frequency.value = 4200;
+	const wet = ctx.createGain();
+	wet.gain.value = 0.9;
+	convolver.connect(damp);
+	damp.connect(wet);
+	wet.connect(master);
+	reverbSend = ctx.createGain();
+	reverbSend.gain.value = 1;
+	reverbSend.connect(convolver);
+
 	// The section beds go through one filter that closes a little while the
 	// visitor scrolls quickly, like wind over the music.
 	musicFilter = ctx.createBiquadFilter();
@@ -144,6 +161,22 @@ function ensureContext() {
 	music = ctx.createGain();
 	music.gain.value = 0.8;
 	music.connect(musicFilter);
+}
+
+/** A stereo impulse response: decaying noise after a short pre-delay. */
+function impulse(context: AudioContext, seconds: number, decay: number) {
+	const rate = context.sampleRate;
+	const length = Math.floor(rate * seconds);
+	const preDelay = Math.floor(rate * 0.018);
+	const buffer = context.createBuffer(2, length, rate);
+	for (let channel = 0; channel < 2; channel++) {
+		const data = buffer.getChannelData(channel);
+		for (let i = preDelay; i < length; i++) {
+			const t = (i - preDelay) / (length - preDelay);
+			data[i] = (Math.random() * 2 - 1) * (1 - t) ** decay;
+		}
+	}
+	return buffer;
 }
 
 /** Keep the scroll-speed filter open, for a glide that moves fast on purpose. */
@@ -219,6 +252,12 @@ export function chord(notes: number[], length = 2.6) {
 	filter.connect(amp);
 	amp.connect(master);
 	amp.connect(delaySend);
+	if (reverbSend) {
+		const room = ctx.createGain();
+		room.gain.value = 0.35;
+		amp.connect(room);
+		room.connect(reverbSend);
+	}
 
 	const saws: OscillatorNode[] = [];
 	for (const note of notes) {
