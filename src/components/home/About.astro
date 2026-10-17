@@ -230,19 +230,31 @@ import LionRampant from "../icons/LionRampant.astro";
 		filter: url(#deckle);
 	}
 
-	/* Dark mode: the sheet is lamp-lit rather than bright cream. */
+	/* Dark mode (system or chosen): the sheet is lamp-lit rather than bright cream. */
 	@media (prefers-color-scheme: dark) {
-		.about {
+		:global(:root:not([data-theme="light"])) .about {
 			--crimson: #7f2a35;
 			--burgundy: #5e2a2c;
 		}
 
-		.proclamation::before {
+		:global(:root:not([data-theme="light"])) .proclamation::before {
 			filter: url(#deckle) brightness(0.8) sepia(0.18);
 			box-shadow:
 				inset 0 0 90px rgba(60, 34, 10, 0.45),
 				0 18px 40px rgba(0, 0, 0, 0.55);
 		}
+	}
+
+	:global(:root[data-theme="dark"]) .about {
+		--crimson: #7f2a35;
+		--burgundy: #5e2a2c;
+	}
+
+	:global(:root[data-theme="dark"]) .proclamation::before {
+		filter: url(#deckle) brightness(0.8) sepia(0.18);
+		box-shadow:
+			inset 0 0 90px rgba(60, 34, 10, 0.45),
+			0 18px 40px rgba(0, 0, 0, 0.55);
 	}
 
 	/* A fine ruled frame inside the sheet. */
@@ -479,10 +491,16 @@ import LionRampant from "../icons/LionRampant.astro";
 	}
 
 	@media (prefers-color-scheme: dark) {
-		.seal {
+		:global(:root:not([data-theme="light"])) .seal {
 			color: #c4b9a2;
 			filter: drop-shadow(-1px -1px 0 rgba(255, 245, 220, 0.45))
 				drop-shadow(1.2px 1.2px 0.6px rgba(40, 26, 10, 0.45));
 		}
+	}
+
+	:global(:root[data-theme="dark"]) .seal {
+		color: #c4b9a2;
+		filter: drop-shadow(-1px -1px 0 rgba(255, 245, 220, 0.45))
+			drop-shadow(1.2px 1.2px 0.6px rgba(40, 26, 10, 0.45));
 	}
 </style>

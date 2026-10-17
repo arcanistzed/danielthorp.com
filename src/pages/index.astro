@@ -7,12 +7,14 @@ import Projects from "../components/home/Projects.astro";
 import SiteNav from "../components/home/SiteNav.astro";
 import SoundToggle from "../components/home/SoundToggle.astro";
 import Status from "../components/home/Status.astro";
+import ThemeToggle from "../components/home/ThemeToggle.astro";
 import Writing from "../components/home/Writing.astro";
 import Layout from "../layouts/Layout.astro";
 import "../styles/sections.css";
 ---
 
 <Layout>
+	<ThemeToggle />
 	<SiteNav />
 	<SoundToggle />
 	<Hero />

@@ -1,0 +1,96 @@
+<!-- Apply a saved theme before the page paints. Without one, the system setting applies. -->
+<script is:inline>
+	try {
+		const theme = localStorage.getItem("theme");
+		if (theme === "light" || theme === "dark") {
+			document.documentElement.dataset.theme = theme;
+		}
+	} catch {}
+</script>
+
+<button class="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
+	<svg class="sun" viewBox="0 0 24 24" aria-hidden="true">
+		<circle cx="12" cy="12" r="4.2" fill="currentColor"></circle>
+		<g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+			<path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path>
+		</g>
+	</svg>
+	<svg class="moon" viewBox="0 0 24 24" aria-hidden="true">
+		<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" fill="currentColor"></path>
+	</svg>
+</button>
+
+<script>
+	import { click } from "../../scripts/sound";
+
+	const root = document.documentElement;
+	const button = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
+	const systemDark = matchMedia("(prefers-color-scheme: dark)");
+
+	const current = () =>
+		(root.dataset.theme as "light" | "dark" | undefined) ??
+		(systemDark.matches ? "dark" : "light");
+
+	// The button shows the mode it switches to: a sun in dark mode, a moon in light.
+	function render() {
+		const next = current() === "dark" ? "light" : "dark";
+		const label = `Switch to ${next} mode`;
+		button.dataset.next = next;
+		button.setAttribute("aria-label", label);
+		button.title = label;
+	}
+
+	button.addEventListener("click", () => {
+		const next = current() === "dark" ? "light" : "dark";
+		root.dataset.theme = next;
+		try {
+			localStorage.setItem("theme", next);
+		} catch {}
+		click(next === "dark");
+		render();
+	});
+	systemDark.addEventListener("change", render);
+	render();
+</script>
+
+<style>
+	.theme-toggle {
+		position: fixed;
+		top: var(--space-4);
+		right: calc(var(--space-4) + 2.6rem + var(--space-2));
+		z-index: 20;
+		display: grid;
+		place-items: center;
+		width: 2.6rem;
+		height: 2.6rem;
+		padding: 0;
+		color: #e6e3ee;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		border-radius: 50%;
+		background: rgba(14, 14, 18, 0.62);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		cursor: pointer;
+		transition: opacity 700ms ease;
+	}
+
+	.theme-toggle:hover {
+		color: #fff;
+	}
+
+	.theme-toggle svg {
+		width: 1.2rem;
+		height: 1.2rem;
+	}
+
+	.theme-toggle[data-next="light"] .moon,
+	.theme-toggle[data-next="dark"] .sun,
+	.theme-toggle:not([data-next]) .moon {
+		display: none;
+	}
+
+	:global(html.intro:not(.intro-done)) .theme-toggle {
+		opacity: 0;
+		pointer-events: none;
+	}
+</style>
