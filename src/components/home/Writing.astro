@@ -446,4 +446,13 @@ const today = new Date().toLocaleDateString("en-CA", {
 	.more:hover svg {
 		transform: translateX(4px);
 	}
+
+	@media (max-width: 640px) {
+		.dateline {
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 0 var(--space-3);
+			font-size: 0.78rem;
+		}
+	}
 </style>
