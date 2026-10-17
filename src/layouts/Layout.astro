@@ -150,6 +150,8 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 	</head>
 
 	<body>
+		<!-- Page navigation goes first so it leads the tab order. -->
+		<slot name="nav" />
 		<ThemeToggle />
 		<SoundToggle />
 		<main id="content">

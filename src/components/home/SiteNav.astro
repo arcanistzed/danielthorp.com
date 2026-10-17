@@ -54,6 +54,14 @@ const links = [
 		toggle.setAttribute("aria-expanded", String(open));
 		click(open);
 	});
+
+	// Escape closes the phone menu and returns focus to its button.
+	nav.addEventListener("keydown", event => {
+		if (event.key !== "Escape" || !nav.classList.contains("open")) return;
+		nav.classList.remove("open");
+		toggle.setAttribute("aria-expanded", "false");
+		toggle.focus();
+	});
 	for (const link of links) {
 		link.addEventListener("click", () => {
 			nav.classList.remove("open");
@@ -233,7 +241,7 @@ const links = [
 			translate: -50% 0;
 		}
 
-		:global(html.js) .site-nav.at-top:not(.open) {
+		:global(html.js) .site-nav.at-top:not(.open):not(:focus-within) {
 			opacity: 0;
 			pointer-events: none;
 		}
