@@ -1,0 +1,28 @@
+# Rebuilds the site every Monday so the "Writing" list picks up new Substack
+# posts. The feed is fetched at build time, so without this a new post only
+# appears after the next push.
+#
+# Setup: create a deploy hook for this project in the Cloudflare dashboard and
+# save its URL as the CLOUDFLARE_DEPLOY_HOOK repository secret.
+name: Scheduled rebuild
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Cloudflare deploy hook
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "CLOUDFLARE_DEPLOY_HOOK is not set; skipping."
+            exit 0
+          fi
+          curl --fail --silent --show-error -X POST "$DEPLOY_HOOK"
