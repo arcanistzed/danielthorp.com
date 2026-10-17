@@ -8,7 +8,15 @@
 interface Props extends astroHTML.JSX.SVGAttributes {
 	motto?: string;
 }
-const { class: className = "crest", motto = "DANIEL THORP", ...rest } = Astro.props;
+const {
+	class: className = "crest",
+	motto = "Quaere · Intellege · Emenda",
+	...rest
+} = Astro.props;
+// Longer mottos get smaller type, stretched to the ribbon's width.
+const long = motto.length > 16;
+const mottoSize = long ? 8.8 : 10.5;
+const mottoLength = long ? 166 : undefined;
 ---
 
 <svg class={className} viewBox="0 0 240 300" aria-hidden="true" {...rest}>
@@ -83,6 +91,6 @@ const { class: className = "crest", motto = "DANIEL THORP", ...rest } = Astro.pr
 <path d="M68 100 H172 V176 C172 220 148 248 120 259 C92 248 68 220 68 176 Z" fill="none" stroke="#d9b95c" stroke-width="0.8" opacity="0.6"/>
 <path d="M34 272 C70 264 170 264 206 272 L214 288 L204 294 C170 284 70 284 36 294 L26 288 Z" fill="#f1e7cf" stroke="#a8862f" stroke-width="1.2" stroke-linejoin="round"/>
 <path d="M34 272 L26 288 L36 294 M206 272 L214 288 L204 294" fill="none" stroke="#a8862f" stroke-width="1.2"/>
-<path id="motto-path" fill="none" d="M44 284 C80 276 160 276 196 284"/>
-<text font-family="Cinzel Decorative, Cinzel, serif" font-size="10.5" letter-spacing="1.5" fill="#4f1a1f" text-anchor="middle"><textPath href="#motto-path" startOffset="50%">{motto}</textPath></text>
+<path id="motto-path" fill="none" d="M37 284 C76 275 164 275 203 284"/>
+<text font-family="Cinzel Decorative, Cinzel, serif" font-size={mottoSize} font-weight="700" letter-spacing={long ? 0 : 1.5} fill="#4f1a1f" text-anchor="middle"><textPath href="#motto-path" startOffset="50%" textLength={mottoLength} lengthAdjust="spacing">{motto}</textPath></text>
 </svg>
