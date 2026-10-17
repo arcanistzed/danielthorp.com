@@ -1,5 +1,7 @@
 ---
 import Footer from "../components/Footer.astro";
+import SoundToggle from "../components/home/SoundToggle.astro";
+import ThemeToggle from "../components/home/ThemeToggle.astro";
 import "../styles/tokens.css";
 import "../styles/base.css";
 
@@ -147,6 +149,8 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 	</head>
 
 	<body>
+		<ThemeToggle />
+		<SoundToggle />
 		<main id="content">
 			<slot />
 		</main>

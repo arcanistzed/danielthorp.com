@@ -4,7 +4,16 @@
 // sidechained progressive-house mix does. Sections opt in with
 // data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper" | "outro".
 
-import { audio, bell, BPM, glideSettle, glideSweep, setScrollSpeed, whiteNoise } from "./sound";
+import {
+	audio,
+	bell,
+	BPM,
+	glideSettle,
+	glideSweep,
+	setScrollSpeed,
+	trackVoice,
+	whiteNoise,
+} from "./sound";
 
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
 const LOOKAHEAD = 0.3;
@@ -106,6 +115,7 @@ function pad(
 
 	const voices = o.voices ?? 2;
 	const spread = o.detune ?? 7;
+	const oscs: OscillatorNode[] = [];
 	for (const note of notes) {
 		for (let v = 0; v < voices; v++) {
 			const osc = ctx.createOscillator();
@@ -116,8 +126,10 @@ function pad(
 			osc.connect(filter);
 			osc.start(start);
 			osc.stop(end + o.release + 0.1);
+			oscs.push(osc);
 		}
 	}
+	trackVoice(amp, ...oscs);
 }
 
 interface PluckOptions {
@@ -160,6 +172,7 @@ function pluck(g: Graph, out: AudioNode, note: number, time: number, o: PluckOpt
 	if (o.send) sendTo(g, tail, o.send);
 	osc.start(time);
 	osc.stop(time + o.decay + 0.05);
+	trackVoice(amp, osc);
 }
 
 interface StabOptions {
@@ -197,6 +210,7 @@ function stab(
 
 	const voices = o.voices ?? 2;
 	const spread = o.detune ?? 6;
+	const oscs: OscillatorNode[] = [];
 	for (const note of notes) {
 		for (let v = 0; v < voices; v++) {
 			const osc = ctx.createOscillator();
@@ -206,8 +220,10 @@ function stab(
 			osc.connect(filter);
 			osc.start(time);
 			osc.stop(time + length + 0.05);
+			oscs.push(osc);
 		}
 	}
+	trackVoice(amp, ...oscs);
 }
 
 /** A pitched sine thump. `muted` is a kick heard through a wall. */
@@ -233,6 +249,7 @@ function kick(g: Graph, out: AudioNode, time: number, level: number, muted = fal
 	tail.connect(out);
 	osc.start(time);
 	osc.stop(time + 0.5);
+	trackVoice(amp, osc);
 
 	if (!muted) {
 		// The click on the front of the beater.
@@ -940,9 +957,17 @@ export function installBeds() {
 	// The hero adds and removes the "intro" class on <html>.
 	new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["class"] });
 
+	// Turning sound off brakes the music like a record; the beds tear down
+	// once it has come to rest, unless sound came back on in the meantime.
 	window.addEventListener("sound-change", event => {
-		if ((event as CustomEvent<boolean>).detail) measure();
-		else teardown();
+		if ((event as CustomEvent<boolean>).detail) {
+			measure();
+		} else {
+			stopTransport();
+			window.setTimeout(() => {
+				if (!audio()) teardown();
+			}, 1000);
+		}
 	});
 
 	if (import.meta.env.DEV) {

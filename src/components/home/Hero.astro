@@ -114,6 +114,7 @@ const orbs = [
 
 <script>
 	import {
+		brake,
 		chord,
 		getPref,
 		isEnabled,
@@ -172,10 +173,11 @@ const orbs = [
 	const anims: Animation[] = [];
 	const track = (animation: Animation) => (anims.push(animation), animation);
 
-	// Scrolling or a navigation key skips the intro.
+	// Scrolling or a navigation key skips the intro; the chords stop like a record.
 	function skip() {
 		if (!running || skipped) return;
 		skipped = true;
+		brake();
 		endPrompt?.(null);
 		for (const animation of anims.splice(0)) animation.cancel();
 		finish();

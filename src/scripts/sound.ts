@@ -16,7 +16,51 @@ let music: GainNode | null = null;
 let musicFilter: BiquadFilterNode | null = null;
 let musicHigh: BiquadFilterNode | null = null;
 let enabled = false;
-const scheduled = new Set<OscillatorNode>();
+
+/** A sounding voice: its oscillators and the gain that shapes them. */
+interface Voice {
+	oscs: OscillatorNode[];
+	amp: GainNode;
+}
+const voices = new Set<Voice>();
+
+/** Register a voice so a brake can slow it down and fade it out. */
+export function trackVoice(amp: GainNode, ...oscs: OscillatorNode[]) {
+	const voice = { oscs, amp };
+	voices.add(voice);
+	let left = oscs.length;
+	for (const osc of oscs) {
+		osc.addEventListener("ended", () => {
+			if (--left <= 0) voices.delete(voice);
+		});
+	}
+}
+
+/**
+ * Everything sounding slows and fades like a record when the turntable is
+ * switched off, with the brake's hiss under it. Returns how long it takes.
+ */
+export function brake(seconds = 0.8) {
+	if (!ctx) return 0;
+	const now = ctx.currentTime;
+	for (const { oscs, amp } of voices) {
+		for (const osc of oscs) {
+			const detune = osc.detune.value;
+			osc.detune.cancelScheduledValues(now);
+			osc.detune.setValueAtTime(detune, now);
+			osc.detune.linearRampToValueAtTime(detune - 4800, now + seconds);
+			try {
+				osc.stop(now + seconds + 0.05);
+			} catch {}
+		}
+		amp.gain.cancelScheduledValues(now);
+		amp.gain.setValueAtTime(Math.max(amp.gain.value, 0.0001), now);
+		amp.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
+	}
+	voices.clear();
+	air(700, 90, seconds, 0.04, 0.08);
+	return seconds;
+}
 
 export function getPref(): Pref {
 	try {
@@ -45,18 +89,13 @@ export function audio() {
 
 /** Call from a click, tap or key handler so the browser lets audio start. */
 export function setEnabled(on: boolean) {
+	// Turning off brakes whatever is playing; the beds tear down once it has stopped.
+	if (!on && enabled) brake();
 	enabled = on;
 	savePref(on);
 	if (on) {
 		ensureContext();
 		void ctx?.resume();
-	} else {
-		for (const osc of scheduled) {
-			try {
-				osc.stop();
-			} catch {}
-		}
-		scheduled.clear();
 	}
 	window.dispatchEvent(new CustomEvent("sound-change", { detail: on }));
 }
@@ -202,6 +241,7 @@ export function chord(notes: number[], length = 2.6) {
 	amp.connect(master);
 	amp.connect(delaySend);
 
+	const saws: OscillatorNode[] = [];
 	for (const note of notes) {
 		for (const detune of [-8, 8]) {
 			const osc = ctx.createOscillator();
@@ -211,8 +251,10 @@ export function chord(notes: number[], length = 2.6) {
 			osc.connect(filter);
 			osc.start(now);
 			osc.stop(now + length + 0.1);
+			saws.push(osc);
 		}
 	}
+	trackVoice(amp, ...saws);
 
 	// A soft sine an octave under the root.
 	const sub = ctx.createOscillator();
@@ -226,6 +268,7 @@ export function chord(notes: number[], length = 2.6) {
 	subAmp.connect(master);
 	sub.start(now);
 	sub.stop(now + length + 0.1);
+	trackVoice(subAmp, sub);
 }
 
 /** A short rising FM swoosh for the magnetic icons. `pan` is -1 to 1. */
@@ -279,6 +322,7 @@ export function bell(note: number, now: number, destination: AudioNode, ring = 1
 		[2, 0.25, "triangle"],
 		[3.01, 0.08, "sine"],
 	];
+	const oscs: OscillatorNode[] = [];
 	for (const [ratio, level, type] of partials) {
 		const osc = ctx.createOscillator();
 		osc.type = type;
@@ -289,9 +333,9 @@ export function bell(note: number, now: number, destination: AudioNode, ring = 1
 		gain.connect(amp);
 		osc.start(now);
 		osc.stop(now + ring + 0.05);
-		scheduled.add(osc);
-		osc.onended = () => scheduled.delete(osc);
+		oscs.push(osc);
 	}
+	trackVoice(amp, ...oscs);
 }
 
 /** Quiet interface sounds for hover and toggle. `semitones` shifts the pitch. */
