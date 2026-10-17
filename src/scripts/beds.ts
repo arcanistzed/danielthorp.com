@@ -28,6 +28,14 @@ const cycle = (step: number, period: number) =>
 
 type Graph = NonNullable<ReturnType<typeof audio>>;
 
+// Wide pads cost oscillators; phones with few cores get two voices per note.
+const MAX_VOICES = (navigator.hardwareConcurrency ?? 8) <= 4 ? 2 : 3;
+
+/** A few milliseconds either side of the grid, so hits don't land as a machine. */
+const jitter = (ms: number) => ((Math.random() - 0.5) * ms) / 1000;
+/** Level varied by up to ±`amount` of itself. */
+const vary = (level: number, amount = 0.15) => level * (1 + (Math.random() * 2 - 1) * amount);
+
 interface Voice {
 	/** Called once per sixteenth while the bed is audible. */
 	step?(step: number, time: number): void;
@@ -35,6 +43,8 @@ interface Voice {
 	wake?(step: number): void;
 	/** How far through its section the page is, 0 to 1. */
 	position?(p: number): void;
+	/** How much of the viewport the bed's section holds, 0 to 1, as it scrolls in. */
+	approach?(p: number): void;
 	stop(): void;
 }
 
@@ -62,9 +72,11 @@ interface PadOptions {
 	attack: number;
 	release: number;
 	level: number;
-	/** Oscillators per note, spread across ±detune cents. */
+	/** Oscillators per note, spread across ±detune cents and across the stereo field. */
 	voices?: number;
 	detune?: number;
+	/** How far the voices spread left and right, 0 to 1. */
+	width?: number;
 	send?: number;
 	vibrato?: boolean;
 }
@@ -106,17 +118,36 @@ function pad(
 		lfo.stop(end + o.release + 0.1);
 	}
 
-	const voices = o.voices ?? 2;
+	// A slow, slightly random drift in pitch, like an analogue oscillator warming.
+	const drift = ctx.createOscillator();
+	drift.frequency.value = 0.07 + Math.random() * 0.1;
+	const driftDepth = ctx.createGain();
+	driftDepth.gain.value = 3;
+	drift.connect(driftDepth);
+	drift.start(start);
+	drift.stop(end + o.release + 0.1);
+
+	const voices = Math.min(o.voices ?? 2, MAX_VOICES);
 	const spread = o.detune ?? 7;
+	const width = o.width ?? 0.55;
 	const oscs: OscillatorNode[] = [];
 	for (const note of notes) {
 		for (let v = 0; v < voices; v++) {
 			const osc = ctx.createOscillator();
 			osc.type = o.type ?? "sawtooth";
 			osc.frequency.value = hz(note);
-			osc.detune.value = voices === 1 ? 0 : -spread + (2 * spread * v) / (voices - 1);
+			const place = voices === 1 ? 0 : -1 + (2 * v) / (voices - 1);
+			osc.detune.value = spread * place;
 			depth?.connect(osc.detune);
-			osc.connect(filter);
+			driftDepth.connect(osc.detune);
+			if (place === 0) {
+				osc.connect(filter);
+			} else {
+				const panner = ctx.createStereoPanner();
+				panner.pan.value = width * place;
+				osc.connect(panner);
+				panner.connect(filter);
+			}
 			osc.start(start);
 			osc.stop(end + o.release + 0.1);
 			oscs.push(osc);
@@ -201,7 +232,7 @@ function stab(
 	amp.connect(out);
 	sendTo(g, amp, o.send ?? 0.25);
 
-	const voices = o.voices ?? 2;
+	const voices = Math.min(o.voices ?? 2, MAX_VOICES);
 	const spread = o.detune ?? 6;
 	const oscs: OscillatorNode[] = [];
 	for (const note of notes) {
@@ -209,8 +240,12 @@ function stab(
 			const osc = ctx.createOscillator();
 			osc.type = "sawtooth";
 			osc.frequency.value = hz(note);
-			osc.detune.value = -spread + (2 * spread * v) / (voices - 1);
-			osc.connect(filter);
+			const place = voices === 1 ? 0 : -1 + (2 * v) / (voices - 1);
+			osc.detune.value = spread * place;
+			const panner = ctx.createStereoPanner();
+			panner.pan.value = 0.4 * place;
+			osc.connect(panner);
+			panner.connect(filter);
 			osc.start(time);
 			osc.stop(time + length + 0.05);
 			oscs.push(osc);
@@ -293,10 +328,16 @@ function noiseBurst(g: Graph, out: AudioNode, time: number, o: BurstOptions) {
 }
 
 const hat = (g: Graph, out: AudioNode, time: number, level: number, open = false) =>
-	noiseBurst(g, out, time, { high: 7000, attack: 0.004, length: open ? 0.16 : 0.035, level });
+	noiseBurst(g, out, time + jitter(10), {
+		high: 7000,
+		attack: 0.004,
+		length: open ? 0.16 : 0.035,
+		level: vary(level, 0.2),
+	});
 
 /** Three quick bursts a few milliseconds apart, like several hands. */
 function clap(g: Graph, out: AudioNode, time: number, level: number) {
+	time += jitter(8);
 	for (const offset of [0, 0.011, 0.022]) {
 		noiseBurst(g, out, time + offset, { band: 1400, attack: 0.002, length: 0.03, level: level * 0.6 });
 	}
@@ -474,7 +515,12 @@ const BEDS: Record<string, Bed> = {
 				step(s, t) {
 					const local = (s - offset) % length;
 					for (const [when, note, ring] of notes) {
-						if (when === local) bell(note, t, out, ring);
+						if (when !== local) continue;
+						// Higher notes sit a little to the right, like a keyboard.
+						const panner = g.ctx.createStereoPanner();
+						panner.pan.value = ((note - 74) / 10) * 0.45;
+						panner.connect(out);
+						bell(note, t + jitter(12), panner, ring);
 					}
 				},
 				stop() {},
@@ -486,7 +532,7 @@ const BEDS: Record<string, Bed> = {
 	// muted four-to-the-floor, disco chord chucks on the off-beats under a
 	// sixteen-bar filter sweep, a bass pulse, and a relay tick on every beat.
 	status: {
-		level: 1.7,
+		level: 2,
 		reverb: 0.18,
 		pump: true,
 		build(g, out, pump) {
@@ -562,11 +608,11 @@ const BEDS: Record<string, Bed> = {
 						const ladder = [...chord, ...chord.map(n => n + 12), chord[0] + 24];
 						const i = (s / 2) % (ladder.length + 1);
 						if (i < ladder.length) {
-							pluck(g, pump, ladder[i], t, {
+							pluck(g, pump, ladder[i], t + jitter(8), {
 								type: "triangle",
 								cutoff: 2800,
 								decay: 0.45,
-								level: 0.06,
+								level: vary(0.06),
 								send: 0.7,
 								pan: (i / (ladder.length - 1)) * 0.8 - 0.4,
 							});
@@ -582,13 +628,39 @@ const BEDS: Record<string, Bed> = {
 	// the off-beats, an off-beat bass, sidechained supersaw stabs, and a
 	// riser through the last bar of every eight.
 	matrix: {
-		level: 2.2,
+		level: 2.9,
 		reverb: 0.1,
 		pump: true,
 		build(g, out, pump) {
 			const GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
 			const BASS = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1];
+			// A riser that builds as the grid scrolls into view and drops away as
+			// it fills the screen, so a slow scroll gets a build and a drop too.
+			const { ctx } = g;
+			const buffer = whiteNoise();
+			const rise = ctx.createBiquadFilter();
+			rise.type = "lowpass";
+			rise.Q.value = 1.4;
+			rise.frequency.value = 150;
+			const riseGain = ctx.createGain();
+			riseGain.gain.value = 0;
+			rise.connect(riseGain);
+			riseGain.connect(out);
+			let riseSource: AudioBufferSourceNode | null = null;
+			if (buffer) {
+				riseSource = ctx.createBufferSource();
+				riseSource.buffer = buffer;
+				riseSource.loop = true;
+				riseSource.connect(rise);
+				riseSource.start();
+			}
 			return {
+				approach(p) {
+					const now = ctx.currentTime;
+					const level = p < 0.85 ? 0.11 * (p / 0.85) ** 2 : 0.11 * (1 - (p - 0.85) / 0.15);
+					riseGain.gain.setTargetAtTime(Math.max(0, level), now, 0.15);
+					rise.frequency.setTargetAtTime(150 * 40 ** p, now, 0.15);
+				},
 				step(s, t) {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
@@ -615,7 +687,9 @@ const BEDS: Record<string, Bed> = {
 					}
 					if (loop === LOOP - BAR) riser(g, out, t, BAR * STEP, 0.07);
 				},
-				stop() {},
+				stop() {
+					riseSource?.stop();
+				},
 			};
 		},
 	},
@@ -657,7 +731,7 @@ const BEDS: Record<string, Bed> = {
 					}
 					if (s % 8 === 0) {
 						const note = MELODY[(s / 8) % MELODY.length];
-						if (note !== null) keys(g, lofi, note, t, 0.06, 0.7);
+						if (note !== null) keys(g, lofi, note, t + jitter(18), vary(0.06), 0.7);
 					}
 				},
 				stop() {
@@ -747,6 +821,8 @@ interface Live {
 	pump: GainNode | null;
 	voice: Voice | null;
 	weight: number;
+	/** The section's raw share of the viewport, before the fade curve. */
+	share: number;
 	audible: boolean;
 }
 
@@ -786,6 +862,7 @@ export function installBeds() {
 			pump: null,
 			voice: null,
 			weight: 0,
+			share: 0,
 			audible: false,
 		});
 	}
@@ -967,7 +1044,10 @@ export function installBeds() {
 		const intro = root.classList.contains("intro");
 		const fadeOut = Math.max(0.35, (slowUntil - performance.now()) / 2200);
 		if (glide) {
-			for (const entry of live.values()) entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
+			for (const entry of live.values()) {
+				entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
+				entry.share = entry.weight;
+			}
 			apply(0.3, null, fadeOut, glide.at);
 			return;
 		}
@@ -989,6 +1069,7 @@ export function installBeds() {
 				}
 			}
 			entry.weight = intro ? 0 : Math.sin((share * Math.PI) / 2);
+			entry.share = intro ? 0 : share;
 		}
 		apply(0.35, null, fadeOut);
 	}
@@ -1033,6 +1114,7 @@ export function installBeds() {
 			}
 			if (audible && !entry.audible) entry.voice?.wake?.(step);
 			entry.audible = audible;
+			entry.voice?.approach?.(entry.share);
 			if (audible) any = true;
 			entry.gain?.gain.setTargetAtTime(
 				entry.weight * entry.bed.level,

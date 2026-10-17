@@ -15,7 +15,7 @@ let delaySend: GainNode | null = null;
 let reverbSend: GainNode | null = null;
 // The space: the delay's feedback and return, and the reverb's return. A
 // mute closes them so the page goes quiet; turning sound on reopens them.
-let delayFeedback: GainNode | null = null;
+let delayFeedbacks: GainNode[] = [];
 let delayReturn: GainNode | null = null;
 let reverbWet: GainNode | null = null;
 let music: GainNode | null = null;
@@ -71,12 +71,13 @@ export function brake(seconds = 0.8, echo = true) {
 		}
 	}
 	voices.clear();
-	if (echo && delayFeedback) {
-		const feedback = delayFeedback.gain;
-		feedback.cancelScheduledValues(now);
-		feedback.setValueAtTime(feedback.value, now);
-		feedback.linearRampToValueAtTime(0.62, now + 0.2);
-		feedback.setTargetAtTime(0.38, now + 2.4, 0.5);
+	if (echo) {
+		for (const { gain: feedback } of delayFeedbacks) {
+			feedback.cancelScheduledValues(now);
+			feedback.setValueAtTime(feedback.value, now);
+			feedback.linearRampToValueAtTime(0.62, now + 0.2);
+			feedback.setTargetAtTime(0.38, now + 2.4, 0.5);
+		}
 	}
 	air(700, 90, seconds, 0.04, 0.08);
 	// Two slowing thumps, like the platter catching as it stops.
@@ -86,9 +87,10 @@ export function brake(seconds = 0.8, echo = true) {
 
 /** After a mute: let the brake be heard, then close the delay and the room. */
 function closeSpace(after: number) {
-	if (!ctx || !delayFeedback || !delayReturn || !reverbWet) return;
+	if (!ctx || !delayReturn || !reverbWet) return;
 	const at = ctx.currentTime + after;
-	for (const param of [delayFeedback.gain, delayReturn.gain, reverbWet.gain]) {
+	const params = [delayReturn.gain, reverbWet.gain, ...delayFeedbacks.map(f => f.gain)];
+	for (const param of params) {
 		param.cancelScheduledValues(at);
 		param.setValueAtTime(param.value, at);
 		param.linearRampToValueAtTime(0, at + 0.5);
@@ -96,13 +98,14 @@ function closeSpace(after: number) {
 }
 
 function openSpace() {
-	if (!ctx || !delayFeedback || !delayReturn || !reverbWet) return;
+	if (!ctx || !delayReturn || !reverbWet) return;
 	const now = ctx.currentTime;
-	for (const [param, value] of [
-		[delayFeedback.gain, 0.38],
+	const settings: [AudioParam, number][] = [
 		[delayReturn.gain, 1],
 		[reverbWet.gain, 0.9],
-	] as const) {
+		...delayFeedbacks.map(f => [f.gain, 0.38] as [AudioParam, number]),
+	];
+	for (const [param, value] of settings) {
 		param.cancelScheduledValues(now);
 		param.setValueAtTime(value, now);
 	}
@@ -170,26 +173,33 @@ function ensureContext() {
 	master.gain.value = 0.5;
 	master.connect(compressor);
 
-	// A dark feedback delay on a dotted eighth at the site's tempo, so the
-	// echoes of chords and plucks land on the grid.
-	const delay = ctx.createDelay(1);
-	delay.delayTime.value = (60 / BPM) * 0.75;
-	const feedback = ctx.createGain();
-	feedback.gain.value = 0.38;
-	const tone = ctx.createBiquadFilter();
-	tone.type = "lowpass";
-	tone.frequency.value = 1800;
+	// A dark ping-pong delay on a dotted eighth at the site's tempo: each
+	// echo lands on the grid and crosses to the other side.
+	const hop = (60 / BPM) * 0.75;
+	const merger = ctx.createChannelMerger(2);
+	const sides = [0, 1].map(side => {
+		const delay = ctx!.createDelay(1);
+		delay.delayTime.value = hop;
+		const tone = ctx!.createBiquadFilter();
+		tone.type = "lowpass";
+		tone.frequency.value = 1800;
+		const feedback = ctx!.createGain();
+		feedback.gain.value = 0.38;
+		delay.connect(tone);
+		tone.connect(merger, 0, side);
+		tone.connect(feedback);
+		return { delay, feedback };
+	});
+	sides[0].feedback.connect(sides[1].delay);
+	sides[1].feedback.connect(sides[0].delay);
+	delayFeedbacks = sides.map(side => side.feedback);
 	delaySend = ctx.createGain();
 	delaySend.gain.value = 0.35;
-	delaySend.connect(delay);
-	delay.connect(tone);
-	tone.connect(feedback);
-	feedback.connect(delay);
+	delaySend.connect(sides[0].delay);
 	delayReturn = ctx.createGain();
 	delayReturn.gain.value = 1;
-	tone.connect(delayReturn);
+	merger.connect(delayReturn);
 	delayReturn.connect(master);
-	delayFeedback = feedback;
 
 	// A room, from a generated impulse: two and a half seconds of noise that
 	// dies away, darkened so the tail sits behind the music rather than on it.
