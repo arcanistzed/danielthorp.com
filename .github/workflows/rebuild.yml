@@ -21,8 +21,9 @@ jobs:
         env:
           DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: |
+          # Fail loudly: a missing secret means new posts would never appear.
           if [ -z "$DEPLOY_HOOK" ]; then
-            echo "CLOUDFLARE_DEPLOY_HOOK is not set; skipping."
-            exit 0
+            echo "::error::CLOUDFLARE_DEPLOY_HOOK is not set, so the site was not rebuilt."
+            exit 1
           fi
           curl --fail --silent --show-error -X POST "$DEPLOY_HOOK"
