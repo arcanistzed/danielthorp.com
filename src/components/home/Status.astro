@@ -24,11 +24,11 @@ const ROLE = 14;
 const STATUS = 11;
 ---
 
-<section class="flat status" id="status" aria-labelledby="status-title">
+<section class="flat status" id="status" aria-labelledby="status-title" data-bed="status">
 	<div class="flat-inner">
 		<h2 id="status-title">Current status</h2>
 
-		<div class="board">
+		<div class="board" data-sfx="flap">
 			<div class="board-bar" aria-hidden="true">
 				<span>Ottawa</span>
 				<time class="clock"></time>
@@ -41,7 +41,7 @@ const STATUS = 11;
 			<ul class="rows" role="list">
 				{
 					statuses.map(item => (
-						<li class="row">
+						<li class="row" data-sfx-hover>
 							<p class="sr-only">
 								{item.role}, {item.where}: {item.status}. {item.detail}
 							</p>

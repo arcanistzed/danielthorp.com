@@ -39,6 +39,8 @@ const links = [
 </nav>
 
 <script>
+	import { click } from "../../scripts/sound";
+
 	const nav = document.querySelector<HTMLElement>(".site-nav")!;
 	const toggle = nav.querySelector<HTMLButtonElement>(".nav-toggle")!;
 	const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-section]")];
@@ -46,6 +48,7 @@ const links = [
 	toggle.addEventListener("click", () => {
 		const open = nav.classList.toggle("open");
 		toggle.setAttribute("aria-expanded", String(open));
+		click(open);
 	});
 	for (const link of links) {
 		link.addEventListener("click", () => {

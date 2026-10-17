@@ -9,6 +9,8 @@ export type Pref = "on" | "off" | null;
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let delaySend: GainNode | null = null;
+let music: GainNode | null = null;
+let musicFilter: BiquadFilterNode | null = null;
 let enabled = false;
 const scheduled = new Set<OscillatorNode>();
 
@@ -29,6 +31,12 @@ function savePref(on: boolean) {
 
 export function isEnabled() {
 	return enabled && ctx !== null;
+}
+
+/** The graph for longer-running music, or null while sound is off. */
+export function audio() {
+	if (!isEnabled() || !ctx || !master || !delaySend || !music) return null;
+	return { ctx, master, delaySend, music };
 }
 
 /** Call from a click, tap or key handler so the browser lets audio start. */
@@ -82,6 +90,25 @@ function ensureContext() {
 	tone.connect(feedback);
 	feedback.connect(delay);
 	tone.connect(master);
+
+	// The section beds go through one filter that closes a little while the
+	// visitor scrolls quickly, like wind over the music.
+	musicFilter = ctx.createBiquadFilter();
+	musicFilter.type = "lowpass";
+	musicFilter.frequency.value = 16000;
+	musicFilter.Q.value = 0.3;
+	musicFilter.connect(master);
+	music = ctx.createGain();
+	music.gain.value = 0.8;
+	music.connect(musicFilter);
+}
+
+/** `speed` is the scroll speed in pixels per second; 0 opens the filter again. */
+export function setScrollSpeed(speed: number) {
+	if (!ctx || !musicFilter) return;
+	const amount = Math.min(1, speed / 3500);
+	const cutoff = 16000 * (2200 / 16000) ** amount;
+	musicFilter.frequency.setTargetAtTime(cutoff, ctx.currentTime, 0.12);
 }
 
 // Fade everything out while the tab is hidden.
@@ -280,9 +307,10 @@ export function musicBox(melody: Melody, bpm: number) {
 	};
 }
 
-/** Quiet interface sounds for hover and toggle. */
-export function tick() {
-	blip(1900, 1700, 0.025, 0.025, "triangle");
+/** Quiet interface sounds for hover and toggle. `semitones` shifts the pitch. */
+export function tick(semitones = 0) {
+	const ratio = 2 ** (semitones / 12);
+	blip(1900 * ratio, 1700 * ratio, 0.025, 0.025, "triangle");
 }
 
 export function click(open: boolean) {
@@ -338,4 +366,65 @@ export function clack() {
 	band.connect(amp);
 	amp.connect(master);
 	source.start(now);
+}
+
+let white: AudioBuffer | null = null;
+
+/** Two seconds of white noise, shared by the air and paper sounds. */
+export function whiteNoise() {
+	if (!ctx) return null;
+	if (!white) {
+		white = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+		const data = white.getChannelData(0);
+		for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+	}
+	return white;
+}
+
+/** Filtered noise whose centre sweeps from one frequency to another. */
+function air(from: number, to: number, length: number, level: number, attack: number) {
+	if (!isEnabled() || !ctx || !master) return;
+	const buffer = whiteNoise();
+	if (!buffer) return;
+	const now = ctx.currentTime;
+	const source = ctx.createBufferSource();
+	source.buffer = buffer;
+	source.loop = true;
+	const band = ctx.createBiquadFilter();
+	band.type = "bandpass";
+	band.Q.value = 1.1;
+	band.frequency.setValueAtTime(from, now);
+	band.frequency.exponentialRampToValueAtTime(to, now + length);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, now);
+	amp.gain.exponentialRampToValueAtTime(level, now + attack);
+	amp.gain.exponentialRampToValueAtTime(0.0001, now + length);
+	source.connect(band);
+	band.connect(amp);
+	amp.connect(master);
+	source.start(now);
+	source.stop(now + length + 0.02);
+}
+
+/** Paper brushing paper: hovering the proclamation or the newspaper. `long` is a page turn. */
+export function rustle(long = false) {
+	if (long) {
+		air(1200, 4200, 0.42, 0.09, 0.14);
+	} else {
+		air(2800, 1700, 0.13, 0.045, 0.02);
+	}
+}
+
+/** A rising "off you go" for links that open somewhere else. */
+export function launch() {
+	blip(520, 1180, 0.11, 0.06, "sine");
+	air(900, 3400, 0.17, 0.03, 0.03);
+	vibrate(10);
+}
+
+/** Air moving past when jumping to another section. `down` is the direction. */
+export function whoosh(down = true) {
+	if (down) air(2600, 420, 0.4, 0.075, 0.12);
+	else air(420, 2600, 0.4, 0.075, 0.12);
+	vibrate(8);
 }

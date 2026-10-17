@@ -18,13 +18,14 @@
 </button>
 
 <script>
-	import { getPref, isEnabled, setEnabled, chord } from "../../scripts/sound";
+	import { getPref, isEnabled, setEnabled, chord, click } from "../../scripts/sound";
 
 	const button = document.querySelector<HTMLButtonElement>(".sound-toggle")!;
 	const render = () => button.setAttribute("aria-pressed", String(isEnabled()));
 
 	button.addEventListener("click", () => {
 		const on = !isEnabled();
+		if (!on) click(false);
 		setEnabled(on);
 		if (!on) return;
 		if (window.scrollY < window.innerHeight / 2) {

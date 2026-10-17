@@ -43,7 +43,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toFixed(2)}%`;
 ---
 
-<section class="flat experience" id="experience" aria-labelledby="experience-title">
+<section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
 	<div class="flat-inner">
 		<h2 id="experience-title">Experience</h2>
 		<div class="filters" role="group" aria-label="Show">
@@ -137,7 +137,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 </section>
 
 <script>
-	import { click, tick } from "../../scripts/sound";
+	import { click } from "../../scripts/sound";
 
 	const filters = [...document.querySelectorAll<HTMLButtonElement>(".filters button")];
 	for (const button of filters) {
@@ -154,15 +154,8 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		});
 	}
 
-	let lastTick = 0;
+	// Hovering a summary is covered by the shared interaction sounds.
 	for (const details of document.querySelectorAll<HTMLDetailsElement>("details.role")) {
-		details.querySelector("summary")!.addEventListener("pointerenter", () => {
-			const now = performance.now();
-			if (now - lastTick > 70) {
-				tick();
-				lastTick = now;
-			}
-		});
 		details.addEventListener("toggle", () => click(details.open));
 	}
 </script>
