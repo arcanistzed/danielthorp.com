@@ -46,7 +46,7 @@
 		try {
 			localStorage.setItem("theme", next);
 		} catch {}
-		click(next === "dark");
+		click(next === "light");
 		render();
 	});
 	systemDark.addEventListener("change", render);
