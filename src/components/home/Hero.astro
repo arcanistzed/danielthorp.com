@@ -128,8 +128,7 @@ const orbs = [
 	const prompt = hero.querySelector<HTMLElement>(".sound-prompt")!;
 	const helloEn = hero.querySelector<HTMLElement>(".hello-en")!;
 	const helloFr = hero.querySelector<HTMLElement>(".hello-fr")!;
-	const first = hero.querySelector<HTMLElement>(".first")!;
-	const last = hero.querySelector<HTMLElement>(".last")!;
+	const nameEl = hero.querySelector<HTMLElement>(".name")!;
 	const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
 	const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -212,15 +211,8 @@ const orbs = [
 		}
 		if (skipped) return;
 
-		// Stage 1: "Thorp" fades, "Daniel" moves right, the English greeting appears.
-		await track(
-			last.animate([{ opacity: 1 }, { opacity: 0 }], {
-				duration: 420,
-				easing: "ease-out",
-				fill: "forwards",
-			}),
-		).finished.catch(() => {});
-		if (skipped) return;
+		// Stage 1: the full name shrinks and moves right as the English greeting
+		// appears beside it: "Hello! My name is Daniel Thorp".
 		chord([57, 64, 69, 72, 76]);
 		vibrate(18);
 		const reveal = track(
@@ -232,10 +224,9 @@ const orbs = [
 				{ duration: 900, delay: 150, easing: EASE, fill: "backwards" },
 			),
 		);
-		await flip([first], () => (hero.dataset.stage = "1")).catch(() => {});
+		await flip([nameEl], () => (hero.dataset.stage = "1")).catch(() => {});
 		await reveal.finished.catch(() => {});
 		if (skipped) return;
-		last.getAnimations().forEach(a => a.cancel());
 
 		await wait(900);
 		if (skipped) return;
@@ -252,7 +243,7 @@ const orbs = [
 				{ duration: 700, delay: 450, easing: "ease-out", fill: "backwards" },
 			),
 		);
-		await flip([helloEn, first], () => (hero.dataset.stage = "2")).catch(() => {});
+		await flip([helloEn, nameEl], () => (hero.dataset.stage = "2")).catch(() => {});
 		await fadeFr.finished.catch(() => {});
 		if (skipped) return;
 
@@ -397,8 +388,8 @@ const orbs = [
 <style>
 	.hero {
 		--name-0: clamp(3rem, 11vw, 10rem);
-		--name-1: clamp(2.6rem, 6vw, 5.75rem);
-		--name-2: clamp(3.4rem, 8.5vw, 8.25rem);
+		--name-1: clamp(2.3rem, 4.6vw, 5rem);
+		--name-2: clamp(2.8rem, 6.4vw, 7rem);
 		--hello-2: clamp(1.2rem, 2.5vw, 2.4rem);
 
 		position: relative;
@@ -560,10 +551,6 @@ const orbs = [
 		padding-block: 0.08em;
 	}
 
-	.last {
-		display: none;
-	}
-
 	@keyframes name-drift {
 		50% {
 			background-position: 100% 50%;
@@ -579,11 +566,6 @@ const orbs = [
 	:global(html.intro) .hero[data-stage="0"] .name,
 	:global(html.intro) .hero:not([data-stage]) .name {
 		font-size: var(--name-0);
-	}
-
-	:global(html.intro) .hero[data-stage="0"] .last,
-	:global(html.intro) .hero:not([data-stage]) .last {
-		display: inline-block;
 	}
 
 	:global(html.intro) .hero[data-stage="1"] .hello {
@@ -795,8 +777,8 @@ const orbs = [
 	@media (max-width: 640px) {
 		.hero {
 			--name-0: clamp(2.6rem, 14vw, 4rem);
-			--name-1: clamp(2.8rem, 15vw, 4.2rem);
-			--name-2: clamp(3.4rem, 19vw, 5.5rem);
+			--name-1: clamp(2.1rem, 11.5vw, 3.3rem);
+			--name-2: clamp(2.2rem, 12vw, 3.4rem);
 			--hello-2: clamp(1.05rem, 5vw, 1.35rem);
 		}
 
