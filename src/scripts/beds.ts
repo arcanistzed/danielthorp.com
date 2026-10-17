@@ -33,6 +33,8 @@ interface Voice {
 	step?(step: number, time: number): void;
 	/** Called when the bed becomes audible after silence. */
 	wake?(step: number): void;
+	/** How far through its section the page is, 0 to 1. */
+	position?(p: number): void;
 	stop(): void;
 }
 
@@ -342,7 +344,7 @@ function noiseFloor(g: Graph, out: AudioNode, type: BiquadFilterType, frequency:
 }
 
 /** A looping record-surface texture: sparse crackle over faint hiss. */
-function crackle(g: Graph, out: AudioNode) {
+function crackle(g: Graph, out: AudioNode, level = 0.22) {
 	const { ctx } = g;
 	const seconds = 4;
 	const buffer = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
@@ -365,7 +367,7 @@ function crackle(g: Graph, out: AudioNode) {
 	band.frequency.value = 2600;
 	band.Q.value = 0.5;
 	const amp = ctx.createGain();
-	amp.gain.value = 0.22;
+	amp.gain.value = level;
 	source.connect(band);
 	band.connect(amp);
 	amp.connect(out);
@@ -403,7 +405,7 @@ const BEDS: Record<string, Bed> = {
 	// supersaw pad breathing against a beat that isn't there yet, and a slow
 	// filter sweeping across sixteen bars.
 	carbon: {
-		level: 1,
+		level: 0.75,
 		pump: true,
 		build(g, out, pump) {
 			const floor = noiseFloor(g, out, "lowpass", 420, 0.035);
@@ -440,7 +442,7 @@ const BEDS: Record<string, Bed> = {
 	// The proclamation: the music box, started from the top each time the
 	// page scrolls back to it.
 	box: {
-		level: 0.9,
+		level: 1.8,
 		pump: false,
 		build(g, out) {
 			sendTo(g, out, 0.5);
@@ -472,7 +474,7 @@ const BEDS: Record<string, Bed> = {
 	// muted four-to-the-floor, disco chord chucks on the off-beats under a
 	// sixteen-bar filter sweep, a bass pulse, and a relay tick on every beat.
 	status: {
-		level: 1,
+		level: 1.7,
 		pump: true,
 		build(g, out, pump) {
 			const keep = padKeeper((start, end, chord) =>
@@ -566,7 +568,7 @@ const BEDS: Record<string, Bed> = {
 	// the off-beats, an off-beat bass, sidechained supersaw stabs, and a
 	// riser through the last bar of every eight.
 	matrix: {
-		level: 1,
+		level: 2.2,
 		pump: true,
 		build(g, out, pump) {
 			const GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
@@ -576,7 +578,7 @@ const BEDS: Record<string, Bed> = {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
 					const loop = s % LOOP;
-					if (i % 4 === 0) kick(g, out, t, 0.42);
+					if (i % 4 === 0) kick(g, out, t, 0.34);
 					if (i === 4 || i === 12) clap(g, out, t, 0.09);
 					if (i % 4 === 2) hat(g, out, t, 0.03);
 					if (i === 14) hat(g, out, t, 0.035, true);
@@ -584,7 +586,7 @@ const BEDS: Record<string, Bed> = {
 					if (GATE[i]) {
 						stab(g, pump, [chord[0] - 12, ...chord], t, STEP * 0.65, {
 							cutoff: 1900,
-							level: 0.04,
+							level: 0.055,
 							voices: 3,
 							detune: 12,
 						});
@@ -646,6 +648,66 @@ const BEDS: Record<string, Bed> = {
 					try {
 						surface.stop();
 					} catch {}
+				},
+			};
+		},
+	},
+
+	// Contact: the end of the night. No pump and no drums. One chord held on
+	// A minor nine that settles onto C major, the record still turning under
+	// it, and a filter that closes as the page runs out.
+	outro: {
+		level: 0.65,
+		pump: false,
+		build(g, out) {
+			const { ctx } = g;
+			const tone = ctx.createBiquadFilter();
+			tone.type = "lowpass";
+			tone.frequency.value = 3200;
+			tone.Q.value = 0.7;
+			tone.connect(out);
+			const surface = crackle(g, out, 0.14);
+			const floor = noiseFloor(g, tone, "lowpass", 380, 0.03);
+			let offset = 0;
+			let until = 0;
+			return {
+				wake(s) {
+					offset = s;
+					until = 0;
+				},
+				position(p) {
+					tone.frequency.setTargetAtTime(3200 * (700 / 3200) ** p, ctx.currentTime, 0.4);
+				},
+				step(s, t) {
+					if (t < until - 0.01) return;
+					const local = s - offset;
+					const end = t + (PHRASE - (local % PHRASE)) * STEP;
+					const resolved = local >= PHRASE * 2;
+					const chord = resolved ? [60, 64, 67, 72] : [60, 64, 67, 71];
+					pad(g, tone, chord, t, end, {
+						cutoff: 2400,
+						attack: 2.8,
+						release: 3.6,
+						level: 0.05,
+						voices: 3,
+						detune: 9,
+						send: 0.6,
+					});
+					pad(g, out, [resolved ? 36 : 33], t, end, {
+						type: "sine",
+						cutoff: 240,
+						attack: 2,
+						release: 3,
+						level: 0.16,
+						voices: 1,
+					});
+					until = end;
+				},
+				stop() {
+					try {
+						surface.stop();
+					} catch {}
+					floor?.stop();
 				},
 			};
 		},
@@ -755,18 +817,34 @@ export function installBeds() {
 		}
 	}
 
-	// Each section's share of the viewport, on an equal-power curve.
+	// Each section's share of the viewport, on an equal-power curve. While the
+	// hero intro plays its own chords the beds wait. Over the last half
+	// viewport of the page the final section takes over, since a short last
+	// section can never fill the screen on its own.
+	const root = document.documentElement;
+	const last = sections[sections.length - 1];
 	function measure() {
 		frame = 0;
 		const height = window.innerHeight;
+		const intro = root.classList.contains("intro");
+		const endness = Math.max(
+			0,
+			Math.min(1, (window.scrollY + height - (root.scrollHeight - height / 2)) / (height / 2)),
+		);
 		for (const entry of live.values()) {
 			let share = 0;
 			for (const section of entry.sections) {
 				const rect = section.getBoundingClientRect();
 				const visible = Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
-				share = Math.max(share, Math.min(1, visible / Math.min(height, rect.height || height)));
+				const own = Math.min(1, visible / Math.min(height, rect.height || height));
+				const scaled = section === last ? Math.max(own, endness) : own * (1 - endness);
+				share = Math.max(share, scaled);
+				if (section === last && rect.height) {
+					const through = (height - rect.top) / (rect.height + height);
+					entry.voice?.position?.(Math.max(endness, Math.min(1, Math.max(0, through))));
+				}
 			}
-			entry.weight = Math.sin((share * Math.PI) / 2);
+			entry.weight = intro ? 0 : Math.sin((share * Math.PI) / 2);
 		}
 		apply();
 	}
@@ -819,6 +897,8 @@ export function installBeds() {
 		{ passive: true },
 	);
 	window.addEventListener("resize", schedule);
+	// The hero adds and removes the "intro" class on <html>.
+	new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["class"] });
 
 	window.addEventListener("sound-change", event => {
 		if ((event as CustomEvent<boolean>).detail) measure();

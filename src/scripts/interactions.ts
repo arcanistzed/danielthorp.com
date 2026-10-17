@@ -1,7 +1,8 @@
 // Sounds for the interactions every page shares: pointing at a link or
 // button, moving focus with the keyboard, jumping to a section, and opening
 // a link somewhere else. An ancestor's data-sfx picks the flavour:
-//   "paper" rustles, "flap" clacks like the status board, "none" is silent.
+//   "paper" rustles, "flap" clacks like the status board, "echo" lets link
+//   cues ring out, "none" is silent.
 // Components with their own sounds (the hero icons, the filters) set "none"
 // or handle their clicks themselves. Anything else that should respond to
 // the pointer, like a row of the status board, carries data-sfx-hover.
@@ -75,7 +76,7 @@ export function installInteractionSounds() {
 		} else if (flavour(link) === "paper") {
 			rustle(true);
 		} else {
-			launch();
+			launch(flavour(link) === "echo");
 		}
 	});
 }

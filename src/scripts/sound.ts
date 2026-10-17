@@ -262,6 +262,7 @@ function blip(
 	length: number,
 	level: number,
 	type: OscillatorType,
+	send = 0,
 ) {
 	if (!isEnabled() || !ctx || !master) return;
 	const now = ctx.currentTime;
@@ -275,6 +276,12 @@ function blip(
 	amp.gain.exponentialRampToValueAtTime(0.0001, now + length);
 	osc.connect(amp);
 	amp.connect(master);
+	if (send && delaySend) {
+		const echo = ctx.createGain();
+		echo.gain.value = send;
+		amp.connect(echo);
+		echo.connect(delaySend);
+	}
 	osc.start(now);
 	osc.stop(now + length + 0.02);
 }
@@ -354,9 +361,9 @@ export function rustle(long = false) {
 	}
 }
 
-/** A rising "off you go" for links that open somewhere else. */
-export function launch() {
-	blip(520, 1180, 0.11, 0.06, "sine");
+/** A rising "off you go" for links that open somewhere else. `echo` lets it ring. */
+export function launch(echo = false) {
+	blip(520, 1180, 0.11, 0.06, "sine", echo ? 0.7 : 0);
 	air(900, 3400, 0.17, 0.03, 0.03);
 	vibrate(10);
 }
