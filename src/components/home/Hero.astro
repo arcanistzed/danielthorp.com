@@ -276,21 +276,31 @@ const orbs = [
 		const helloSize = getComputedStyle(hello).fontSize;
 		// The greeting leads: it dissolves away just before the name moves, so the
 		// growing name never passes over visible text. A feathered mask sweeps
-		// from right to left while the letters blur and fade.
-		const dissolve = "linear-gradient(to right, #000 40%, transparent 60%)";
+		// away from the name (right to left beside it, bottom to top above it on
+		// phones) while the letters blur and fade.
+		const stacked = getComputedStyle(hero.querySelector(".greeting")!).flexDirection === "column";
+		const dissolve = `linear-gradient(${stacked ? "to bottom" : "to right"}, #000 40%, transparent 60%)`;
+		const maskSize = stacked ? "100% 300%" : "300% 100%";
+		const [maskFrom, maskTo] = stacked ? ["0 0%", "0 100%"] : ["0% 0", "100% 0"];
 		Object.assign(hello.style, {
 			maskImage: dissolve,
 			webkitMaskImage: dissolve,
-			maskSize: "300% 100%",
-			webkitMaskSize: "300% 100%",
+			maskSize,
+			webkitMaskSize: maskSize,
 			maskRepeat: "no-repeat",
 			webkitMaskRepeat: "no-repeat",
 		});
 		const exit = track(
 			hello.animate(
 				[
-					{ maskPosition: "0% 0", webkitMaskPosition: "0% 0", filter: "blur(0)", opacity: 1, transform: "none" },
-					{ maskPosition: "100% 0", webkitMaskPosition: "100% 0", filter: "blur(5px)", opacity: 0, transform: "translateX(-0.3em)" },
+					{ maskPosition: maskFrom, webkitMaskPosition: maskFrom, filter: "blur(0)", opacity: 1, transform: "none" },
+					{
+						maskPosition: maskTo,
+						webkitMaskPosition: maskTo,
+						filter: "blur(5px)",
+						opacity: 0,
+						transform: stacked ? "translateY(-0.3em)" : "translateX(-0.3em)",
+					},
 				],
 				{ duration: 620, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
 			),
