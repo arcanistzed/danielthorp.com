@@ -114,13 +114,13 @@ export const leadership: Role[] = [
 		dates: "Nov 2022 to present",
 		place: "Ottawa",
 		points: [
-			"Led Hack the Hill III as co-president and director: five months of work, more than 350 attendees, 100 projects, and a civic tech track I’m especially proud of.",
+			"Led Hack the Hill III as co-president and director: more than 350 attendees, 100 projects, and a civic tech track I’m especially proud of.",
+			"Led Hack the Hill II as president: 826 participants, 113 projects, and more than $95,000 raised.",
 			"Previously Board Chair and Director at Large, leading governance, oversight, and strategic direction.",
 			"Previously Vice-President of Operations, Vice-President of Governance, and President, leading strategy, chairing meetings, and representing the nonprofit externally.",
 			"As Operations Director, managed operations, finance, and administrative systems, and drafted the organization’s legal documents, policies, and procedures.",
 			"As Development Director, designed and built the event management platform (TypeScript, React, Next.js, Node.js, MySQL), the public website, and email infrastructure for more than 2,500 personalized messages, and taught workshops to more than 120 students.",
 			"Rebuilt the website in Astro, making it 11 times faster with a perfect Lighthouse score.",
-			"Planned and ran Hack the Hill II.",
 		],
 	},
 	{
@@ -198,7 +198,7 @@ export const leadership: Role[] = [
 		],
 	},
 	{
-		title: "Executive Officer (Communications Commissioner)",
+		title: "Executive (Communications Commissioner)",
 		org: "University of Ottawa Students’ Union",
 		dates: "Nov 2023 to Apr 2024",
 		place: "Ottawa",
