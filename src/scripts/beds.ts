@@ -4,16 +4,7 @@
 // sidechained progressive-house mix does. Sections opt in with
 // data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper" | "outro".
 
-import {
-	audio,
-	bell,
-	BPM,
-	glideSettle,
-	glideSweep,
-	setScrollSpeed,
-	trackVoice,
-	whiteNoise,
-} from "./sound";
+import { audio, bell, BPM, holdOpen, setScrollSpeed, trackVoice, whiteNoise } from "./sound";
 
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
 const LOOKAHEAD = 0.3;
@@ -738,6 +729,9 @@ interface Live {
 	/** Sections sharing this bed; the loudest one sets its level. */
 	sections: HTMLElement[];
 	gain: GainNode | null;
+	/** The bed's own filters, swept only during a nav glide. */
+	high: BiquadFilterNode | null;
+	low: BiquadFilterNode | null;
 	pump: GainNode | null;
 	voice: Voice | null;
 	weight: number;
@@ -773,6 +767,8 @@ export function installBeds() {
 			bed: BEDS[name],
 			sections: [section],
 			gain: null,
+			high: null,
+			low: null,
 			pump: null,
 			voice: null,
 			weight: 0,
@@ -829,15 +825,46 @@ export function installBeds() {
 			entry.gain?.disconnect();
 			entry.voice = null;
 			entry.gain = null;
+			entry.high = null;
+			entry.low = null;
 			entry.pump = null;
 			entry.audible = false;
 		}
 	}
 
 	// A nav glide hands the mix straight to the destination bed over the
-	// glide's own duration, with a filter sweep, instead of the slower fade
-	// by viewport share.
+	// glide's own duration, instead of the slower fade by viewport share,
+	// and swaps the filters the way a DJ does: the outgoing bed is high-
+	// passed away while the incoming bed's low-pass opens. The swap lasts at
+	// least a bar so it reads as a transition even on a short glide.
 	let glide: { bed: Live; seconds: number } | null = null;
+	// Beds on their way out keep fading slowly until the swap has finished,
+	// even after the scroll itself has stopped.
+	let slowUntil = 0;
+	function swap(target: Live, seconds: number) {
+		const g = audio();
+		if (!g) return;
+		const now = g.ctx.currentTime;
+		const length = Math.max(seconds, BAR * STEP);
+		for (const entry of live.values()) {
+			if (!entry.high || !entry.low) continue;
+			const high = entry.high.frequency;
+			const low = entry.low.frequency;
+			high.cancelScheduledValues(now);
+			low.cancelScheduledValues(now);
+			if (entry === target) {
+				high.setTargetAtTime(20, now, 0.05);
+				low.setValueAtTime(entry.audible ? 16000 : 220, now);
+				low.exponentialRampToValueAtTime(16000, now + length);
+			} else if (entry.audible) {
+				low.setTargetAtTime(16000, now, 0.05);
+				// The bass leaves first, while the bed is still clearly audible.
+				high.setValueAtTime(Math.max(20, high.value), now);
+				high.exponentialRampToValueAtTime(2400, now + length * 0.55);
+				high.setTargetAtTime(20, now + length + 0.5, 0.3);
+			}
+		}
+	}
 	window.addEventListener("glide-start", event => {
 		const { to, duration } = (event as CustomEvent<{ to: number; duration: number }>).detail;
 		const height = window.innerHeight;
@@ -856,14 +883,16 @@ export function installBeds() {
 		}
 		if (!best) return;
 		glide = { bed: best, seconds: duration / 1000 };
-		if (audio()) glideSweep(glide.seconds);
-		setScrollSpeed(0);
+		slowUntil = performance.now() + Math.max(glide.seconds, BAR * STEP) * 1000;
+		// The incoming bed's filter must exist before the swap starts.
+		apply(0.3, best);
+		swap(best, glide.seconds);
+		holdOpen();
 		measure();
 	});
 	window.addEventListener("glide-end", () => {
 		if (!glide) return;
 		glide = null;
-		glideSettle();
 		measure();
 	});
 
@@ -877,9 +906,10 @@ export function installBeds() {
 		frame = 0;
 		const height = window.innerHeight;
 		const intro = root.classList.contains("intro");
+		const fadeOut = Math.max(0.35, (slowUntil - performance.now()) / 2200);
 		if (glide) {
 			for (const entry of live.values()) entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
-			apply(glide.seconds / 2.5);
+			apply(0.3, null, fadeOut);
 			return;
 		}
 		const endness = Math.max(
@@ -901,20 +931,30 @@ export function installBeds() {
 			}
 			entry.weight = intro ? 0 : Math.sin((share * Math.PI) / 2);
 		}
-		apply();
+		apply(0.35, null, fadeOut);
 	}
 
-	function apply(smoothing = 0.35) {
+	function apply(smoothing = 0.35, build: Live | null = null, fadeOut = smoothing) {
 		const g = audio();
 		if (!g) return;
 		const now = g.ctx.currentTime;
 		let any = false;
 		for (const entry of live.values()) {
 			const audible = entry.weight > 0.002;
-			if (audible && !entry.gain) {
+			if ((audible || entry === build) && !entry.gain) {
 				entry.gain = g.ctx.createGain();
 				entry.gain.gain.value = 0;
-				entry.gain.connect(g.music);
+				entry.high = g.ctx.createBiquadFilter();
+				entry.high.type = "highpass";
+				entry.high.frequency.value = 20;
+				entry.high.Q.value = 0.71;
+				entry.low = g.ctx.createBiquadFilter();
+				entry.low.type = "lowpass";
+				entry.low.frequency.value = 16000;
+				entry.low.Q.value = 0.71;
+				entry.gain.connect(entry.high);
+				entry.high.connect(entry.low);
+				entry.low.connect(g.music);
 				entry.pump = g.ctx.createGain();
 				entry.pump.connect(entry.gain);
 				entry.voice = entry.bed.build(g, entry.gain, entry.pump);
@@ -922,7 +962,11 @@ export function installBeds() {
 			if (audible && !entry.audible) entry.voice?.wake?.(step);
 			entry.audible = audible;
 			if (audible) any = true;
-			entry.gain?.gain.setTargetAtTime(entry.weight * entry.bed.level, now, smoothing);
+			entry.gain?.gain.setTargetAtTime(
+				entry.weight * entry.bed.level,
+				now,
+				audible ? smoothing : fadeOut,
+			);
 		}
 		if (any) startTransport();
 	}
@@ -971,10 +1015,18 @@ export function installBeds() {
 	});
 
 	if (import.meta.env.DEV) {
-		(window as unknown as { __beds: () => Record<string, number> }).__beds = () => {
+		const dev = window as unknown as {
+			__beds: () => Record<string, number>;
+			__bedGains: () => Record<string, number>;
+		};
+		dev.__beds = () => {
 			measure();
 			return Object.fromEntries([...live].map(([name, entry]) => [name, entry.weight]));
 		};
+		dev.__bedGains = () =>
+			Object.fromEntries(
+				[...live].map(([name, entry]) => [name, +(entry.gain?.gain.value ?? 0).toFixed(3)]),
+			);
 	}
 
 	measure();
