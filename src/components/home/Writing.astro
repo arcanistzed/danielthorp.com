@@ -142,6 +142,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 	year: "numeric",
 	month: "long",
 	day: "numeric",
+	timeZone: "America/Toronto",
 });
 ---
 
@@ -151,7 +152,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 			<h2 id="writing-title" class="nameplate">Writing</h2>
 			<p class="dateline">
 				<span>Ottawa</span>
-				<span>{today}</span>
+				<time class="today">{today}</time>
 				<span>By Daniel Thorp</span>
 			</p>
 		</header>
@@ -217,6 +218,23 @@ const today = new Date().toLocaleDateString("en-CA", {
 		</p>
 	</div>
 </section>
+
+<script>
+	// The dateline means "today in Ottawa", so set it in the browser; the build
+	// date stays in the HTML for visitors without JavaScript.
+	const today = document.querySelector<HTMLTimeElement>(".writing .today");
+	if (today) {
+		const now = new Date();
+		today.textContent = now.toLocaleDateString("en-CA", {
+			weekday: "long",
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			timeZone: "America/Toronto",
+		});
+		today.dateTime = now.toLocaleDateString("en-CA", { timeZone: "America/Toronto" });
+	}
+</script>
 
 <style>
 	.writing .flat-inner {
