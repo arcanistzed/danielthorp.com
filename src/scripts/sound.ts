@@ -100,7 +100,7 @@ function ensureContext() {
 	// visitor scrolls quickly, like wind over the music.
 	musicFilter = ctx.createBiquadFilter();
 	musicFilter.type = "lowpass";
-	musicFilter.frequency.value = 16000;
+	musicFilter.frequency.value = openCutoff;
 	musicFilter.Q.value = 0.3;
 	musicFilter.connect(master);
 	// A high-pass that a nav glide sweeps up and back down, the way a DJ
@@ -125,7 +125,7 @@ export function glideSweep(seconds: number) {
 	high.exponentialRampToValueAtTime(1100, now + seconds * 0.5);
 	high.exponentialRampToValueAtTime(20, now + seconds);
 	musicFilter.frequency.cancelScheduledValues(now);
-	musicFilter.frequency.setTargetAtTime(16000, now, 0.1);
+	musicFilter.frequency.setTargetAtTime(openCutoff, now, 0.1);
 }
 
 /** Bring the high-pass back down early when a glide is interrupted. */
@@ -140,9 +140,28 @@ export function glideSettle() {
 export function setScrollSpeed(speed: number) {
 	if (!ctx || !musicFilter) return;
 	const amount = Math.min(1, speed / 3500);
-	const cutoff = 16000 * (2200 / 16000) ** amount;
+	const cutoff = openCutoff * (2200 / openCutoff) ** amount;
 	musicFilter.frequency.setTargetAtTime(cutoff, ctx.currentTime, 0.12);
 }
+
+// Dark mode is a little darker to listen to as well: the music loses some
+// air. The theme is the saved data-theme on <html>, else the system setting.
+let openCutoff = 16000;
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+function applyTheme() {
+	const saved = document.documentElement.dataset.theme;
+	const dark = saved ? saved === "dark" : systemDark.matches;
+	openCutoff = dark ? 9000 : 16000;
+	if (ctx && musicFilter) {
+		musicFilter.frequency.setTargetAtTime(openCutoff, ctx.currentTime, 0.6);
+	}
+}
+new MutationObserver(applyTheme).observe(document.documentElement, {
+	attributes: true,
+	attributeFilter: ["data-theme"],
+});
+systemDark.addEventListener("change", applyTheme);
+applyTheme();
 
 // Fade everything out while the tab is hidden.
 document.addEventListener("visibilitychange", () => {
