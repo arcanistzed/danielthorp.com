@@ -129,13 +129,21 @@ const orbs = [
 	const helloEn = hero.querySelector<HTMLElement>(".hello-en")!;
 	const helloFr = hero.querySelector<HTMLElement>(".hello-fr")!;
 	const nameEl = hero.querySelector<HTMLElement>(".name")!;
+	const hello = hero.querySelector<HTMLElement>(".hello")!;
 	const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
 	const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 	const EASE = "cubic-bezier(0.65, 0, 0.25, 1)";
 
 	// Animate elements from where they were to where a class change puts them.
-	function flip(elements: HTMLElement[], change: () => void, duration = 950) {
+	// `fromCentre` scales about each element's centre instead of its top-left
+	// corner, so a growing element expands in place rather than drifting.
+	function flip(
+		elements: HTMLElement[],
+		change: () => void,
+		duration = 950,
+		{ fromCentre = false, easing = EASE } = {},
+	) {
 		const before = elements.map(el => el.getBoundingClientRect());
 		change();
 		return Promise.all(
@@ -144,17 +152,22 @@ const orbs = [
 				const b = el.getBoundingClientRect();
 				if (!a.width || !b.width) return Promise.resolve();
 				const scale = a.height / b.height;
-				const dx = a.left - b.left;
-				const dy = a.top - b.top;
+				const origin = fromCentre ? "50% 50%" : "0 0";
+				const dx = fromCentre
+					? a.left + a.width / 2 - (b.left + b.width / 2)
+					: a.left - b.left;
+				const dy = fromCentre
+					? a.top + a.height / 2 - (b.top + b.height / 2)
+					: a.top - b.top;
 				return track(el.animate(
 					[
 						{
-							transformOrigin: "0 0",
+							transformOrigin: origin,
 							transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
 						},
-						{ transformOrigin: "0 0", transform: "none" },
+						{ transformOrigin: origin, transform: "none" },
 					],
-					{ duration, easing: EASE },
+					{ duration, easing },
 				)).finished;
 			}),
 		);
@@ -179,6 +192,7 @@ const orbs = [
 		brake();
 		endPrompt?.(null);
 		for (const animation of anims.splice(0)) animation.cancel();
+		hello.removeAttribute("style");
 		finish();
 		running = false;
 	}
@@ -247,9 +261,59 @@ const orbs = [
 		await fadeFr.finished.catch(() => {});
 		if (skipped) return;
 
-		await wait(250);
+		// Stage 3, one gesture: the greeting wipes away to the left (the reverse
+		// of its entrance) while the full name grows back to the centre.
+		await wait(1000);
 		if (skipped) return;
 		chord([48, 55, 64, 67, 71], 3.4);
+		const heroBox = hero.getBoundingClientRect();
+		const helloBox = hello.getBoundingClientRect();
+		const helloSize = getComputedStyle(hello).fontSize;
+		// The greeting leads: it dissolves away just before the name moves, so the
+		// growing name never passes over visible text. A feathered mask sweeps
+		// from right to left while the letters blur and fade.
+		const dissolve = "linear-gradient(to right, #000 40%, transparent 60%)";
+		Object.assign(hello.style, {
+			maskImage: dissolve,
+			webkitMaskImage: dissolve,
+			maskSize: "300% 100%",
+			webkitMaskSize: "300% 100%",
+			maskRepeat: "no-repeat",
+			webkitMaskRepeat: "no-repeat",
+		});
+		const exit = track(
+			hello.animate(
+				[
+					{ maskPosition: "0% 0", webkitMaskPosition: "0% 0", filter: "blur(0)", opacity: 1, transform: "none" },
+					{ maskPosition: "100% 0", webkitMaskPosition: "100% 0", filter: "blur(5px)", opacity: 0, transform: "translateX(-0.3em)" },
+				],
+				{ duration: 620, easing: "cubic-bezier(0.4, 0, 0.6, 1)", fill: "forwards" },
+			),
+		);
+		await wait(260);
+		// Switch to the final layout for the glide, but drop the "intro" class only
+		// once the name has landed, so the beds swell in as it comes to rest. The
+		// greeting is pinned where it was so it can finish leaving.
+		const glide = flip(
+			[nameEl],
+			() => {
+				hero.dataset.stage = "3";
+				Object.assign(hello.style, {
+					display: "flex",
+					position: "absolute",
+					left: `${helloBox.left - heroBox.left}px`,
+					top: `${helloBox.top - heroBox.top}px`,
+					fontSize: helloSize,
+					margin: "0",
+				});
+			},
+			1300,
+			{ fromCentre: true, easing: "cubic-bezier(0.45, 0, 0.15, 1)" },
+		);
+		await Promise.all([glide, exit.finished]).catch(() => {});
+		hello.getAnimations().forEach(a => a.cancel());
+		hello.removeAttribute("style");
+		if (skipped) return;
 		finish();
 		anims.length = 0;
 		running = false;
@@ -260,9 +324,11 @@ const orbs = [
 	const showPrompt = () => {
 		prompt.hidden = isEnabled();
 	};
+	// Turning sound on from the hero button replays the intro if it has
+	// finished; mid-intro, the intro simply carries on with sound.
 	prompt.addEventListener("click", () => {
 		setEnabled(true);
-		if (!running) chord([60, 67, 72, 76], 1.8);
+		if (!running && !reduceMotion.matches) play(false);
 	});
 	window.addEventListener("sound-change", showPrompt);
 	showPrompt();
@@ -295,6 +361,12 @@ const orbs = [
 	window.addEventListener("sound-toggled-on", () => {
 		if (running || reduceMotion.matches) return;
 		if (window.scrollY < window.innerHeight / 2) play(false);
+	});
+
+	// A small extra: clicking the name replays the intro.
+	hero.querySelector(".greeting")!.addEventListener("click", () => {
+		if (running || reduceMotion.matches) return;
+		play(false);
 	});
 
 	// The chevron fades once the visitor has started scrolling.
@@ -510,12 +582,16 @@ const orbs = [
 		justify-content: center;
 		line-height: 1.05;
 		text-align: left;
+		cursor: pointer;
+		user-select: none;
 	}
 
+	/* The greeting only shows during the intro; the final state is the name. */
 	.hello {
-		display: flex;
+		display: none;
 		flex-direction: column;
 		gap: 0.3em;
+		margin-right: clamp(0.5rem, 1.2vw, 1.25rem);
 		font-size: var(--hello-2);
 		color: #d9d6e4;
 	}
@@ -527,8 +603,7 @@ const orbs = [
 	}
 
 	.name {
-		margin-left: 0.22em;
-		font-size: var(--name-2);
+		font-size: var(--name-0);
 		font-weight: 600;
 		letter-spacing: -0.02em;
 		white-space: nowrap;
@@ -566,6 +641,15 @@ const orbs = [
 	:global(html.intro) .hero[data-stage="0"] .name,
 	:global(html.intro) .hero:not([data-stage]) .name {
 		font-size: var(--name-0);
+	}
+
+	:global(html.intro) .hero[data-stage="1"] .hello,
+	:global(html.intro) .hero[data-stage="2"] .hello {
+		display: flex;
+	}
+
+	:global(html.intro) .hero[data-stage="2"] .name {
+		font-size: var(--name-2);
 	}
 
 	:global(html.intro) .hero[data-stage="1"] .hello {
@@ -790,11 +874,13 @@ const orbs = [
 		}
 
 		.name {
-			margin-left: 0;
+			white-space: normal;
+			text-align: center;
 		}
 
 		.hello {
 			align-items: center;
+			margin-right: 0;
 		}
 
 		:global(html.intro) .hero[data-stage="0"] .name,
@@ -803,7 +889,16 @@ const orbs = [
 			text-align: center;
 		}
 
-		:global(html.intro) .hero[data-stage="1"] .hello {
+		:global(html.intro) .hero[data-stage="1"] .hello,
+	:global(html.intro) .hero[data-stage="2"] .hello {
+		display: flex;
+	}
+
+	:global(html.intro) .hero[data-stage="2"] .name {
+		font-size: var(--name-2);
+	}
+
+	:global(html.intro) .hero[data-stage="1"] .hello {
 			font-size: clamp(1.6rem, 8vw, 2.4rem);
 		}
 
