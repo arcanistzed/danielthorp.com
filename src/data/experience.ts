@@ -117,7 +117,7 @@ export const leadership: Role[] = [
 		org: "ClimaTalk",
 		dates: "May 2026 to present",
 		points: [
-			"Design and build for the ClimaTalk website, including an interactive explorer of the UN climate conferences (COPs).",
+			"Designing and developing ClimaTalk’s website, including an interactive explorer of United Nations climate change conferences (COPs).",
 		],
 	},
 	{
