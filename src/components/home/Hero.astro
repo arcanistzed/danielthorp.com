@@ -610,10 +610,11 @@ const orbs = [
 		gap: var(--space-3);
 		margin: 0;
 		padding: var(--space-3) var(--space-5);
-		border: 1px solid rgba(255, 255, 255, 0.22);
+		border: 1px solid rgba(255, 255, 255, 0.28);
 		border-radius: 999px;
-		background: rgba(10, 10, 12, 0.6);
-		backdrop-filter: blur(6px);
+		background: rgba(10, 10, 12, 0.25);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		font: inherit;
 		font-family: var(--font-sans);
 		font-size: 1rem;
@@ -629,7 +630,7 @@ const orbs = [
 	.sound-prompt:hover,
 	.sound-prompt:focus-visible {
 		border-color: rgba(120, 220, 255, 0.6);
-		background: rgba(20, 24, 34, 0.75);
+		background: rgba(20, 24, 34, 0.45);
 	}
 
 	.sound-prompt[hidden] {
@@ -843,6 +844,164 @@ const orbs = [
 			top: 64%;
 			font-size: 0.9rem;
 		}
+	}
+
+
+	/* Light mode: brushed aluminium instead of carbon fibre, with softer glows
+	   and dark lettering. */
+	:global(:root[data-theme="light"]) .hero {
+		--color-hero-start: #2b2a36;
+		--color-hero-mid: #b4524a;
+		--color-hero-end: #3b2f4a;
+		color: #22222a;
+		background-color: #cfd1d6;
+	}
+
+	:global(:root[data-theme="light"]) .hero::before {
+		background:
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E") 0 0 / 600px 600px,
+			linear-gradient(100deg, #e9eaee, #c8cacf 30%, #eceef1 52%, #c3c5ca 75%, #dfe1e5);
+	}
+
+	:global(:root[data-theme="light"]) .hero::after {
+		background:
+			linear-gradient(
+				to bottom,
+				transparent 78%,
+				color-mix(in srgb, var(--bg-about-top) 45%, transparent) 91%,
+				var(--bg-about-top) 100%
+			),
+			radial-gradient(420px circle at var(--px, 50%) var(--py, 40%), rgba(255, 255, 255, 0.4), transparent 70%),
+			linear-gradient(
+				115deg,
+				transparent 35%,
+				rgba(255, 255, 255, 0.25) 47%,
+				rgba(255, 255, 255, 0.5) 50%,
+				rgba(255, 255, 255, 0.25) 53%,
+				transparent 65%
+			),
+			radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255, 46, 160, 0.16), transparent 70%),
+			radial-gradient(ellipse 55% 45% at 100% 0%, rgba(0, 190, 230, 0.16), transparent 70%),
+			radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(40, 40, 52, 0.22));
+		background-size:
+			100% 100%,
+			100% 100%,
+			300% 100%,
+			100% 100%,
+			100% 100%,
+			100% 100%;
+		background-repeat: no-repeat;
+	}
+
+	:global(:root[data-theme="light"]) .hello {
+		color: #3d3b47;
+	}
+
+	:global(:root[data-theme="light"]) .orb {
+		color: #34343e;
+	}
+
+	:global(:root[data-theme="light"]) .orb-inner {
+		filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
+	}
+
+	:global(:root[data-theme="light"]) .chevron {
+		color: #3b3b46;
+	}
+
+	:global(:root[data-theme="light"]) .sound-prompt {
+		color: #1f1f27;
+		background: rgba(255, 255, 255, 0.35);
+		border-color: rgba(20, 20, 30, 0.22);
+	}
+
+	:global(:root[data-theme="light"]) .sound-prompt:hover,
+	:global(:root[data-theme="light"]) .sound-prompt:focus-visible {
+		background: rgba(255, 255, 255, 0.92);
+		border-color: rgba(0, 134, 171, 0.5);
+	}
+
+	:global(:root[data-theme="light"]) .sound-prompt svg {
+		color: #0a86ab;
+	}
+
+	@media (prefers-color-scheme: light) {
+
+		/* Light mode: brushed aluminium instead of carbon fibre, with softer glows
+		   and dark lettering. */
+		:global(:root:not([data-theme="dark"])) .hero {
+			--color-hero-start: #2b2a36;
+			--color-hero-mid: #b4524a;
+			--color-hero-end: #3b2f4a;
+			color: #22222a;
+			background-color: #cfd1d6;
+		}
+
+		:global(:root:not([data-theme="dark"])) .hero::before {
+			background:
+				url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E") 0 0 / 600px 600px,
+				linear-gradient(100deg, #e9eaee, #c8cacf 30%, #eceef1 52%, #c3c5ca 75%, #dfe1e5);
+		}
+
+		:global(:root:not([data-theme="dark"])) .hero::after {
+			background:
+				linear-gradient(
+					to bottom,
+					transparent 78%,
+					color-mix(in srgb, var(--bg-about-top) 45%, transparent) 91%,
+					var(--bg-about-top) 100%
+				),
+				radial-gradient(420px circle at var(--px, 50%) var(--py, 40%), rgba(255, 255, 255, 0.4), transparent 70%),
+				linear-gradient(
+					115deg,
+					transparent 35%,
+					rgba(255, 255, 255, 0.25) 47%,
+					rgba(255, 255, 255, 0.5) 50%,
+					rgba(255, 255, 255, 0.25) 53%,
+					transparent 65%
+				),
+				radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255, 46, 160, 0.16), transparent 70%),
+				radial-gradient(ellipse 55% 45% at 100% 0%, rgba(0, 190, 230, 0.16), transparent 70%),
+				radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(40, 40, 52, 0.22));
+			background-size:
+				100% 100%,
+				100% 100%,
+				300% 100%,
+				100% 100%,
+				100% 100%,
+				100% 100%;
+			background-repeat: no-repeat;
+		}
+
+		:global(:root:not([data-theme="dark"])) .hello {
+			color: #3d3b47;
+		}
+
+		:global(:root:not([data-theme="dark"])) .orb {
+			color: #34343e;
+		}
+
+		:global(:root:not([data-theme="dark"])) .orb-inner {
+			filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
+		}
+
+
+		:global(:root:not([data-theme="dark"])) .sound-prompt {
+			color: #1f1f27;
+			background: rgba(255, 255, 255, 0.72);
+			border-color: rgba(20, 20, 30, 0.15);
+		}
+
+		:global(:root:not([data-theme="dark"])) .sound-prompt:hover,
+		:global(:root:not([data-theme="dark"])) .sound-prompt:focus-visible {
+			background: rgba(255, 255, 255, 0.92);
+			border-color: rgba(0, 134, 171, 0.5);
+		}
+
+		:global(:root:not([data-theme="dark"])) .sound-prompt svg {
+			color: #0a86ab;
+		}
+
 	}
 
 	@media (prefers-reduced-motion: reduce) {
