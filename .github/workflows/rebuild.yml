@@ -1,6 +1,7 @@
-# Rebuilds the site every Monday so the "Writing" list picks up new Substack
-# posts. The feed is fetched at build time, so without this a new post only
-# appears after the next push.
+# Keeps the "Writing" list current. The Substack feed is fetched at build time
+# and Substack has no publish webhook, so this checks three times a day whether
+# the newest post is on the live site and rebuilds only when it isn't. Running it
+# by hand always rebuilds.
 #
 # Setup: create a deploy hook for this project in the Cloudflare dashboard and
 # save its URL as the CLOUDFLARE_DEPLOY_HOOK repository secret.
@@ -8,7 +9,9 @@ name: Scheduled rebuild
 
 on:
   schedule:
-    - cron: "0 12 * * 1"
+    # Midnight, 8 a.m. and 4 p.m. in Ottawa during daylight time (UTC-4); an
+    # hour earlier in winter, since cron runs in UTC.
+    - cron: "0 4,12,20 * * *"
   workflow_dispatch:
 
 permissions: {}
@@ -17,7 +20,29 @@ jobs:
   rebuild:
     runs-on: ubuntu-latest
     steps:
+      - name: Check for a new Substack post
+        id: check
+        if: github.event_name == 'schedule'
+        run: |
+          python3 - <<'EOF' >> "$GITHUB_OUTPUT"
+          import re, sys, urllib.request
+
+          def get(url):
+              request = urllib.request.Request(url, headers={"User-Agent": "danielthorp.com rebuild check"})
+              return urllib.request.urlopen(request, timeout=30).read().decode("utf-8", "replace")
+
+          feed = get("https://arcanistzed.substack.com/feed")
+          item = re.search(r"<item>(.*?)</item>", feed, re.S)
+          if not item:
+              sys.exit("No posts found in the Substack feed.")
+          link = re.search(r"<link>\s*(.*?)\s*</link>", item.group(1), re.S).group(1)
+          live = get("https://danielthorp.com/")
+          print(f"stale={'false' if link in live else 'true'}")
+          print(f"Newest post: {link} ({'already live' if link in live else 'not on the site yet'})", file=sys.stderr)
+          EOF
+
       - name: Trigger Cloudflare deploy hook
+        if: github.event_name != 'schedule' || steps.check.outputs.stale == 'true'
         env:
           DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: |
