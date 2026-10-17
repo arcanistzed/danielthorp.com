@@ -61,11 +61,18 @@ const orbs = [
 		>
 	</div>
 
-	<div class="sound-prompt" role="group" aria-label="Sound" hidden>
-		<span>Turn on sound?</span>
-		<button type="button" data-answer="on">Yes</button>
-		<button type="button" data-answer="off">No thanks</button>
-	</div>
+	<p class="sound-prompt" aria-live="polite" hidden>
+		<svg viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"></path>
+			<path
+				d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.8"
+				stroke-linecap="round"></path>
+		</svg>
+		<span class="prompt-text">Click anywhere to turn on sound</span>
+	</p>
 
 	<ul class="orbit" role="list" aria-label="Contact" data-sfx="none">
 		{
@@ -165,7 +172,7 @@ const orbs = [
 	const anims: Animation[] = [];
 	const track = (animation: Animation) => (anims.push(animation), animation);
 
-	// Scrolling, a navigation key, or a click outside the prompt skips the intro.
+	// Scrolling or a navigation key skips the intro. A click turns sound on instead.
 	function skip() {
 		if (!running || skipped) return;
 		skipped = true;
@@ -182,9 +189,6 @@ const orbs = [
 	window.addEventListener("touchmove", skip, { passive: true });
 	window.addEventListener("keydown", event => {
 		if (SKIP_KEYS.has(event.key)) skip();
-	});
-	window.addEventListener("pointerdown", event => {
-		if (!(event.target as Element).closest(".sound-prompt")) skip();
 	});
 
 	async function play(askFirst: boolean) {
@@ -258,17 +262,19 @@ const orbs = [
 		running = false;
 	}
 
+	// Shows "Click anywhere to turn on sound". Any click on the page turns it on
+	// (see SoundToggle); after 2.5 s without one the intro carries on silently.
 	function askForSound(): Promise<void> {
 		return new Promise(resolve => {
+			if (matchMedia("(hover: none)").matches) {
+				prompt.querySelector(".prompt-text")!.textContent = "Tap anywhere to turn on sound";
+			}
 			prompt.hidden = false;
-			const yes = prompt.querySelector<HTMLButtonElement>('[data-answer="on"]')!;
-			if (getPref() === "on") yes.focus({ preventScroll: true });
 
 			const done = (on: boolean | null) => {
 				endPrompt = null;
 				clearTimeout(timer);
-				prompt.removeEventListener("click", onClick);
-				if (on !== null) setEnabled(on);
+				window.removeEventListener("sound-change", onSound);
 				prompt.classList.add("leaving");
 				setTimeout(() => {
 					prompt.hidden = true;
@@ -276,15 +282,11 @@ const orbs = [
 				}, 300);
 				setTimeout(resolve, on ? 350 : 250);
 			};
-			endPrompt = done;
-			const onClick = (event: Event) => {
-				const answer = (event.target as HTMLElement).closest<HTMLElement>(
-					"[data-answer]",
-				)?.dataset.answer;
-				if (answer) done(answer === "on");
+			const onSound = (event: Event) => {
+				if ((event as CustomEvent<boolean>).detail) done(true);
 			};
-			prompt.addEventListener("click", onClick);
-			// No answer: carry on silently and ask again next visit.
+			endPrompt = done;
+			window.addEventListener("sound-change", onSound);
 			const timer = setTimeout(() => done(null), 2500);
 		});
 	}
@@ -603,7 +605,8 @@ const orbs = [
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
-		padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+		margin: 0;
+		padding: var(--space-2) var(--space-4);
 		border: 1px solid rgba(255, 255, 255, 0.16);
 		border-radius: 999px;
 		background: rgba(10, 10, 12, 0.55);
@@ -612,6 +615,7 @@ const orbs = [
 		font-size: 0.95rem;
 		color: #e9e7ef;
 		white-space: nowrap;
+		pointer-events: none;
 		animation: fade-up 500ms ease-out 400ms both;
 	}
 
@@ -624,24 +628,18 @@ const orbs = [
 		transition: opacity 280ms ease;
 	}
 
-	.sound-prompt button {
-		font: inherit;
-		color: inherit;
-		background: rgba(255, 255, 255, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 999px;
-		padding: 0.3em 0.9em;
-		cursor: pointer;
+	.sound-prompt svg {
+		width: 1.1rem;
+		height: 1.1rem;
+		flex: none;
+		color: #9fe6ff;
+		animation: pulse 1.6s ease-in-out infinite;
 	}
 
-	.sound-prompt button[data-answer="on"] {
-		background: linear-gradient(110deg, #ff4fae, #7b5cff 60%, #22d3ee);
-		border-color: transparent;
-		color: #fff;
-	}
-
-	.sound-prompt button:hover {
-		filter: brightness(1.15);
+	@keyframes pulse {
+		50% {
+			opacity: 0.45;
+		}
 	}
 
 	@keyframes fade-up {

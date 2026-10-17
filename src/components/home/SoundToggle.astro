@@ -36,17 +36,17 @@
 	});
 	window.addEventListener("sound-change", render);
 
-	// Returning visitors who chose sound: it starts on their first interaction.
-	if (getPref() === "on") {
-		const start = (event: Event) => {
-			if (isEnabled()) return;
-			if ((event.target as Element | null)?.closest?.(".sound-toggle, .sound-prompt")) return;
+	// Any click or tap on the page turns sound on, unless the visitor turned it
+	// off with this button. A click counts as the gesture browsers need for audio.
+	window.addEventListener(
+		"click",
+		event => {
+			if (isEnabled() || getPref() === "off") return;
+			if ((event.target as Element | null)?.closest?.(".sound-toggle")) return;
 			setEnabled(true);
-		};
-		for (const type of ["pointerdown", "keydown"]) {
-			window.addEventListener(type, start, { once: true, capture: true });
-		}
-	}
+		},
+		{ capture: true },
+	);
 	render();
 </script>
 
