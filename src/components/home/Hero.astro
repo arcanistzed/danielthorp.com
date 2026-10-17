@@ -588,7 +588,7 @@ const orbs = [
 
 	:global(html.intro) .hero[data-stage="1"] .hello {
 		font-size: var(--name-1);
-		color: #f1eff6;
+		color: inherit;
 	}
 
 	:global(html.intro) .hero[data-stage="1"] .hello-fr {
@@ -1000,6 +1000,25 @@ const orbs = [
 
 		:global(:root:not([data-theme="dark"])) .sound-prompt svg {
 			color: #0a86ab;
+		}
+
+	}
+
+	:global(:root[data-theme="light"]) .orb:hover .orb-inner,
+	:global(:root[data-theme="light"]) .orb.near .orb-inner,
+	:global(:root[data-theme="light"]) .orb:focus-visible .orb-inner {
+		color: #0e0e14;
+		filter: drop-shadow(0 0 6px rgba(0, 170, 220, 0.55))
+			drop-shadow(0 0 14px rgba(255, 46, 160, 0.35));
+	}
+
+	@media (prefers-color-scheme: light) {
+		:global(:root:not([data-theme="dark"])) .orb:hover .orb-inner,
+		:global(:root:not([data-theme="dark"])) .orb.near .orb-inner,
+		:global(:root:not([data-theme="dark"])) .orb:focus-visible .orb-inner {
+			color: #0e0e14;
+			filter: drop-shadow(0 0 6px rgba(0, 170, 220, 0.55))
+				drop-shadow(0 0 14px rgba(255, 46, 160, 0.35));
 		}
 
 	}
