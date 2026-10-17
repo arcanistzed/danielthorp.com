@@ -1,12 +1,16 @@
 // "Current status": what I'm doing right now. Edit this file to update the
 // board; the "Updated" date comes from this file's last commit.
 
+/** Flaps per row on the board. A longer role or status fails the build. */
+export const ROLE_WIDTH = 18;
+export const STATUS_WIDTH = 11;
+
 export interface Status {
-	/** Short role, shown on the flaps. At most 18 characters. */
+	/** Short role, shown on the flaps. At most ROLE_WIDTH characters. */
 	role: string;
 	where: string;
 	href?: string;
-	/** Short state, shown on the flaps. */
+	/** Short state, shown on the flaps. At most STATUS_WIDTH characters. */
 	status: string;
 	/** One plain sentence with more detail. */
 	detail: string;

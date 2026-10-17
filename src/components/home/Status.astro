@@ -1,6 +1,6 @@
 ---
 import { execSync } from "node:child_process";
-import { statuses, updatedFallback } from "../../data/now";
+import { ROLE_WIDTH as ROLE, STATUS_WIDTH as STATUS, statuses, updatedFallback } from "../../data/now";
 
 // The date the status file last changed, so the board can't silently go stale.
 let updated = updatedFallback;
@@ -18,10 +18,17 @@ try {
 	}
 } catch {}
 
+// The flaps would silently cut off longer text, so stop the build instead.
+const tooLong = statuses.flatMap(({ role, status }) => [
+	...([...role].length > ROLE ? [`role "${role}" is over ${ROLE} characters`] : []),
+	...([...status].length > STATUS ? [`status "${status}" is over ${STATUS} characters`] : []),
+]);
+if (tooLong.length) {
+	throw new Error(`src/data/now.ts: ${tooLong.join("; ")}.`);
+}
+
 const flaps = (text: string, width: number) =>
 	[...text.padEnd(width, " ")].slice(0, width);
-const ROLE = 18;
-const STATUS = 11;
 ---
 
 <section class="flat status" id="status" aria-labelledby="status-title" data-bed="status">

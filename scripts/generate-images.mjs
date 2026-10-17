@@ -5,9 +5,13 @@ import pngToIco from "png-to-ico";
 import sharp from "sharp";
 import { readFileSync, writeFileSync } from "node:fs";
 
-// OG image (1200×630 PNG) from SVG
+// OG image (1200×630 PNG) from SVG. A 256-colour palette keeps it near
+// 190 KB instead of 630 KB with no visible change to the gradients.
 const ogSvg = readFileSync("public/og-image.svg");
-await sharp(ogSvg).resize(1200, 630).png().toFile("public/og-image.png");
+await sharp(ogSvg)
+	.resize(1200, 630)
+	.png({ compressionLevel: 9, palette: true })
+	.toFile("public/og-image.png");
 
 // Icons from the full-size favicon source, which stays out of public/ so
 // browsers never download it.

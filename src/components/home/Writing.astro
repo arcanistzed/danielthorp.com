@@ -51,19 +51,16 @@ try {
 
 	const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
 
-	posts = items.slice(0, 5).map(item => {
-		const title = extractTag(item, "title") || "Untitled";
-		const link = extractTag(item, "link") || "#";
-		const pubDate = extractTag(item, "pubDate");
-		const description = extractTag(item, "description");
-
-		return {
-			title: decodeEntities(title.trim()),
-			link: link.trim(),
-			pubDate: pubDate.trim(),
-			description,
-		};
-	});
+	// A post is only listed if it links somewhere.
+	posts = items
+		.map(item => ({
+			title: decodeEntities(extractTag(item, "title").trim()) || "Untitled",
+			link: extractTag(item, "link").trim(),
+			pubDate: extractTag(item, "pubDate").trim(),
+			description: extractTag(item, "description"),
+		}))
+		.filter(post => post.link)
+		.slice(0, 5);
 } catch {
 	posts = [];
 }
