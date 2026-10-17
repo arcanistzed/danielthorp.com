@@ -1,0 +1,850 @@
+---
+import BlueskyIcon from "../icons/BlueskyIcon.astro";
+import EmailIcon from "../icons/EmailIcon.astro";
+import GitHubIcon from "../icons/GitHubIcon.astro";
+import InstagramIcon from "../icons/InstagramIcon.astro";
+import LinkedInIcon from "../icons/LinkedInIcon.astro";
+
+// Positions are percentages of the hero; each icon floats with its own period.
+const orbs = [
+	{
+		label: "Email",
+		href: "mailto:daniel@danielthorp.com",
+		aria: "Send an email to Daniel Thorp",
+		icon: EmailIcon,
+		pos: "--x: 17%; --y: 30%; --mx: 16%; --my: 24%; --dur: 7.5s; --delay: -1s;",
+	},
+	{
+		label: "GitHub",
+		href: "https://github.com/arcanistzed",
+		aria: "Daniel Thorp on GitHub (opens in new tab)",
+		icon: GitHubIcon,
+		pos: "--x: 82%; --y: 24%; --mx: 84%; --my: 24%; --dur: 9s; --delay: -4s;",
+	},
+	{
+		label: "LinkedIn",
+		href: "https://www.linkedin.com/in/daniel-a-thorp/",
+		aria: "Daniel Thorp on LinkedIn (opens in new tab)",
+		icon: LinkedInIcon,
+		pos: "--x: 86%; --y: 70%; --mx: 84%; --my: 74%; --dur: 8s; --delay: -2.5s;",
+	},
+	{
+		label: "Bluesky",
+		href: "https://bsky.app/profile/danielthorp.bsky.social",
+		aria: "Daniel Thorp on Bluesky (opens in new tab)",
+		icon: BlueskyIcon,
+		pos: "--x: 13%; --y: 72%; --mx: 16%; --my: 74%; --dur: 10s; --delay: -6s;",
+	},
+	{
+		label: "Instagram",
+		href: "https://instagram.com/daniel.a.thorp",
+		aria: "Daniel Thorp on Instagram (opens in new tab)",
+		icon: InstagramIcon,
+		pos: "--x: 64%; --y: 84%; --mx: 50%; --my: 82%; --dur: 8.5s; --delay: -3.5s;",
+	},
+];
+---
+
+<section class="hero" id="top" aria-labelledby="hero-title">
+	<h1 id="hero-title" class="sr-only">Daniel Thorp</h1>
+	<p class="sr-only">Hello! My name is Daniel.</p>
+	<p class="sr-only" lang="fr">Bonjour! Je m’appelle Daniel.</p>
+
+	<div class="greeting" aria-hidden="true">
+		<span class="hello">
+			<span class="hello-en">Hello! My name is</span>
+			<span class="hello-fr" lang="fr">Bonjour! Je m’appelle</span>
+		</span>
+		<span class="name"
+			><span class="first">Daniel</span><span class="last">&nbsp;Thorp</span
+			></span
+		>
+	</div>
+
+	<div class="sound-prompt" role="group" aria-label="Sound" hidden>
+		<span>Turn on sound?</span>
+		<button type="button" data-answer="on">Yes</button>
+		<button type="button" data-answer="off">No thanks</button>
+	</div>
+
+	<ul class="orbit" role="list" aria-label="Contact">
+		{
+			orbs.map(orb => {
+				const Icon = orb.icon;
+				const external = orb.href.startsWith("http");
+				return (
+					<li style={orb.pos}>
+						<a
+							class="orb"
+							href={orb.href}
+							title={orb.label}
+							aria-label={orb.aria}
+							target={external ? "_blank" : undefined}
+							rel={external ? "noopener noreferrer me" : undefined}
+						>
+							<span class="orb-inner">
+								<Icon />
+							</span>
+						</a>
+					</li>
+				);
+			})
+		}
+	</ul>
+
+	<a class="chevron" href="#about" aria-label="Scroll to About me">
+		<svg viewBox="0 0 24 24" aria-hidden="true">
+			<path
+				d="M5 9l7 7 7-7"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+		</svg>
+	</a>
+</section>
+
+<script>
+	import {
+		chord,
+		getPref,
+		isEnabled,
+		magnet,
+		setEnabled,
+		vibrate,
+	} from "../../scripts/sound";
+
+	const root = document.documentElement;
+	const hero = document.querySelector<HTMLElement>(".hero")!;
+	const prompt = hero.querySelector<HTMLElement>(".sound-prompt")!;
+	const helloEn = hero.querySelector<HTMLElement>(".hello-en")!;
+	const helloFr = hero.querySelector<HTMLElement>(".hello-fr")!;
+	const first = hero.querySelector<HTMLElement>(".first")!;
+	const last = hero.querySelector<HTMLElement>(".last")!;
+	const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+	const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+	const EASE = "cubic-bezier(0.65, 0, 0.25, 1)";
+
+	// Animate elements from where they were to where a class change puts them.
+	function flip(elements: HTMLElement[], change: () => void, duration = 950) {
+		const before = elements.map(el => el.getBoundingClientRect());
+		change();
+		return Promise.all(
+			elements.map((el, i) => {
+				const a = before[i];
+				const b = el.getBoundingClientRect();
+				if (!a.width || !b.width) return Promise.resolve();
+				const scale = a.height / b.height;
+				const dx = a.left - b.left;
+				const dy = a.top - b.top;
+				return track(el.animate(
+					[
+						{
+							transformOrigin: "0 0",
+							transform: `translate(${dx}px, ${dy}px) scale(${scale})`,
+						},
+						{ transformOrigin: "0 0", transform: "none" },
+					],
+					{ duration, easing: EASE },
+				)).finished;
+			}),
+		);
+	}
+
+	function finish() {
+		hero.dataset.stage = "3";
+		root.classList.remove("intro");
+		root.classList.add("intro-done");
+	}
+
+	let running = false;
+	let skipped = false;
+	let endPrompt: ((on: boolean | null) => void) | null = null;
+	const anims: Animation[] = [];
+	const track = (animation: Animation) => (anims.push(animation), animation);
+
+	// Scrolling, a navigation key, or a click outside the prompt skips the intro.
+	function skip() {
+		if (!running || skipped) return;
+		skipped = true;
+		endPrompt?.(null);
+		for (const animation of anims.splice(0)) animation.cancel();
+		finish();
+		running = false;
+	}
+
+	const SKIP_KEYS = new Set([
+		"ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home", " ", "Escape",
+	]);
+	window.addEventListener("wheel", skip, { passive: true });
+	window.addEventListener("touchmove", skip, { passive: true });
+	window.addEventListener("keydown", event => {
+		if (SKIP_KEYS.has(event.key)) skip();
+	});
+	window.addEventListener("pointerdown", event => {
+		if (!(event.target as Element).closest(".sound-prompt")) skip();
+	});
+
+	async function play(askFirst: boolean) {
+		if (running) return;
+		running = true;
+		skipped = false;
+		try {
+			sessionStorage.setItem("intro-played", "1");
+		} catch {}
+
+		root.classList.add("intro");
+		root.classList.remove("intro-done");
+		hero.dataset.stage = "0";
+
+		if (askFirst) {
+			await askForSound();
+		} else {
+			await wait(900);
+		}
+		if (skipped) return;
+
+		// Stage 1: "Thorp" fades, "Daniel" moves right, the English greeting appears.
+		await track(
+			last.animate([{ opacity: 1 }, { opacity: 0 }], {
+				duration: 420,
+				easing: "ease-out",
+				fill: "forwards",
+			}),
+		).finished.catch(() => {});
+		if (skipped) return;
+		chord([57, 64, 69, 72, 76]);
+		vibrate(18);
+		const reveal = track(
+			helloEn.animate(
+				[
+					{ clipPath: "inset(0 0 0 100%)", opacity: 0 },
+					{ clipPath: "inset(0 0 0 0)", opacity: 1 },
+				],
+				{ duration: 900, delay: 150, easing: EASE, fill: "backwards" },
+			),
+		);
+		await flip([first], () => (hero.dataset.stage = "1")).catch(() => {});
+		await reveal.finished.catch(() => {});
+		if (skipped) return;
+		last.getAnimations().forEach(a => a.cancel());
+
+		await wait(900);
+		if (skipped) return;
+
+		// Stage 2: the English greeting shrinks and the French one appears below it.
+		chord([53, 60, 64, 69, 72]);
+		vibrate([12, 60, 12]);
+		const fadeFr = track(
+			helloFr.animate(
+				[
+					{ opacity: 0, transform: "translateY(0.4em)" },
+					{ opacity: 1, transform: "none" },
+				],
+				{ duration: 700, delay: 450, easing: "ease-out", fill: "backwards" },
+			),
+		);
+		await flip([helloEn, first], () => (hero.dataset.stage = "2")).catch(() => {});
+		await fadeFr.finished.catch(() => {});
+		if (skipped) return;
+
+		await wait(250);
+		if (skipped) return;
+		chord([48, 55, 64, 67, 71], 3.4);
+		finish();
+		anims.length = 0;
+		running = false;
+	}
+
+	function askForSound(): Promise<void> {
+		return new Promise(resolve => {
+			prompt.hidden = false;
+			const yes = prompt.querySelector<HTMLButtonElement>('[data-answer="on"]')!;
+			if (getPref() === "on") yes.focus({ preventScroll: true });
+
+			const done = (on: boolean | null) => {
+				endPrompt = null;
+				clearTimeout(timer);
+				prompt.removeEventListener("click", onClick);
+				if (on !== null) setEnabled(on);
+				prompt.classList.add("leaving");
+				setTimeout(() => {
+					prompt.hidden = true;
+					prompt.classList.remove("leaving");
+				}, 300);
+				setTimeout(resolve, on ? 350 : 250);
+			};
+			endPrompt = done;
+			const onClick = (event: Event) => {
+				const answer = (event.target as HTMLElement).closest<HTMLElement>(
+					"[data-answer]",
+				)?.dataset.answer;
+				if (answer) done(answer === "on");
+			};
+			prompt.addEventListener("click", onClick);
+			// No answer: carry on silently and ask again next visit.
+			const timer = setTimeout(() => done(null), 2500);
+		});
+	}
+
+	if (root.classList.contains("intro")) {
+		play(getPref() !== "off");
+	} else {
+		finish();
+	}
+
+	// Turning sound on from the corner button while near the top replays the intro.
+	window.addEventListener("sound-toggled-on", () => {
+		if (running || reduceMotion.matches) return;
+		if (window.scrollY < window.innerHeight / 2) play(false);
+	});
+
+	// The chevron fades once the visitor has started scrolling.
+	const onScroll = () => hero.classList.toggle("scrolled", window.scrollY > 40);
+	window.addEventListener("scroll", onScroll, { passive: true });
+	onScroll();
+
+	// Specular highlight that follows the cursor.
+	hero.addEventListener("pointermove", event => {
+		const rect = hero.getBoundingClientRect();
+		hero.style.setProperty("--px", `${event.clientX - rect.left}px`);
+		hero.style.setProperty("--py", `${event.clientY - rect.top}px`);
+	});
+
+	// Magnetic icons: within RANGE px of the pointer, each icon leans toward it.
+	const RANGE = 140;
+	const PULL = 18;
+	const orbs = [...hero.querySelectorAll<HTMLElement>(".orb")].map(el => ({
+		el,
+		inner: el.querySelector<HTMLElement>(".orb-inner")!,
+		x: 0,
+		y: 0,
+		tx: 0,
+		ty: 0,
+		near: false,
+		lastSound: 0,
+	}));
+	let pointer: { x: number; y: number } | null = null;
+	let frame = 0;
+
+	function update() {
+		frame = 0;
+		let moving = false;
+		for (const orb of orbs) {
+			orb.tx = 0;
+			orb.ty = 0;
+			let near = false;
+			if (pointer && !reduceMotion.matches) {
+				const rect = orb.el.getBoundingClientRect();
+				const cx = rect.left + rect.width / 2;
+				const cy = rect.top + rect.height / 2;
+				const dx = pointer.x - cx;
+				const dy = pointer.y - cy;
+				const distance = Math.hypot(dx, dy);
+				if (distance < RANGE && distance > 0) {
+					near = true;
+					const strength = PULL * (1 - distance / RANGE) * 1.6;
+					const amount = Math.min(PULL, strength);
+					orb.tx = (dx / distance) * amount;
+					orb.ty = (dy / distance) * amount;
+				}
+				if (near && !orb.near) {
+					const now = performance.now();
+					if (now - orb.lastSound > 600 && isEnabled()) {
+						magnet((cx / window.innerWidth) * 2 - 1);
+						orb.lastSound = now;
+					}
+				}
+			}
+			orb.near = near;
+			orb.el.classList.toggle("near", near);
+			orb.x += (orb.tx - orb.x) * 0.18;
+			orb.y += (orb.ty - orb.y) * 0.18;
+			if (Math.abs(orb.tx - orb.x) > 0.1 || Math.abs(orb.ty - orb.y) > 0.1) {
+				moving = true;
+			}
+			orb.inner.style.transform = `translate(${orb.x.toFixed(2)}px, ${orb.y.toFixed(2)}px)`;
+		}
+		if (moving) frame = requestAnimationFrame(update);
+	}
+
+	const schedule = () => {
+		if (!frame) frame = requestAnimationFrame(update);
+	};
+
+	// Mouse only: on touch screens a held finger opens link previews, so icons just float.
+	window.addEventListener(
+		"pointermove",
+		event => {
+			pointer = event.pointerType === "mouse" ? { x: event.clientX, y: event.clientY } : null;
+			schedule();
+		},
+		{ passive: true },
+	);
+	document.documentElement.addEventListener("pointerleave", () => {
+		pointer = null;
+		schedule();
+	});
+</script>
+
+<style>
+	.hero {
+		--name-0: clamp(3rem, 11vw, 10rem);
+		--name-1: clamp(2.6rem, 6vw, 5.75rem);
+		--name-2: clamp(3.4rem, 8.5vw, 8.25rem);
+		--hello-2: clamp(1.2rem, 2.5vw, 2.4rem);
+
+		position: relative;
+		isolation: isolate;
+		min-height: 100vh;
+		min-height: 100svh;
+		display: grid;
+		place-items: center;
+		padding: var(--space-8) var(--space-4);
+		overflow: hidden;
+		color: #f1eff6;
+		background-color: #141416;
+		font-family: var(--font-display);
+	}
+
+	/* Carbon fibre weave. */
+	.hero::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -2;
+		background:
+			linear-gradient(27deg, #121213 5px, transparent 5px) 0 5px,
+			linear-gradient(207deg, #121213 5px, transparent 5px) 10px 0,
+			linear-gradient(27deg, #232326 5px, transparent 5px) 0 10px,
+			linear-gradient(207deg, #232326 5px, transparent 5px) 10px 5px,
+			linear-gradient(90deg, #1a1a1c 10px, transparent 10px),
+			linear-gradient(
+				#1c1c1e 25%,
+				#19191b 25%,
+				#19191b 50%,
+				transparent 50%,
+				transparent 75%,
+				#262629 75%,
+				#262629
+			);
+		background-color: #18181a;
+		background-size: 20px 20px;
+	}
+
+	/* Metallic sheen, synthwave edge glow, and a highlight under the cursor. */
+	.hero::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			linear-gradient(
+				to bottom,
+				transparent 62%,
+				color-mix(in srgb, var(--bg-about-top) 55%, transparent) 82%,
+				var(--bg-about-top) 100%
+			),
+			radial-gradient(
+				420px circle at var(--px, 50%) var(--py, 40%),
+				rgba(255, 255, 255, 0.09),
+				transparent 70%
+			),
+			linear-gradient(
+				115deg,
+				transparent 35%,
+				rgba(220, 228, 255, 0.07) 47%,
+				rgba(255, 255, 255, 0.12) 50%,
+				rgba(220, 228, 255, 0.07) 53%,
+				transparent 65%
+			),
+			radial-gradient(
+				ellipse 60% 50% at 0% 100%,
+				rgba(255, 46, 160, 0.2),
+				transparent 70%
+			),
+			radial-gradient(
+				ellipse 55% 45% at 100% 0%,
+				rgba(0, 214, 255, 0.16),
+				transparent 70%
+			),
+			radial-gradient(
+				ellipse 90% 80% at 50% 50%,
+				transparent 55%,
+				rgba(0, 0, 0, 0.55)
+			);
+		background-size:
+			100% 100%,
+			100% 100%,
+			300% 100%,
+			100% 100%,
+			100% 100%,
+			100% 100%;
+		background-repeat: no-repeat;
+		animation: sheen 14s ease-in-out infinite alternate;
+	}
+
+	@keyframes sheen {
+		from {
+			background-position:
+				0 0,
+				0 0,
+				100% 0,
+				0 0,
+				0 0,
+				0 0;
+		}
+		to {
+			background-position:
+				0 0,
+				0 0,
+				0% 0,
+				0 0,
+				0 0,
+				0 0;
+		}
+	}
+
+	/* Final state; also what visitors see without JavaScript or with reduced motion. */
+	.greeting {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1.05;
+		text-align: left;
+	}
+
+	.hello {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+		font-size: var(--hello-2);
+		color: #d9d6e4;
+	}
+
+	.hello-en,
+	.hello-fr {
+		display: block;
+		white-space: nowrap;
+	}
+
+	.name {
+		margin-left: 0.22em;
+		font-size: var(--name-2);
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		white-space: nowrap;
+	}
+
+	.first,
+	.last {
+		display: inline-block;
+		background: linear-gradient(
+			110deg,
+			var(--color-hero-start),
+			var(--color-hero-mid),
+			var(--color-hero-end)
+		);
+		background-size: 220% 220%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		animation: name-drift 24s ease-in-out infinite;
+		padding-block: 0.08em;
+	}
+
+	.last {
+		display: none;
+	}
+
+	@keyframes name-drift {
+		50% {
+			background-position: 100% 50%;
+		}
+	}
+
+	/* Intro stages. */
+	:global(html.intro) .hero[data-stage="0"] .hello,
+	:global(html.intro) .hero:not([data-stage]) .hello {
+		display: none;
+	}
+
+	:global(html.intro) .hero[data-stage="0"] .name,
+	:global(html.intro) .hero:not([data-stage]) .name {
+		font-size: var(--name-0);
+	}
+
+	:global(html.intro) .hero[data-stage="0"] .last,
+	:global(html.intro) .hero:not([data-stage]) .last {
+		display: inline-block;
+	}
+
+	:global(html.intro) .hero[data-stage="1"] .hello {
+		font-size: var(--name-1);
+		color: #f1eff6;
+	}
+
+	:global(html.intro) .hero[data-stage="1"] .hello-fr {
+		display: none;
+	}
+
+	:global(html.intro) .hero[data-stage="1"] .name {
+		font-size: var(--name-1);
+	}
+
+	/* The sound prompt sits under the name while the intro waits. */
+	.sound-prompt {
+		position: absolute;
+		left: 50%;
+		bottom: 22%;
+		translate: -50% 0;
+		display: flex;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		border-radius: 999px;
+		background: rgba(10, 10, 12, 0.55);
+		backdrop-filter: blur(6px);
+		font-family: var(--font-sans);
+		font-size: 0.95rem;
+		color: #e9e7ef;
+		white-space: nowrap;
+		animation: fade-up 500ms ease-out 400ms both;
+	}
+
+	.sound-prompt[hidden] {
+		display: none;
+	}
+
+	.sound-prompt.leaving {
+		opacity: 0;
+		transition: opacity 280ms ease;
+	}
+
+	.sound-prompt button {
+		font: inherit;
+		color: inherit;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 999px;
+		padding: 0.3em 0.9em;
+		cursor: pointer;
+	}
+
+	.sound-prompt button[data-answer="on"] {
+		background: linear-gradient(110deg, #ff4fae, #7b5cff 60%, #22d3ee);
+		border-color: transparent;
+		color: #fff;
+	}
+
+	.sound-prompt button:hover {
+		filter: brightness(1.15);
+	}
+
+	@keyframes fade-up {
+		from {
+			opacity: 0;
+			transform: translateY(8px);
+		}
+	}
+
+	/* Floating, magnetic contact icons. */
+	.orbit {
+		position: absolute;
+		inset: 0;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		pointer-events: none;
+	}
+
+	.orbit li {
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		translate: -50% -50%;
+		pointer-events: auto;
+	}
+
+	.orb {
+		display: block;
+		color: #cfcbe0;
+		animation: drift var(--dur) ease-in-out var(--delay) infinite;
+	}
+
+	.orb-inner {
+		display: grid;
+		place-items: center;
+		width: 3.25rem;
+		height: 3.25rem;
+		filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+		transition:
+			filter var(--dur-4),
+			color var(--dur-4);
+		will-change: transform;
+	}
+
+	.orb svg {
+		width: 1.7rem;
+		height: 1.7rem;
+	}
+
+	.orb:hover .orb-inner,
+	.orb.near .orb-inner,
+	.orb:focus-visible .orb-inner {
+		color: #fff;
+		filter: drop-shadow(0 0 6px rgba(80, 200, 255, 0.8))
+			drop-shadow(0 0 16px rgba(255, 60, 170, 0.45));
+	}
+
+	.orb:focus-visible {
+		outline-offset: 4px;
+		border-radius: 6px;
+	}
+
+	@keyframes drift {
+		0%,
+		100% {
+			transform: translate(0, 0) rotate(0deg);
+		}
+		33% {
+			transform: translate(6px, -10px) rotate(3deg);
+		}
+		66% {
+			transform: translate(-7px, 6px) rotate(-2deg);
+		}
+	}
+
+	.chevron {
+		position: absolute;
+		left: 50%;
+		bottom: var(--space-5);
+		translate: -50% 0;
+		display: grid;
+		place-items: center;
+		width: 3rem;
+		height: 3rem;
+		color: #d9d6e4;
+		animation: bob 2.4s ease-in-out infinite;
+	}
+
+	.chevron svg {
+		width: 1.9rem;
+		height: 1.9rem;
+	}
+
+	.hero.scrolled .chevron {
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 400ms ease;
+	}
+
+	@keyframes bob {
+		50% {
+			transform: translateY(7px);
+		}
+	}
+
+	/* Icons and chevron wait for the greeting. */
+	:global(html.intro) .hero:not([data-stage="3"]) :is(.orbit, .chevron) {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.hero[data-stage="3"] :is(.orbit, .chevron) {
+		transition:
+			opacity 900ms ease,
+			visibility 0s;
+	}
+
+	.hero[data-stage="3"] .orbit li {
+		animation: orb-in 900ms ease-out both;
+	}
+
+	.hero[data-stage="3"] .orbit li:nth-child(2) {
+		animation-delay: 120ms;
+	}
+	.hero[data-stage="3"] .orbit li:nth-child(3) {
+		animation-delay: 240ms;
+	}
+	.hero[data-stage="3"] .orbit li:nth-child(4) {
+		animation-delay: 360ms;
+	}
+	.hero[data-stage="3"] .orbit li:nth-child(5) {
+		animation-delay: 480ms;
+	}
+
+	@keyframes orb-in {
+		from {
+			opacity: 0;
+			scale: 0.6;
+		}
+	}
+
+	/* Phones: the greeting stacks, and icons sit above and below it. */
+	@media (max-width: 640px) {
+		.hero {
+			--name-0: clamp(2.6rem, 14vw, 4rem);
+			--name-1: clamp(2.8rem, 15vw, 4.2rem);
+			--name-2: clamp(3.4rem, 19vw, 5.5rem);
+			--hello-2: clamp(1.05rem, 5vw, 1.35rem);
+		}
+
+		.greeting {
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 0.2em;
+		}
+
+		.name {
+			margin-left: 0;
+		}
+
+		.hello {
+			align-items: center;
+		}
+
+		:global(html.intro) .hero[data-stage="0"] .name,
+		:global(html.intro) .hero:not([data-stage]) .name {
+			white-space: normal;
+			text-align: center;
+		}
+
+		:global(html.intro) .hero[data-stage="1"] .hello {
+			font-size: clamp(1.6rem, 8vw, 2.4rem);
+		}
+
+		.orbit li {
+			left: var(--mx);
+			top: var(--my);
+		}
+
+		.orb-inner {
+			width: 2.9rem;
+			height: 2.9rem;
+		}
+
+		.orb svg {
+			width: 1.5rem;
+			height: 1.5rem;
+		}
+
+		.sound-prompt {
+			bottom: 16%;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.orb,
+		.chevron,
+		.first,
+		.last,
+		.hero::after {
+			animation: none;
+		}
+	}
+</style>

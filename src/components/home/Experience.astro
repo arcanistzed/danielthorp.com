@@ -1,0 +1,457 @@
+---
+import * as icons from "simple-icons";
+import { leadership, skills, work, type Role } from "../../data/experience";
+
+type SimpleIcon = { path: string; title: string };
+const iconFor = (slug: string | null): SimpleIcon | undefined => {
+	if (!slug) return undefined;
+	const key = `si${slug[0].toUpperCase()}${slug.slice(1)}`;
+	return (icons as unknown as Record<string, SimpleIcon>)[key];
+};
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const now = new Date();
+const NOW = now.getFullYear() + now.getMonth() / 12;
+const FIRST = 2021;
+const LAST = Math.max(NOW, 2026 + 11 / 12);
+
+// "May 2025 to Aug 2025", "Apr 2025", "Nov 2022 to present" -> fractional years.
+function span(dates: string): [number, number] {
+	const parse = (part: string) => {
+		if (/present/i.test(part)) return NOW;
+		const [month, year] = part.trim().split(/\s+/);
+		return Number(year) + Math.max(0, MONTHS.indexOf(month)) / 12;
+	};
+	const [from, to] = dates.split(/\s+to\s+/);
+	const start = parse(from);
+	const end = to ? parse(to) : start;
+	return [start, Math.max(end + 1 / 12, start + 1 / 12)];
+}
+
+type Entry = Role & { kind: "work" | "leadership"; start: number; end: number };
+const entries: Entry[] = [
+	...work.map(role => ({ ...role, kind: "work" as const })),
+	...leadership.map(role => ({ ...role, kind: "leadership" as const })),
+]
+	.map(role => {
+		const [start, end] = span(role.dates);
+		return { ...role, start, end };
+	})
+	.sort((a, b) => b.start - a.start);
+
+const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
+const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toFixed(2)}%`;
+---
+
+<section class="flat experience" id="experience" aria-labelledby="experience-title">
+	<div class="flat-inner">
+		<h2 id="experience-title">Experience</h2>
+		<div class="filters" role="group" aria-label="Show">
+			<button type="button" data-filter="all" aria-pressed="true">All</button>
+			<button type="button" data-filter="work" aria-pressed="false">Work</button>
+			<button type="button" data-filter="leadership" aria-pressed="false">
+				Leadership and volunteering
+			</button>
+		</div>
+
+		<div class="timeline">
+			{
+				years.map(year => (
+					<div class="year">
+						<h3 class="year-label">{year}</h3>
+						<ul class="roles" role="list">
+							{entries
+								.filter(entry => Math.floor(entry.start) === year)
+								.map(role => (
+									<li data-kind={role.kind}>
+										<details class="role">
+											<summary>
+												<span class="role-head">
+													<span class="role-title">{role.title}</span>
+													<span class="role-org">{role.org}</span>
+												</span>
+												<span class="role-meta">
+													<span class="role-dates">{role.dates}</span>
+													<span class="span-track" aria-hidden="true">
+														<span
+															class:list={["span-bar", role.kind]}
+															style={`left: ${pct(role.start)}; width: calc(${pct(role.end)} - ${pct(role.start)});`}
+														/>
+													</span>
+												</span>
+												<svg class="role-caret" viewBox="0 0 24 24" aria-hidden="true">
+													<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+												</svg>
+											</summary>
+											<ul class="points">
+												{role.points.map(point => (
+													<li>{point}</li>
+												))}
+											</ul>
+										</details>
+									</li>
+								))}
+						</ul>
+					</div>
+				))
+			}
+		</div>
+
+		<p class="legend" aria-hidden="true">
+			<span class="span-bar work"></span> Work
+			<span class="span-bar leadership"></span> Leadership and volunteering
+		</p>
+
+		<h3>Technical skills</h3>
+		<dl class="skills">
+			{
+				skills.map(group => (
+					<div class="skill-group">
+						<dt>{group.group}</dt>
+						<dd>
+							<ul role="list">
+								{group.items.map(([name, slug]) => {
+									const icon = iconFor(slug);
+									return (
+										<li class="tag">
+											{icon ? (
+												<svg viewBox="0 0 24 24" aria-hidden="true">
+													<path d={icon.path} fill="currentColor" />
+												</svg>
+											) : (
+												<svg viewBox="0 0 24 24" aria-hidden="true">
+													<circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2.5" />
+												</svg>
+											)}
+											{name}
+										</li>
+									);
+								})}
+							</ul>
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>
+
+<script>
+	import { click, tick } from "../../scripts/sound";
+
+	const filters = [...document.querySelectorAll<HTMLButtonElement>(".filters button")];
+	for (const button of filters) {
+		button.addEventListener("click", () => {
+			const kind = button.dataset.filter;
+			for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
+			for (const item of document.querySelectorAll<HTMLElement>(".timeline li[data-kind]")) {
+				item.hidden = kind !== "all" && item.dataset.kind !== kind;
+			}
+			for (const year of document.querySelectorAll<HTMLElement>(".timeline .year")) {
+				year.hidden = !year.querySelector("li[data-kind]:not([hidden])");
+			}
+			click(true);
+		});
+	}
+
+	let lastTick = 0;
+	for (const details of document.querySelectorAll<HTMLDetailsElement>("details.role")) {
+		details.querySelector("summary")!.addEventListener("pointerenter", () => {
+			const now = performance.now();
+			if (now - lastTick > 70) {
+				tick();
+				lastTick = now;
+			}
+		});
+		details.addEventListener("toggle", () => click(details.open));
+	}
+</script>
+
+<style>
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-5);
+	}
+
+	.filters button {
+		font: inherit;
+		font-size: 0.9rem;
+		padding: 0.35em 0.9em;
+		border: 1px solid var(--color-rule);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+	}
+
+	.filters button[aria-pressed="true"] {
+		background: var(--color-text);
+		border-color: var(--color-text);
+		color: var(--bg-experience);
+	}
+
+	/* A vertical rail with the year each group of roles started. */
+	.timeline {
+		position: relative;
+		padding-left: 4.5rem;
+	}
+
+	.timeline::before {
+		content: "";
+		position: absolute;
+		top: 0.4rem;
+		bottom: 0;
+		left: 3.1rem;
+		width: 2px;
+		background: linear-gradient(
+			to bottom,
+			var(--color-accent),
+			color-mix(in srgb, var(--color-accent) 15%, transparent)
+		);
+	}
+
+	.year {
+		position: relative;
+		margin-bottom: var(--space-5);
+	}
+
+	.year[hidden] {
+		display: none;
+	}
+
+	.year .year-label {
+		position: absolute;
+		left: -4.5rem;
+		top: 0.7rem;
+		margin: 0;
+		width: 2.6rem;
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+		color: var(--color-text);
+		text-align: right;
+	}
+
+	.year .year-label::after {
+		content: "";
+		position: absolute;
+		right: -0.95rem;
+		top: 0.45em;
+		width: 10px;
+		height: 10px;
+		border-radius: 50%;
+		background: var(--bg-experience);
+		border: 2px solid var(--color-accent);
+	}
+
+	.roles {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.roles > li[hidden] {
+		display: none;
+	}
+
+	summary {
+		display: grid;
+		grid-template-columns: 1fr auto auto;
+		align-items: center;
+		gap: var(--space-4);
+		padding: var(--space-3) var(--space-2);
+		cursor: pointer;
+		list-style: none;
+		border-radius: 6px;
+		transition: background-color var(--dur-2);
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	summary:hover {
+		background: var(--color-surface);
+	}
+
+	.role-head {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1em;
+	}
+
+	.role-title {
+		font-weight: 600;
+	}
+
+	.role-org {
+		color: var(--color-muted);
+	}
+
+	.role-meta {
+		display: grid;
+		justify-items: end;
+		gap: 0.35rem;
+	}
+
+	.role-dates {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.span-track {
+		position: relative;
+		width: 8rem;
+		height: 4px;
+		border-radius: 2px;
+		background: var(--color-rule);
+	}
+
+	.span-track .span-bar {
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		min-width: 3px;
+	}
+
+	.span-bar {
+		display: inline-block;
+		border-radius: 2px;
+	}
+
+	.span-bar.work {
+		background: var(--color-accent);
+	}
+
+	.span-bar.leadership {
+		background: #e0569b;
+	}
+
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-3);
+		margin: var(--space-3) 0 0 4.5rem;
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+
+	.legend .span-bar {
+		width: 1.4rem;
+		height: 4px;
+	}
+
+	.role-caret {
+		width: 1.1rem;
+		height: 1.1rem;
+		color: var(--color-muted);
+		transition: transform var(--dur-2);
+	}
+
+	details[open] .role-caret {
+		transform: rotate(180deg);
+	}
+
+	.points {
+		margin: 0;
+		padding: 0 var(--space-2) var(--space-5) calc(var(--space-2) + 1.2rem);
+		max-width: 68ch;
+	}
+
+	.points li {
+		margin-bottom: var(--space-2);
+		line-height: 1.55;
+	}
+
+	.skills {
+		display: grid;
+		gap: var(--space-4);
+		margin: 0;
+	}
+
+	.skill-group {
+		display: grid;
+		grid-template-columns: 10rem 1fr;
+		gap: var(--space-3);
+		align-items: start;
+	}
+
+	.skill-group dt {
+		padding-top: 0.2em;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+	}
+
+	.skill-group dd {
+		margin: 0;
+	}
+
+	.skill-group ul {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.tag svg {
+		width: 0.95em;
+		height: 0.95em;
+		flex: none;
+	}
+
+	.skills .tag {
+		font-size: 0.85rem;
+		color: var(--color-text);
+	}
+
+	@media (max-width: 640px) {
+		.timeline {
+			padding-left: 0;
+		}
+
+		.timeline::before {
+			display: none;
+		}
+
+		.year .year-label {
+			position: static;
+			width: auto;
+			margin: var(--space-4) 0 var(--space-2);
+			text-align: left;
+		}
+
+		.year .year-label::after {
+			display: none;
+		}
+
+		summary {
+			grid-template-columns: 1fr auto;
+		}
+
+		.role-meta {
+			grid-column: 1;
+			grid-row: 2;
+			justify-items: start;
+		}
+
+		.role-caret {
+			grid-column: 2;
+			grid-row: 1 / span 2;
+		}
+
+		.legend {
+			margin-left: 0;
+		}
+
+		.skill-group {
+			grid-template-columns: 1fr;
+			gap: var(--space-2);
+		}
+	}
+</style>

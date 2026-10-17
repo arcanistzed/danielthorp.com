@@ -1,0 +1,53 @@
+---
+// Lion rampant drawn for this site (same figure as CoatOfArms.astro), as a
+// group for use inside another SVG. The body uses currentColor; the engraved
+// detail lines, claws and tongue use --lion-detail (default transparent).
+// Box: 100 wide by 130 tall, facing dexter (viewer's left).
+const rest = Astro.props;
+---
+
+<g class="lion" {...rest} fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+<path stroke="none" d="M40 42 C56 42 68 56 72 76 C76 90 72 102 62 104 C52 104 46 96 42 86 C38 74 32 64 32 56 C32 48 36 42 40 42 Z"/>
+<path stroke="none" d="M28 26 L46 32 L46 50 L32 52 Z"/>
+<ellipse stroke="none" cx="64" cy="94" rx="12" ry="10"/>
+<path fill="none" stroke-width="9" d="M40 56 Q26 50 8 41"/>
+<path fill="none" stroke-width="9" d="M36 67 Q24 69 8 67"/>
+<path fill="none" stroke-width="10" d="M62 96 Q46 98 29 112"/>
+<path fill="none" stroke-width="10" d="M68 100 Q70 114 58 124"/>
+<circle stroke="none" cx="7" cy="40" r="6"/>
+<circle stroke="none" cx="7" cy="67" r="6"/>
+<circle stroke="none" cx="27" cy="113" r="6"/>
+<circle stroke="none" cx="56" cy="125" r="6"/>
+<path stroke="none" d="M30 60 L22 54 L31 52 Z M27 72 L19 70 L27 64 Z M46 104 L40 112 L50 110 Z M64 112 L56 118 L66 118 Z M72 88 L80 92 L74 96 Z"/>
+<path fill="none" stroke-width="6" d="M70 86 C92 82 100 58 90 44 C86 37 80 35 76 40"/>
+<path stroke="none" d="M79 46 C70 42 66 30 73 22 C74 29 78 31 80 24 C87 30 88 42 81 47 Z"/>
+<path stroke="none" d="M60.8 21.8 L53.0 26.5 L57.5 32.0 L50.3 33.2 L53.9 42.3 L44.1 36.2 L44.5 49.3 L38.3 38.5 L33.1 46.5 L31.1 38.7 L24.3 41.0 L26.4 33.3 L15.3 34.1 L25.5 26.8 L13.5 22.5 L24.7 20.3 L20.3 13.3 L27.6 13.7 L27.5 5.9 L34.5 11.8 L37.5 -0.1 L40.8 12.6 L48.6 3.8 L47.5 13.8 L54.9 12.9 L52.1 19.4 Z"/>
+<path stroke="none" d="M50.7 46.7 L45.5 49.2 L44.4 53.8 L39.6 52.8 L35.2 57.0 L33.6 50.4 L26.1 51.7 L30.0 45.5 L25.8 41.4 L30.3 38.7 L31.5 34.0 L36.4 35.5 L40.9 30.5 L42.3 37.7 L49.7 36.4 L46.4 42.4 Z"/>
+<circle stroke="none" cx="30" cy="20" r="10"/>
+<path stroke="none" d="M24 14 C13 12 6 17 6 22 C6 27 13 29 24 28 Z"/>
+<path stroke="none" d="M34 10 L37 1 L42 10 Z"/>
+</g>
+<g fill="none" stroke="var(--lion-detail, transparent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+<path d="M8 24 Q15 25.5 22 24"/>
+<path d="M8 19.5 Q11 18 13 19.5"/>
+<path d="M37 4 L38 8"/>
+<path d="M44 50 Q40 56 40 62"/>
+<path d="M56 88 Q66 86 70 94"/>
+<path d="M48 12 Q52 18 50 24 M52 30 Q56 34 54 40 M44 38 Q48 42 46 48"/>
+</g>
+<circle cx="27" cy="17" r="1.7" fill="var(--lion-detail, transparent)"/>
+<path fill="var(--lion-detail, transparent)" d="M12 25 C9 30 11 34 15 32 C17 30 16 27 14 25 Z"/>
+<g fill="var(--lion-detail, transparent)">
+<path d="M2.1 39.1 L-1.9 41.1 L2.4 42.1 Z"/>
+<path d="M3.3 36.7 L-1.2 36.3 L2.0 39.4 Z"/>
+<path d="M5.5 35.2 L1.9 32.6 L3.1 36.9 Z"/>
+<path d="M2.3 68.7 L-0.2 72.4 L4.1 71.1 Z"/>
+<path d="M2.1 66.0 L-2.0 67.9 L2.4 68.9 Z"/>
+<path d="M3.3 63.6 L-1.1 63.1 L2.1 66.3 Z"/>
+<path d="M24.1 117.1 L24.3 121.6 L27.0 118.0 Z"/>
+<path d="M22.4 115.0 L20.2 118.9 L24.4 117.2 Z"/>
+<path d="M22.0 112.3 L18.1 114.5 L22.5 115.2 Z"/>
+<path d="M57.2 129.8 L60.7 132.7 L59.8 128.3 Z"/>
+<path d="M54.5 129.8 L56.0 134.0 L57.5 129.8 Z"/>
+<path d="M52.2 128.3 L51.3 132.7 L54.8 129.8 Z"/>
+</g>

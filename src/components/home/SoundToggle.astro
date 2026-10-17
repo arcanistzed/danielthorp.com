@@ -1,0 +1,91 @@
+<button
+	class="sound-toggle"
+	type="button"
+	aria-pressed="false"
+	aria-label="Sound and vibration"
+	title="Sound and vibration"
+>
+	<svg viewBox="0 0 24 24" aria-hidden="true">
+		<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"></path>
+		<g class="on" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+			<path d="M15.5 9a4.2 4.2 0 0 1 0 6"></path>
+			<path d="M18 6.5a7.8 7.8 0 0 1 0 11"></path>
+		</g>
+		<g class="off" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+			<path d="M16 9.5l5 5M21 9.5l-5 5"></path>
+		</g>
+	</svg>
+</button>
+
+<script>
+	import { getPref, isEnabled, setEnabled, chord } from "../../scripts/sound";
+
+	const button = document.querySelector<HTMLButtonElement>(".sound-toggle")!;
+	const render = () => button.setAttribute("aria-pressed", String(isEnabled()));
+
+	button.addEventListener("click", () => {
+		const on = !isEnabled();
+		setEnabled(on);
+		if (!on) return;
+		if (window.scrollY < window.innerHeight / 2) {
+			window.dispatchEvent(new Event("sound-toggled-on"));
+		} else {
+			chord([60, 67, 72, 76], 1.8);
+		}
+	});
+	window.addEventListener("sound-change", render);
+
+	// Returning visitors who chose sound: it starts on their first interaction.
+	if (getPref() === "on") {
+		const start = (event: Event) => {
+			if (isEnabled()) return;
+			if ((event.target as Element | null)?.closest?.(".sound-toggle, .sound-prompt")) return;
+			setEnabled(true);
+		};
+		for (const type of ["pointerdown", "keydown"]) {
+			window.addEventListener(type, start, { once: true, capture: true });
+		}
+	}
+	render();
+</script>
+
+<style>
+	.sound-toggle {
+		position: fixed;
+		top: var(--space-4);
+		right: var(--space-4);
+		z-index: 20;
+		display: grid;
+		place-items: center;
+		width: 2.6rem;
+		height: 2.6rem;
+		padding: 0;
+		color: #e6e3ee;
+		border: 1px solid rgba(255, 255, 255, 0.14);
+		border-radius: 50%;
+		background: rgba(14, 14, 18, 0.62);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		cursor: pointer;
+		transition: opacity 700ms ease;
+	}
+
+	.sound-toggle:hover {
+		color: #fff;
+	}
+
+	.sound-toggle svg {
+		width: 1.35rem;
+		height: 1.35rem;
+	}
+
+	.sound-toggle[aria-pressed="false"] .on,
+	.sound-toggle[aria-pressed="true"] .off {
+		display: none;
+	}
+
+	:global(html.intro:not(.intro-done)) .sound-toggle {
+		opacity: 0;
+		pointer-events: none;
+	}
+</style>

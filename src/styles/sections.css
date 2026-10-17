@@ -1,0 +1,73 @@
+/* Shared layout for the plain sections after the About parchment. */
+.flat {
+	padding: clamp(var(--space-7), 8vw, var(--space-9)) var(--space-5);
+	scroll-margin-top: var(--space-6);
+}
+
+/* Each section has its own background and blends from the one above it. */
+.status {
+	background:
+		radial-gradient(ellipse 60% 40% at 85% 30%, color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 70%),
+		var(--bg-status);
+}
+
+.experience {
+	background: linear-gradient(to bottom, var(--bg-status), var(--bg-experience) 14rem);
+}
+
+.projects {
+	background:
+		linear-gradient(color-mix(in srgb, var(--color-text) 4%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+		linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+		linear-gradient(to bottom, var(--bg-experience), var(--bg-projects) 14rem);
+}
+
+
+.flat-inner {
+	max-width: 52rem;
+	margin: 0 auto;
+}
+
+.flat-inner > h2 {
+	padding-bottom: var(--space-3);
+	border-bottom: 1px solid var(--color-rule);
+}
+
+.flat-inner > h3 {
+	padding-bottom: var(--space-2);
+	border-bottom: 1px solid var(--color-rule);
+}
+
+.flat h2 {
+	margin: 0 0 var(--space-5);
+	font-family: var(--font-display);
+	font-size: clamp(1.7rem, 3vw, 2.2rem);
+	font-weight: 600;
+	letter-spacing: -0.015em;
+}
+
+.flat h3 {
+	margin: var(--space-7) 0 var(--space-4);
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--color-muted);
+}
+
+.flat .lede {
+	margin: 0 0 var(--space-5);
+	color: var(--color-muted);
+	max-width: 65ch;
+}
+
+.tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0.15em 0.6em;
+	border: 1px solid var(--color-rule);
+	border-radius: 999px;
+	font-size: 0.78rem;
+	color: var(--color-muted);
+	background: var(--color-surface);
+	white-space: nowrap;
+}
