@@ -1,26 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Social card: the finished hero greeting on carbon fibre. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0a0b0d"/>
-      <stop offset="45%" stop-color="#10091a"/>
-      <stop offset="100%" stop-color="#090710"/>
+    <!-- Carbon-fibre weave, 20px tile, matching the hero's CSS pattern. -->
+    <pattern id="weave" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#18181a"/>
+      <rect width="20" height="5" fill="#1c1c1e"/>
+      <rect y="5" width="20" height="5" fill="#19191b"/>
+      <rect y="15" width="20" height="5" fill="#262629"/>
+      <rect width="10" height="20" fill="#1a1a1c" opacity="0.6"/>
+      <path d="M0 5 L5 0 L10 0 L0 10 Z M10 15 L15 10 L20 10 L10 20 Z" fill="#121213"/>
+      <path d="M10 5 L15 0 L20 0 L10 10 Z M0 15 L5 10 L10 10 L0 20 Z" fill="#232326"/>
+    </pattern>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0.45">
+      <stop offset="0.35" stop-color="#dce4ff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.09"/>
+      <stop offset="0.65" stop-color="#dce4ff" stop-opacity="0"/>
     </linearGradient>
-    <radialGradient id="glow1" cx="30%" cy="35%" r="50%">
-      <stop offset="0%" stop-color="rgba(110,74,186,0.4)"/>
-      <stop offset="100%" stop-color="transparent"/>
+    <radialGradient id="magenta" cx="0" cy="1" r="0.75">
+      <stop offset="0" stop-color="#ff2ea0" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#ff2ea0" stop-opacity="0"/>
     </radialGradient>
-    <radialGradient id="glow2" cx="70%" cy="60%" r="45%">
-      <stop offset="0%" stop-color="rgba(216,118,78,0.25)"/>
-      <stop offset="100%" stop-color="transparent"/>
+    <radialGradient id="cyan" cx="1" cy="0" r="0.7">
+      <stop offset="0" stop-color="#00d6ff" stop-opacity="0.26"/>
+      <stop offset="1" stop-color="#00d6ff" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="text-grad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="rgba(236,238,246,1)"/>
-      <stop offset="50%" stop-color="rgba(210,132,122,1)"/>
-      <stop offset="100%" stop-color="rgba(250,250,252,1)"/>
+    <radialGradient id="vignette" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.6"/>
+    </radialGradient>
+    <linearGradient id="name" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0" stop-color="#eceef6"/>
+      <stop offset="0.55" stop-color="#d2847a"/>
+      <stop offset="1" stop-color="#fafafc"/>
     </linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <rect width="1200" height="630" fill="url(#glow1)"/>
-  <rect width="1200" height="630" fill="url(#glow2)"/>
-  <text x="600" y="335" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="84" font-weight="700" fill="url(#text-grad)">Daniel Thorp</text>
+
+  <rect width="1200" height="630" fill="url(#weave)"/>
+  <rect width="1200" height="630" fill="url(#sheen)"/>
+  <rect width="1200" height="630" fill="url(#magenta)"/>
+  <rect width="1200" height="630" fill="url(#cyan)"/>
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+
+  <g font-family="'Liberation Serif', 'Times New Roman', 'Noto Serif', serif">
+    <text x="575" y="292" text-anchor="end" font-size="44" fill="#d9d6e4">Hello! My name is</text>
+    <text x="575" y="350" text-anchor="end" font-size="44" fill="#d9d6e4">Bonjour! Je m’appelle</text>
+    <text x="600" y="358" font-size="150" font-weight="700" letter-spacing="-3" fill="url(#name)">Daniel</text>
+  </g>
+  <text x="600" y="560" text-anchor="middle" font-family="'Liberation Sans', Arial, sans-serif" font-size="26" letter-spacing="2" fill="#a3a2ad">danielthorp.com</text>
 </svg>
