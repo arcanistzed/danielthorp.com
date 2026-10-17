@@ -4,7 +4,7 @@
 // sidechained progressive-house mix does. Sections opt in with
 // data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper".
 
-import { audio, bell, BPM, setScrollSpeed, whiteNoise } from "./sound";
+import { audio, bell, BPM, glideSettle, glideSweep, setScrollSpeed, whiteNoise } from "./sound";
 
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
 const LOOKAHEAD = 0.3;
@@ -817,6 +817,39 @@ export function installBeds() {
 		}
 	}
 
+	// A nav glide hands the mix straight to the destination bed over the
+	// glide's own duration, with a filter sweep, instead of the slower fade
+	// by viewport share.
+	let glide: { bed: Live; seconds: number } | null = null;
+	window.addEventListener("glide-start", event => {
+		const { to, duration } = (event as CustomEvent<{ to: number; duration: number }>).detail;
+		const height = window.innerHeight;
+		let best: Live | null = null;
+		let bestOverlap = 0;
+		for (const entry of live.values()) {
+			for (const section of entry.sections) {
+				const rect = section.getBoundingClientRect();
+				const top = rect.top + window.scrollY;
+				const overlap = Math.min(top + rect.height, to + height) - Math.max(top, to);
+				if (overlap > bestOverlap) {
+					bestOverlap = overlap;
+					best = entry;
+				}
+			}
+		}
+		if (!best) return;
+		glide = { bed: best, seconds: duration / 1000 };
+		if (audio()) glideSweep(glide.seconds);
+		setScrollSpeed(0);
+		measure();
+	});
+	window.addEventListener("glide-end", () => {
+		if (!glide) return;
+		glide = null;
+		glideSettle();
+		measure();
+	});
+
 	// Each section's share of the viewport, on an equal-power curve. While the
 	// hero intro plays its own chords the beds wait. Over the last half
 	// viewport of the page the final section takes over, since a short last
@@ -827,6 +860,11 @@ export function installBeds() {
 		frame = 0;
 		const height = window.innerHeight;
 		const intro = root.classList.contains("intro");
+		if (glide) {
+			for (const entry of live.values()) entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
+			apply(glide.seconds / 2.5);
+			return;
+		}
 		const endness = Math.max(
 			0,
 			Math.min(1, (window.scrollY + height - (root.scrollHeight - height / 2)) / (height / 2)),
@@ -849,7 +887,7 @@ export function installBeds() {
 		apply();
 	}
 
-	function apply() {
+	function apply(smoothing = 0.35) {
 		const g = audio();
 		if (!g) return;
 		const now = g.ctx.currentTime;
@@ -867,7 +905,7 @@ export function installBeds() {
 			if (audible && !entry.audible) entry.voice?.wake?.(step);
 			entry.audible = audible;
 			if (audible) any = true;
-			entry.gain?.gain.setTargetAtTime(entry.weight * entry.bed.level, now, 0.35);
+			entry.gain?.gain.setTargetAtTime(entry.weight * entry.bed.level, now, smoothing);
 		}
 		if (any) startTransport();
 	}
@@ -889,9 +927,11 @@ export function installBeds() {
 			const speed = (Math.abs(window.scrollY - lastY) / dt) * 1000;
 			lastY = window.scrollY;
 			lastAt = now;
-			setScrollSpeed(speed);
-			clearTimeout(settle);
-			settle = window.setTimeout(() => setScrollSpeed(0), 180);
+			if (!glide) {
+				setScrollSpeed(speed);
+				clearTimeout(settle);
+				settle = window.setTimeout(() => setScrollSpeed(0), 180);
+			}
 			schedule();
 		},
 		{ passive: true },

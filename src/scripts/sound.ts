@@ -14,6 +14,7 @@ let master: GainNode | null = null;
 let delaySend: GainNode | null = null;
 let music: GainNode | null = null;
 let musicFilter: BiquadFilterNode | null = null;
+let musicHigh: BiquadFilterNode | null = null;
 let enabled = false;
 const scheduled = new Set<OscillatorNode>();
 
@@ -102,9 +103,37 @@ function ensureContext() {
 	musicFilter.frequency.value = 16000;
 	musicFilter.Q.value = 0.3;
 	musicFilter.connect(master);
+	// A high-pass that a nav glide sweeps up and back down, the way a DJ
+	// filters one track out and the next one in.
+	musicHigh = ctx.createBiquadFilter();
+	musicHigh.type = "highpass";
+	musicHigh.frequency.value = 20;
+	musicHigh.Q.value = 0.8;
+	musicHigh.connect(musicFilter);
 	music = ctx.createGain();
 	music.gain.value = 0.8;
-	music.connect(musicFilter);
+	music.connect(musicHigh);
+}
+
+/** Sweep the music's high-pass up and back over `seconds`: a glide between sections. */
+export function glideSweep(seconds: number) {
+	if (!ctx || !musicHigh || !musicFilter) return;
+	const now = ctx.currentTime;
+	const high = musicHigh.frequency;
+	high.cancelScheduledValues(now);
+	high.setValueAtTime(Math.max(20, high.value), now);
+	high.exponentialRampToValueAtTime(1100, now + seconds * 0.5);
+	high.exponentialRampToValueAtTime(20, now + seconds);
+	musicFilter.frequency.cancelScheduledValues(now);
+	musicFilter.frequency.setTargetAtTime(16000, now, 0.1);
+}
+
+/** Bring the high-pass back down early when a glide is interrupted. */
+export function glideSettle() {
+	if (!ctx || !musicHigh) return;
+	const now = ctx.currentTime;
+	musicHigh.frequency.cancelScheduledValues(now);
+	musicHigh.frequency.setTargetAtTime(20, now, 0.12);
 }
 
 /** `speed` is the scroll speed in pixels per second; 0 opens the filter again. */
