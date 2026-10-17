@@ -172,7 +172,7 @@ const orbs = [
 	const anims: Animation[] = [];
 	const track = (animation: Animation) => (anims.push(animation), animation);
 
-	// Scrolling or a navigation key skips the intro. A click turns sound on instead.
+	// Scrolling or a navigation key skips the intro.
 	function skip() {
 		if (!running || skipped) return;
 		skipped = true;

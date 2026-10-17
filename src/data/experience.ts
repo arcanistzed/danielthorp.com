@@ -40,8 +40,7 @@ export const work: Role[] = [
 		place: "Remote",
 		points: [
 			"Designed and delivered a self-service deployment platform that reduced staging environment provisioning from several hours of manual work to 8 to 25 minutes of automated setup.",
-			"Built an Angular interface and TypeScript-based orchestration service to create, monitor, and manage containerized staging environments for development, testing, and demonstrations.",
-			"Delivered a one-click web UI in Angular and Feathers for creating, deleting, and monitoring staging deployments.",
+			"Built a one-click Angular and Feathers interface and a TypeScript-based orchestration service to create, monitor, and manage containerized staging environments for development, testing, and demonstrations.",
 			"Built an Express service in TypeScript with SQLite to orchestrate deployments, with queuing, status tracking, cancellation, and a secure polling endpoint.",
 			"Automated provisioning and teardown with Bash, Docker health checks, and Nginx routing, with fail-fast error handling.",
 			"Moved costs from a per-environment model to a fixed footprint, and made it possible to run several environments at once across teams.",
