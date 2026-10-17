@@ -15,15 +15,22 @@ const links = [
 		type="button"
 		aria-expanded="false"
 		aria-controls="site-nav-list"
+		aria-label="Open menu"
 	>
-		<svg viewBox="0 0 24 24" aria-hidden="true">
+		<svg class="icon-open" viewBox="0 0 24 24" aria-hidden="true">
 			<path
 				d="M4 7h16M4 12h16M4 17h16"
 				stroke="currentColor"
 				stroke-width="2"
 				stroke-linecap="round"></path>
 		</svg>
-		<span class="nav-current">Menu</span>
+		<svg class="icon-close" viewBox="0 0 24 24" aria-hidden="true">
+			<path
+				d="M6 6l12 12M18 6L6 18"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"></path>
+		</svg>
 	</button>
 	<ul id="site-nav-list" role="list">
 		<li class="indicator" aria-hidden="true"></li>
@@ -36,6 +43,9 @@ const links = [
 				</li>
 			))
 		}
+		<li class="menu-theme-row">
+			<button class="menu-theme" type="button">Switch to light mode</button>
+		</li>
 	</ul>
 </nav>
 
@@ -46,34 +56,74 @@ const links = [
 	installSmoothScroll();
 
 	const nav = document.querySelector<HTMLElement>(".site-nav")!;
+	let current: HTMLAnchorElement | null = null;
 	const toggle = nav.querySelector<HTMLButtonElement>(".nav-toggle")!;
 	const links = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-section]")];
 
-	toggle.addEventListener("click", () => {
-		const open = nav.classList.toggle("open");
-		toggle.setAttribute("aria-expanded", String(open));
-		click(open);
-	});
+	// Phones: the toggle opens a full-screen menu. "menu-open" and "menu-close"
+	// are dispatched on window for sound to follow.
+	const list = nav.querySelector<HTMLElement>("ul")!;
+	const themeButton = nav.querySelector<HTMLButtonElement>(".menu-theme")!;
+	const isOpen = () => nav.classList.contains("open");
 
-	// Escape closes the phone menu and returns focus to its button.
-	nav.addEventListener("keydown", event => {
-		if (event.key !== "Escape" || !nav.classList.contains("open")) return;
-		nav.classList.remove("open");
-		toggle.setAttribute("aria-expanded", "false");
-		click(false);
-		toggle.focus();
-	});
-	for (const link of links) {
-		link.addEventListener("click", () => {
-			nav.classList.remove("open");
-			toggle.setAttribute("aria-expanded", "false");
-		});
+	function setOpen(open: boolean, { restoreFocus = true, keyboard = true } = {}) {
+		if (open === isOpen()) return;
+		nav.classList.toggle("open", open);
+		document.documentElement.classList.toggle("menu-open", open);
+		toggle.setAttribute("aria-expanded", String(open));
+		toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+		click(open);
+		window.dispatchEvent(new Event(open ? "menu-open" : "menu-close"));
+		// Move focus into the menu; show the ring only when opened by keyboard.
+		if (open) (current ?? links[0]).focus({ focusVisible: keyboard } as FocusOptions);
+		else if (restoreFocus) toggle.focus();
 	}
 
+	// A click with detail 0 came from the keyboard (Enter or Space).
+	toggle.addEventListener("click", event => setOpen(!isOpen(), { keyboard: event.detail === 0 }));
+
+	// A link closes the menu, then the page glides to its section.
+	for (const link of links) {
+		link.addEventListener("click", () => setOpen(false, { restoreFocus: false }));
+	}
+
+	// Tapping the backdrop closes it too.
+	list.addEventListener("click", event => {
+		if (event.target === list) setOpen(false);
+	});
+
+	// Escape closes; Tab stays inside the open menu.
+	nav.addEventListener("keydown", event => {
+		if (!isOpen()) return;
+		if (event.key === "Escape") {
+			setOpen(false);
+			return;
+		}
+		if (event.key !== "Tab") return;
+		const items = [toggle, ...links, themeButton];
+		const i = items.indexOf(document.activeElement as HTMLElement);
+		const next = event.shiftKey
+			? items[(i - 1 + items.length) % items.length]
+			: items[(i + 1) % items.length];
+		event.preventDefault();
+		next.focus();
+	});
+
+	// The theme control lives in the menu on phones and drives the corner
+	// toggle, so both stay in sync.
+	const themeToggle = () => document.querySelector<HTMLButtonElement>(".theme-toggle");
+	const syncTheme = () => {
+		themeButton.textContent = themeToggle()?.getAttribute("aria-label") ?? "Switch theme";
+	};
+	themeButton.addEventListener("click", () => {
+		themeToggle()?.click();
+		syncTheme();
+	});
+	syncTheme();
+	matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme);
+
 	// A pill slides to the link for the section in the middle of the viewport.
-	const list = nav.querySelector<HTMLElement>("ul")!;
 	const indicator = nav.querySelector<HTMLElement>(".indicator")!;
-	let current: HTMLAnchorElement | null = null;
 
 	function moveIndicator() {
 		if (!current || current.offsetParent === null) {
@@ -88,12 +138,8 @@ const links = [
 		indicator.classList.add("shown");
 	}
 
-	const label = nav.querySelector<HTMLElement>(".nav-current")!;
-
 	function setCurrent(id: string | null) {
 		current = links.find(link => link.dataset.section === id) ?? null;
-		label.textContent = current?.textContent?.trim() ?? "Menu";
-		nav.classList.toggle("at-top", !current);
 		for (const link of links) {
 			const on = link === current;
 			link.classList.toggle("current", on);
@@ -233,36 +279,20 @@ const links = [
 		pointer-events: none;
 	}
 
-	/* Phones: one pill at the bottom centre naming the current section. */
+	.menu-theme-row {
+		display: none;
+	}
+
+	.icon-close {
+		display: none;
+	}
+
+	/* Phones: a menu button in the top-right corner (left of it, the sound
+	   toggle) opens a full-screen menu. Without JavaScript the links simply
+	   wrap across the top of the page. */
 	@media (max-width: 760px) {
 		.site-nav {
-			top: auto;
-			left: 50%;
-			bottom: var(--space-4);
-			translate: -50% 0;
-		}
-
-		:global(html.js) .site-nav.at-top:not(.open):not(:focus-within) {
-			opacity: 0;
-			pointer-events: none;
-		}
-
-		:global(html.js) .nav-toggle {
-			display: inline-flex;
-		}
-
-		:global(html.js) ul {
-			display: none;
-			position: absolute;
-			bottom: calc(100% + var(--space-2));
-			left: 50%;
-			translate: -50% 0;
-			flex-direction: column;
-			min-width: 12rem;
-		}
-
-		:global(html.js) .site-nav.open ul {
-			display: flex;
+			right: var(--space-4);
 		}
 
 		ul {
@@ -270,9 +300,113 @@ const links = [
 			border-radius: var(--radius-1);
 		}
 
-		a,
 		.indicator {
-			border-radius: calc(var(--radius-1) - 2px);
+			display: none;
 		}
+
+		:global(html.js) .site-nav {
+			left: auto;
+		}
+
+		:global(html.js) .site-nav.open {
+			z-index: 40;
+		}
+
+		:global(html.js) .nav-toggle {
+			position: relative;
+			z-index: 1;
+			display: grid;
+			place-items: center;
+			width: 2.6rem;
+			height: 2.6rem;
+			padding: 0;
+			border-radius: 50%;
+		}
+
+		.nav-toggle svg {
+			width: 1.3rem;
+			height: 1.3rem;
+		}
+
+		.nav-toggle[aria-expanded="true"] .icon-open {
+			display: none;
+		}
+
+		.nav-toggle[aria-expanded="true"] .icon-close {
+			display: block;
+		}
+
+		:global(html.js) ul {
+			display: none;
+		}
+
+		:global(html.js) .site-nav.open ul {
+			position: fixed;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			flex-wrap: nowrap;
+			justify-content: flex-end;
+			gap: var(--space-1);
+			padding: var(--space-8) var(--space-6) 14vh;
+			border: 0;
+			border-radius: 0;
+			background: rgba(8, 8, 12, 0.94);
+			backdrop-filter: blur(14px);
+			-webkit-backdrop-filter: blur(14px);
+			overflow-y: auto;
+			animation: menu-in 260ms ease-out;
+		}
+
+		:global(html.js) .site-nav.open a {
+			display: inline-block;
+			width: fit-content;
+			padding: 0.2em 0;
+			border-radius: 0;
+			font-family: var(--font-display);
+			font-size: clamp(1.9rem, 9vw, 2.6rem);
+			line-height: 1.15;
+			color: #b9b6c6;
+			background: none;
+		}
+
+		:global(html.js) .site-nav.open a.current,
+		:global(html.js) .site-nav.open a:hover,
+		:global(html.js) .site-nav.open a:focus-visible {
+			color: #fff;
+		}
+
+		:global(html.js) .site-nav.open a.current {
+			text-decoration: underline;
+			text-decoration-color: #ff4fae;
+			text-decoration-thickness: 2px;
+			text-underline-offset: 0.18em;
+		}
+
+		:global(html.js) .site-nav.open .menu-theme-row {
+			display: block;
+			margin-top: var(--space-6);
+		}
+
+		.menu-theme {
+			font: inherit;
+			font-size: 1rem;
+			padding: 0.5em 1.1em;
+			color: #d6d3e0;
+			background: transparent;
+			border: 1px solid rgba(255, 255, 255, 0.25);
+			border-radius: 999px;
+			cursor: pointer;
+		}
+
+		@keyframes menu-in {
+			from {
+				opacity: 0;
+			}
+		}
+	}
+
+	:global(html.menu-open) {
+		overflow: hidden;
 	}
 </style>

@@ -84,4 +84,11 @@
 		opacity: 0;
 		pointer-events: none;
 	}
+
+	/* Phones: the menu button takes the corner, so sound sits just left of it. */
+	@media (max-width: 760px) {
+		.sound-toggle {
+			right: calc(var(--space-4) + 2.6rem + var(--space-2));
+		}
+	}
 </style>
