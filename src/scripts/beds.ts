@@ -656,6 +656,8 @@ const BEDS: Record<string, Bed> = {
 
 interface Live {
 	bed: Bed;
+	/** Sections sharing this bed; the loudest one sets its level. */
+	sections: HTMLElement[];
 	gain: GainNode | null;
 	pump: GainNode | null;
 	voice: Voice | null;
@@ -678,10 +680,19 @@ export function installBeds() {
 	);
 	if (!sections.length) return;
 
-	const live = new Map<HTMLElement, Live>();
+	// One instance per bed name, so two sections with the same bed (the hero
+	// and the contact section both use "carbon") share it.
+	const live = new Map<string, Live>();
 	for (const section of sections) {
-		live.set(section, {
-			bed: BEDS[section.dataset.bed!],
+		const name = section.dataset.bed!;
+		const entry = live.get(name);
+		if (entry) {
+			entry.sections.push(section);
+			continue;
+		}
+		live.set(name, {
+			bed: BEDS[name],
+			sections: [section],
 			gain: null,
 			pump: null,
 			voice: null,
@@ -748,10 +759,13 @@ export function installBeds() {
 	function measure() {
 		frame = 0;
 		const height = window.innerHeight;
-		for (const [section, entry] of live) {
-			const rect = section.getBoundingClientRect();
-			const visible = Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
-			const share = Math.min(1, visible / Math.min(height, rect.height || height));
+		for (const entry of live.values()) {
+			let share = 0;
+			for (const section of entry.sections) {
+				const rect = section.getBoundingClientRect();
+				const visible = Math.max(0, Math.min(rect.bottom, height) - Math.max(rect.top, 0));
+				share = Math.max(share, Math.min(1, visible / Math.min(height, rect.height || height)));
+			}
 			entry.weight = Math.sin((share * Math.PI) / 2);
 		}
 		apply();
@@ -814,9 +828,7 @@ export function installBeds() {
 	if (import.meta.env.DEV) {
 		(window as unknown as { __beds: () => Record<string, number> }).__beds = () => {
 			measure();
-			return Object.fromEntries(
-				[...live].map(([section, entry]) => [section.dataset.bed!, entry.weight]),
-			);
+			return Object.fromEntries([...live].map(([name, entry]) => [name, entry.weight]));
 		};
 	}
 
