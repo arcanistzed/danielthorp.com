@@ -39,8 +39,8 @@ export const work: Role[] = [
 		dates: "May 2025 to Aug 2025",
 		place: "Remote",
 		points: [
-			"Led and owned, end to end, an initiative to streamline staging environments for development, QA, testing, and demos.",
-			"Cut environment provisioning from several hours of manual engineering work to 8 to 25 minutes of automated setup.",
+			"Designed and delivered a self-service deployment platform that reduced staging environment provisioning from several hours of manual work to 8 to 25 minutes of automated setup.",
+			"Built an Angular interface and TypeScript-based orchestration service to create, monitor, and manage containerized staging environments for development, testing, and demonstrations.",
 			"Delivered a one-click web UI in Angular and Feathers for creating, deleting, and monitoring staging deployments.",
 			"Built an Express service in TypeScript with SQLite to orchestrate deployments, with queuing, status tracking, cancellation, and a secure polling endpoint.",
 			"Automated provisioning and teardown with Bash, Docker health checks, and Nginx routing, with fail-fast error handling.",
@@ -114,13 +114,13 @@ export const leadership: Role[] = [
 		dates: "Nov 2022 to present",
 		place: "Ottawa",
 		points: [
-			"Led Hack the Hill III as co-president and director: more than 350 attendees, 100 projects, and a civic tech track I’m especially proud of.",
+			"Co-led Hack the Hill III, bringing together more than 350 attendees and generating nearly 100 project submissions, including a civic technology collaboration.",
 			"Led Hack the Hill II as president: 826 participants, 113 projects, and more than $95,000 raised.",
 			"Previously Board Chair and Director at Large, leading governance, oversight, and strategic direction.",
 			"Previously Vice-President of Operations, Vice-President of Governance, and President, leading strategy, chairing meetings, and representing the nonprofit externally.",
 			"As Operations Director, managed operations, finance, and administrative systems, and drafted the organization’s legal documents, policies, and procedures.",
 			"As Development Director, designed and built the event management platform (TypeScript, React, Next.js, Node.js, MySQL), the public website, and email infrastructure for more than 2,500 personalized messages, and taught workshops to more than 120 students.",
-			"Rebuilt the website in Astro, making it 11 times faster with a perfect Lighthouse score.",
+			"Rebuilt the Hack the Hill website in Astro, improving load speed elevenfold and reaching a perfect Lighthouse score.",
 		],
 	},
 	{
@@ -151,7 +151,7 @@ export const leadership: Role[] = [
 		points: [
 			"Co-founded and lead a student organization focused on technology law, digital governance, and public policy.",
 			"Drafted the constitution, chair meetings, and run finances, communications, and the website.",
-			"Organize workshops, panels, and discussions on AI governance, data privacy, cybersecurity, and technology policy.",
+			"Developing opportunities for students to engage with technology law and public policy, including discussions, workshops, and events concerning AI governance, privacy, cybersecurity, and digital rights.",
 		],
 	},
 	{
@@ -205,7 +205,7 @@ export const leadership: Role[] = [
 		points: [
 			"Member of the executive committee of a $17.4M+ not-for-profit serving more than 40,000 members, overseeing communications, marketing, sponsorship, and outreach.",
 			"Directed the 2024 General Elections: introduced a modern election platform and in-person voting, fixed email delivery with University IT, worked with legal counsel on voting integrity, and built a live turnout tracker.",
-			"Built an election portal in Next.js that connects uOttawa sign-in to ElectionBuddy, which contributed to record turnout in the following elections.",
+			"Built a Next.js election portal integrating uOttawa authentication with ElectionBuddy, simplifying voter access. The portal was used in subsequent elections that achieved record turnout.",
 			"Chaired the Electoral Committee and drafted appeal decisions.",
 			"Recovered access to CRA and Corporations Canada portals for regulatory filings.",
 			"Ran town halls on elections and the Union Portal, and directed the Union Portal project for club administration and the Student Rights Centre.",
@@ -256,7 +256,7 @@ export const leadership: Role[] = [
 // Logos come from simple-icons by slug; null means no logo is available.
 export const skills: { group: string; items: [string, string | null][] }[] = [
 	{
-		group: "Languages",
+		group: "Languages and markup",
 		items: [
 			["TypeScript", "typescript"],
 			["JavaScript", "javascript"],
@@ -309,7 +309,13 @@ export const skills: { group: string; items: [string, string | null][] }[] = [
 			["MySQL", "mysql"],
 			["MongoDB", "mongodb"],
 			["SQLite", "sqlite"],
+		],
+	},
+	{
+		group: "Applied AI",
+		items: [
 			["RAG and embeddings", null],
+			["ChromaDB", null],
 		],
 	},
 ];

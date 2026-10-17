@@ -166,6 +166,13 @@ const today = new Date().toLocaleDateString("en-CA", {
 			</p>
 		</header>
 
+		<p class="intro">
+			I write about technology, law, politics, and the institutions shaping
+			our increasingly digital world. I’m particularly interested in
+			questions where technical decisions have broader consequences for
+			individual rights, public policy, and society.
+		</p>
+
 		{
 			lead && (
 				<article class="lead">
@@ -213,6 +220,11 @@ const today = new Date().toLocaleDateString("en-CA", {
 			</svg>
 			<span class="sr-only"> (opens in new tab)</span>
 		</a>
+
+		<p class="disclaimer">
+			The views expressed in my writing are my own and do not necessarily
+			reflect those of the organizations with which I am affiliated.
+		</p>
 	</div>
 </section>
 
@@ -271,6 +283,23 @@ const today = new Date().toLocaleDateString("en-CA", {
 		font-family: var(--font-display);
 		font-size: 0.85rem;
 		color: var(--color-text);
+	}
+
+	.intro {
+		max-width: 44rem;
+		margin: 0 auto var(--space-7);
+		font-family: var(--font-display);
+		font-size: 1.1rem;
+		line-height: 1.6;
+		text-align: center;
+		color: var(--color-muted);
+	}
+
+	.disclaimer {
+		margin: var(--space-4) 0 0;
+		font-size: 0.82rem;
+		font-style: italic;
+		color: var(--color-muted);
 	}
 
 	.writing a {

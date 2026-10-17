@@ -16,14 +16,14 @@ export const projectGroups: { group: string; projects: Project[] }[] = [
 				name: "Track the Hack",
 				repo: "HacktheHill/track-the-hack",
 				summary:
-					"Hack the Hill’s all-in-one event management platform: registration, judging, check-ins, live attendance counts, the event map and schedule, and resources for hackers. It was my first real full-stack project and my first time running a dev team. Many people have contributed over the years, but I’ve written most of the code and set the architecture.",
+					"A full-stack event management platform covering registration, check-ins, judging, schedules, maps, attendance tracking, and participant resources. What began as my first substantial full-stack project has grown through several editions of Hack the Hill. I designed its original architecture and have been its principal developer, working alongside contributors over the years.",
 				tags: ["TypeScript", "Next.js", "React", "MySQL"],
 			},
 			{
 				name: "Bulk email",
 				repo: "HacktheHill/bulk-email",
 				summary:
-					"A tool I’ve refined over several years that makes it cheap and easy to send thousands of emails written in React, with good deliverability. It has sent tens of thousands of emails for Hack the Hill, and a version of it sent about 50,000 during my campaign for UOSU president.",
+					"A reusable system for composing and sending large volumes of personalized emails using React Email. I’ve refined it over several years, and it has delivered tens of thousands of messages for Hack the Hill. A version was also used to send approximately 50,000 emails during my UOSU presidential campaign.",
 				tags: ["TypeScript", "React Email"],
 			},
 			{
@@ -37,8 +37,8 @@ export const projectGroups: { group: string; projects: Project[] }[] = [
 				name: "Hack the Hill website",
 				repo: "HacktheHill/hackathon-website",
 				summary:
-					"The hackathon’s public site. I built much of the 2023 version and the 2026 version.",
-				tags: ["TypeScript", "Next.js"],
+					"The hackathon’s public site. I built much of the 2023 version, including its rebuild in Astro, and the 2026 version.",
+				tags: ["TypeScript", "Astro", "Next.js"],
 			},
 			{
 				name: "Email list manager",
@@ -58,7 +58,7 @@ export const projectGroups: { group: string; projects: Project[] }[] = [
 				name: "Hack the Hill III photo album",
 				repo: "HacktheHill/photo-album",
 				summary:
-					"A quick but solid photo album for attendees: fast browsing, categories, and the licence shown before each download.",
+					"A lightweight photo gallery built for Hack the Hill III, featuring fast browsing, categorized albums, and clear licensing information before downloads.",
 				tags: ["Astro", "React", "Cloudflare Workers", "R2"],
 			},
 			{
@@ -77,14 +77,14 @@ export const projectGroups: { group: string; projects: Project[] }[] = [
 				name: "UOSU elections portal",
 				repo: "arcanistzed/uosu-elections-portal",
 				summary:
-					"At a town hall I hosted after the 2024 elections, students asked for one link they could use to vote by signing in with their uOttawa account, instead of hunting for a personal link that often never reached their inbox. I built it. It saved the Students’ Union the cost of buying that integration from the election vendor, fixed the problem of missing ballot emails, and measurably raised turnout because the link can be shared.",
+					"At a town hall I hosted after the 2024 elections, students asked for one link they could use to vote by signing in with their uOttawa account. The portal provides a single, shareable voting link using uOttawa credentials, avoiding reliance on individually emailed ballot links and the cost of purchasing an equivalent integration from the election vendor. It was subsequently used in elections that achieved record turnout.",
 				tags: ["Next.js", "Microsoft Entra ID", "ElectionBuddy"],
 			},
 			{
 				name: "Live turnout counter",
 				repo: "arcanistzed/election-buddy-voter-turnout",
 				summary:
-					"Shows Students’ Union election turnout live, using a simple workaround. Still in use.",
+					"A lightweight dashboard displaying live voter turnout during UOSU elections. Originally developed for the 2024 election, it remains in use.",
 				tags: ["TypeScript"],
 			},
 			{

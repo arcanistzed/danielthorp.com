@@ -2,7 +2,7 @@
 // board; the "Updated" date comes from this file's last commit.
 
 export interface Status {
-	/** Short role, shown on the flaps. Keep it under about 20 characters. */
+	/** Short role, shown on the flaps. At most 18 characters. */
 	role: string;
 	where: string;
 	href?: string;
@@ -16,32 +16,35 @@ export const updatedFallback = "October 2026";
 
 export const statuses: Status[] = [
 	{
-		role: "Final year",
+		role: "Final-year student",
 		where: "uOttawa Software Engineering",
-		status: "Capstone",
-		detail: "Most of my time goes to my courses and my capstone project.",
+		status: "Studying",
+		detail:
+			"Completing my BASc in Software Engineering at the University of Ottawa, with coursework, research, and my capstone project as my main priorities.",
 	},
 	{
-		role: "Researcher",
+		role: "Undergrad research",
 		where: "CRAIEDL",
 		href: "https://www.craiedl.ca/",
-		status: "In progress",
+		status: "Researching",
 		detail:
-			"Applying ethics to software requirements engineering for AI systems, with the Canadian Robotics and Artificial Intelligence Ethical Design Lab.",
+			"As a member of the Canadian Robotics and Artificial Intelligence Ethical Design Lab, investigating how ethical considerations can be incorporated into software requirements engineering, particularly for AI-based systems, under the supervision of Professor Jason Millar.",
 	},
 	{
 		role: "Board director",
 		where: "OpenMedia",
 		href: "https://openmedia.org/",
 		status: "Serving",
-		detail: "On the board of a Canadian digital rights organization.",
+		detail:
+			"Serving on the Board of Directors of a Canadian digital rights organization, with responsibilities spanning governance, finance, human resources, and strategic planning.",
 	},
 	{
 		role: "COP explorer",
 		where: "ClimaTalk",
 		href: "https://climatalk.org/",
 		status: "Building",
-		detail: "An interactive explorer of the UN climate conferences.",
+		detail:
+			"Developing an interactive explorer of United Nations climate change conferences (COPs), making information about international climate negotiations easier to navigate and understand.",
 	},
 	{
 		role: "Co-president",
