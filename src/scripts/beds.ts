@@ -927,11 +927,30 @@ export function installBeds() {
 		holdOpen();
 		measure();
 	});
+	/** An interrupted swap would leave a bed high-passed; bring everything back. */
+	function unswap() {
+		const g = audio();
+		if (!g) return;
+		const now = g.ctx.currentTime;
+		for (const entry of live.values()) {
+			if (!entry.high || !entry.low || !entry.echo) continue;
+			for (const [param, value] of [
+				[entry.high.frequency, 20],
+				[entry.low.frequency, 16000],
+				[entry.echo.gain, 0],
+			] as const) {
+				param.cancelScheduledValues(now);
+				param.setTargetAtTime(value, now, 0.15);
+			}
+		}
+		slowUntil = 0;
+	}
 	window.addEventListener("glide-end", () => {
 		if (!glide) return;
 		// A glide that reached its target lands with one light tap; an
-		// interrupted one doesn't.
+		// interrupted one doesn't, and its half-done swap is undone.
 		if (Math.abs(window.scrollY - glide.to) < 2) vibrate(10);
+		else unswap();
 		glide = null;
 		measure();
 	});
@@ -1061,10 +1080,22 @@ export function installBeds() {
 			measure();
 		} else {
 			stopTransport();
+			// The noise floors and crackle have no pitch to brake, so the bed
+			// buses fade with it instead.
+			for (const entry of live.values()) {
+				entry.gain?.gain.setTargetAtTime(0, entry.gain.context.currentTime, 0.25);
+			}
 			window.setTimeout(() => {
 				if (!audio()) teardown();
 			}, 1000);
 		}
+	});
+
+	// Nothing needs scheduling while the tab is hidden; the master is faded
+	// out anyway. Measuring again on return restarts whatever is in view.
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden) stopTransport();
+		else measure();
 	});
 
 	if (import.meta.env.DEV) {

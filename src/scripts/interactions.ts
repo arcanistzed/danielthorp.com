@@ -15,10 +15,13 @@ function flavour(el: Element) {
 	return el.closest<HTMLElement>("[data-sfx]")?.dataset.sfx ?? "tick";
 }
 
-function hover(el: Element) {
+function hover(el: Element, keyboard = false) {
 	if (!isEnabled()) return;
 	switch (flavour(el)) {
 		case "none":
+			// Silent for the pointer (the hero icons have their own magnet
+			// sound), but keyboard focus still gets a cue.
+			if (keyboard) tick();
 			return;
 		case "paper":
 			return rustle();
@@ -62,7 +65,7 @@ export function installInteractionSounds() {
 	// Keyboard users hear the same thing when focus lands on a control.
 	document.addEventListener("focusin", event => {
 		const el = (event.target as Element).closest(INTERACTIVE);
-		if (el?.matches(":focus-visible")) hover(el);
+		if (el?.matches(":focus-visible")) hover(el, true);
 	});
 
 	document.addEventListener("click", event => {

@@ -13,6 +13,11 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let delaySend: GainNode | null = null;
 let reverbSend: GainNode | null = null;
+// The space: the delay's feedback and return, and the reverb's return. A
+// mute closes them so the page goes quiet; turning sound on reopens them.
+let delayFeedback: GainNode | null = null;
+let delayReturn: GainNode | null = null;
+let reverbWet: GainNode | null = null;
 let music: GainNode | null = null;
 let musicFilter: BiquadFilterNode | null = null;
 let enabled = false;
@@ -38,9 +43,11 @@ export function trackVoice(amp: GainNode, ...oscs: OscillatorNode[]) {
 
 /**
  * Everything sounding slows and fades like a record when the turntable is
- * switched off, with the brake's hiss under it. Returns how long it takes.
+ * switched off, with the brake's hiss under it. With `echo`, the slowing
+ * notes repeat into the delay as they fall, a DJ's echo-out; a mute passes
+ * false so the page can go quiet. Returns how long the brake takes.
  */
-export function brake(seconds = 0.8) {
+export function brake(seconds = 0.8, echo = true) {
 	if (!ctx) return 0;
 	const now = ctx.currentTime;
 	for (const { oscs, amp } of voices) {
@@ -56,12 +63,49 @@ export function brake(seconds = 0.8) {
 		amp.gain.cancelScheduledValues(now);
 		amp.gain.setValueAtTime(Math.max(amp.gain.value, 0.0001), now);
 		amp.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
+		if (echo && delaySend) {
+			const send = ctx.createGain();
+			send.gain.value = 0.5;
+			amp.connect(send);
+			send.connect(delaySend);
+		}
 	}
 	voices.clear();
+	if (echo && delayFeedback) {
+		const feedback = delayFeedback.gain;
+		feedback.cancelScheduledValues(now);
+		feedback.setValueAtTime(feedback.value, now);
+		feedback.linearRampToValueAtTime(0.62, now + 0.2);
+		feedback.setTargetAtTime(0.38, now + 2.4, 0.5);
+	}
 	air(700, 90, seconds, 0.04, 0.08);
 	// Two slowing thumps, like the platter catching as it stops.
 	vibrate([14, 90, 8]);
 	return seconds;
+}
+
+/** After a mute: let the brake be heard, then close the delay and the room. */
+function closeSpace(after: number) {
+	if (!ctx || !delayFeedback || !delayReturn || !reverbWet) return;
+	const at = ctx.currentTime + after;
+	for (const param of [delayFeedback.gain, delayReturn.gain, reverbWet.gain]) {
+		param.cancelScheduledValues(at);
+		param.setValueAtTime(param.value, at);
+		param.linearRampToValueAtTime(0, at + 0.5);
+	}
+}
+
+function openSpace() {
+	if (!ctx || !delayFeedback || !delayReturn || !reverbWet) return;
+	const now = ctx.currentTime;
+	for (const [param, value] of [
+		[delayFeedback.gain, 0.38],
+		[delayReturn.gain, 1],
+		[reverbWet.gain, 0.9],
+	] as const) {
+		param.cancelScheduledValues(now);
+		param.setValueAtTime(value, now);
+	}
 }
 
 export function getPref(): Pref {
@@ -91,12 +135,18 @@ export function audio() {
 
 /** Call from a click, tap or key handler so the browser lets audio start. */
 export function setEnabled(on: boolean) {
-	// Turning off brakes whatever is playing; the beds tear down once it has stopped.
-	if (!on && enabled) brake();
+	// Turning off brakes whatever is playing, then the delay and the room
+	// close so the page is quiet within about a second; the beds tear down
+	// once it has stopped.
+	if (!on && enabled) {
+		const seconds = brake(0.8, false);
+		closeSpace(seconds * 0.6);
+	}
 	enabled = on;
 	savePref(on);
 	if (on) {
 		ensureContext();
+		openSpace();
 		void ctx?.resume();
 	}
 	window.dispatchEvent(new CustomEvent("sound-change", { detail: on }));
@@ -135,7 +185,11 @@ function ensureContext() {
 	delay.connect(tone);
 	tone.connect(feedback);
 	feedback.connect(delay);
-	tone.connect(master);
+	delayReturn = ctx.createGain();
+	delayReturn.gain.value = 1;
+	tone.connect(delayReturn);
+	delayReturn.connect(master);
+	delayFeedback = feedback;
 
 	// A room, from a generated impulse: two and a half seconds of noise that
 	// dies away, darkened so the tail sits behind the music rather than on it.
@@ -149,6 +203,7 @@ function ensureContext() {
 	convolver.connect(damp);
 	damp.connect(wet);
 	wet.connect(master);
+	reverbWet = wet;
 	reverbSend = ctx.createGain();
 	reverbSend.gain.value = 1;
 	reverbSend.connect(convolver);
@@ -216,9 +271,11 @@ new MutationObserver(applyTheme).observe(document.documentElement, {
 systemDark.addEventListener("change", applyTheme);
 applyTheme();
 
-// Fade everything out while the tab is hidden.
+// Fade everything out while the tab is hidden, and wake the context when the
+// tab returns, since some browsers suspend it while another app has the audio.
 document.addEventListener("visibilitychange", () => {
 	if (!ctx || !master) return;
+	if (!document.hidden && enabled) void ctx.resume();
 	const now = ctx.currentTime;
 	master.gain.cancelScheduledValues(now);
 	master.gain.setValueAtTime(master.gain.value, now);
