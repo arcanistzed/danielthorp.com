@@ -7,7 +7,7 @@
 // or handle their clicks themselves. Anything else that should respond to
 // the pointer, like a row of the status board, carries data-sfx-hover.
 
-import { clack, isEnabled, launch, rustle, tick, whoosh } from "./sound";
+import { clack, isEnabled, launch, rustle, setMuffled, tick, vibrate, whoosh } from "./sound";
 
 const INTERACTIVE = "a[href], button, summary, [data-sfx-hover]";
 
@@ -66,6 +66,17 @@ export function installInteractionSounds() {
 	document.addEventListener("focusin", event => {
 		const el = (event.target as Element).closest(INTERACTIVE);
 		if (el?.matches(":focus-visible")) hover(el, true);
+	});
+
+	// The phone menu's overlay: the music goes backstage while it is open,
+	// and opening and closing each get a light tap under their click.
+	window.addEventListener("menu-open", () => {
+		setMuffled(true);
+		vibrate(8);
+	});
+	window.addEventListener("menu-close", () => {
+		setMuffled(false);
+		vibrate(8);
 	});
 
 	document.addEventListener("click", event => {

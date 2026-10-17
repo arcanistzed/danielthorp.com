@@ -222,7 +222,7 @@ function ensureContext() {
 	// visitor scrolls quickly, like wind over the music.
 	musicFilter = ctx.createBiquadFilter();
 	musicFilter.type = "lowpass";
-	musicFilter.frequency.value = openCutoff;
+	musicFilter.frequency.value = ceiling();
 	musicFilter.Q.value = 0.3;
 	musicFilter.connect(master);
 	music = ctx.createGain();
@@ -246,20 +246,35 @@ function impulse(context: AudioContext, seconds: number, decay: number) {
 	return buffer;
 }
 
+/** The most the music filter opens right now: the theme's cutoff, or much less backstage. */
+const ceiling = () => (muffled ? 1100 : openCutoff);
+
 /** Keep the scroll-speed filter open, for a glide that moves fast on purpose. */
 export function holdOpen() {
 	if (!ctx || !musicFilter) return;
 	const now = ctx.currentTime;
 	musicFilter.frequency.cancelScheduledValues(now);
-	musicFilter.frequency.setTargetAtTime(openCutoff, now, 0.1);
+	musicFilter.frequency.setTargetAtTime(ceiling(), now, 0.1);
 }
 
 /** `speed` is the scroll speed in pixels per second; 0 opens the filter again. */
 export function setScrollSpeed(speed: number) {
 	if (!ctx || !musicFilter) return;
 	const amount = Math.min(1, speed / 3500);
-	const cutoff = openCutoff * (2200 / openCutoff) ** amount;
+	const top = ceiling();
+	const cutoff = top * (Math.min(2200, top) / top) ** amount;
 	musicFilter.frequency.setTargetAtTime(cutoff, ctx.currentTime, 0.12);
+}
+
+// The phone menu's overlay puts the page backstage: the music goes behind a
+// closed door while it is open and comes back as it closes.
+let muffled = false;
+export function setMuffled(on: boolean) {
+	muffled = on;
+	if (!ctx || !musicFilter) return;
+	const now = ctx.currentTime;
+	musicFilter.frequency.cancelScheduledValues(now);
+	musicFilter.frequency.setTargetAtTime(ceiling(), now, on ? 0.25 : 0.4);
 }
 
 // Dark mode is a little darker to listen to as well: the music loses some
@@ -271,7 +286,7 @@ function applyTheme() {
 	const dark = saved ? saved === "dark" : systemDark.matches;
 	openCutoff = dark ? 9000 : 16000;
 	if (ctx && musicFilter) {
-		musicFilter.frequency.setTargetAtTime(openCutoff, ctx.currentTime, 0.6);
+		musicFilter.frequency.setTargetAtTime(ceiling(), ctx.currentTime, 0.6);
 	}
 }
 new MutationObserver(applyTheme).observe(document.documentElement, {
