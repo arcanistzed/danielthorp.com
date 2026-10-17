@@ -20,7 +20,7 @@ try {
 
 const flaps = (text: string, width: number) =>
 	[...text.padEnd(width, " ")].slice(0, width);
-const ROLE = 14;
+const ROLE = 18;
 const STATUS = 11;
 ---
 
@@ -43,7 +43,7 @@ const STATUS = 11;
 					statuses.map(item => (
 						<li class="row" data-sfx-hover>
 							<p class="sr-only">
-								{item.role}, {item.where}: {item.status}. {item.detail}
+								{item.role}: {item.status}.
 							</p>
 							<span class="flaps role-flaps" aria-hidden="true" data-text={item.role}>
 								{flaps(item.role, ROLE).map(ch => (
@@ -57,7 +57,7 @@ const STATUS = 11;
 										<span class="sr-only"> (opens in new tab)</span>
 									</a>
 								) : (
-									<span aria-hidden="true">{item.where}</span>
+									<span>{item.where}</span>
 								)}
 							</span>
 							<span class="flaps state" aria-hidden="true" data-text={item.status}>
@@ -65,7 +65,7 @@ const STATUS = 11;
 									<span class="flap">{ch}</span>
 								))}
 							</span>
-							<span class="detail" aria-hidden="true">{item.detail}</span>
+							<span class="detail">{item.detail}</span>
 						</li>
 					))
 				}
@@ -141,6 +141,10 @@ const STATUS = 11;
 </script>
 
 <style>
+	.status .flat-inner {
+		max-width: 60rem;
+	}
+
 	.board {
 		--board: #0c0d10;
 		--flap: #1b1c21;
@@ -175,9 +179,9 @@ const STATUS = 11;
 	.row {
 		display: grid;
 		grid-template-columns:
-			calc(14 * 1.0925rem + 13 * 2px)
+			calc(18 * 0.9775rem + 17 * 2px)
 			minmax(0, 1fr)
-			calc(11 * 1.0925rem + 10 * 2px);
+			calc(11 * 0.9775rem + 10 * 2px);
 		column-gap: var(--space-5);
 		align-items: center;
 		padding: 0 var(--space-5);
@@ -206,7 +210,7 @@ const STATUS = 11;
 		display: inline-flex;
 		gap: 2px;
 		font-family: var(--font-mono);
-		font-size: 0.95rem;
+		font-size: 0.85rem;
 	}
 
 	.flap {
