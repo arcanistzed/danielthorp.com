@@ -1,57 +1,26 @@
 :root {
 	color-scheme: dark light;
 
-	/* Colors */
-	--color-bg: #0a0b0d;
-	--color-surface: rgba(255, 255, 255, 0.05);
-	--color-text: rgba(255, 255, 255, 0.92);
-	--color-muted: rgba(255, 255, 255, 0.65);
-	--color-accent: #6366e8;
+	/* Flat sections (dark default, light below) */
+	--color-bg: #0e0f12;
+	--color-surface: #17181c;
+	--color-text: #ecebf0;
+	--color-muted: #a3a2ad;
+	--color-link: #c9b8ff;
+	--color-rule: #2b2c33;
+	--color-accent: #8b7cf6;
 
-	/* Decorative palette */
-	--color-hero-start: rgba(236, 238, 246, 1);
-	--color-hero-mid: rgba(210, 132, 122, 1);
-	--color-hero-end: rgba(250, 250, 252, 1);
-	--color-hero-shadow: rgba(108, 70, 64, 0.28);
+	/* Section backgrounds, top to bottom */
+	--bg-about-top: #240b0e;
+	--bg-status: #10131c;
+	--bg-experience: #0e0f12;
+	--bg-projects: #120f18;
+	--bg-writing: #15120f;
 
-	--color-bg-art-dark-base-1: #07070b;
-	--color-bg-art-dark-base-2: #0f0b17;
-	--color-bg-art-dark-base-3: #08070d;
-	--color-bg-art-dark-violet: #8a5de3;
-	--color-bg-art-dark-amber: #c45f42;
-	--color-bg-art-dark-pink: #d17ca5;
-	--color-bg-art-dark-edge: #7b5bd9;
-
-	--color-bg-art-light-base-1: #f4efff;
-	--color-bg-art-light-base-2: #eadfff;
-	--color-bg-art-light-base-3: #fcf2ea;
-	--color-bg-art-light-violet: #6d4dc9;
-	--color-bg-art-light-amber: #b35a42;
-	--color-bg-art-light-rose: #a86c8e;
-	--color-bg-art-light-edge: #8f72e5;
-
-	--color-bg-atmo-dark-base-1: rgba(8, 7, 12, 1);
-	--color-bg-atmo-dark-base-2: rgba(16, 11, 22, 1);
-	--color-bg-atmo-dark-base-3: rgba(9, 7, 14, 1);
-	--color-bg-atmo-dark-sheen-1: rgba(255, 255, 255, 0.04);
-	--color-bg-atmo-dark-sheen-2: rgba(255, 255, 255, 0.015);
-	--color-bg-atmo-dark-sheen-3: rgba(255, 255, 255, 0.06);
-	--color-bg-atmo-dark-stripe-1: rgba(255, 255, 255, 0.03);
-	--color-bg-atmo-dark-stripe-2: rgba(255, 255, 255, 0.02);
-	--color-bg-atmo-dark-stripe-clear: rgba(255, 255, 255, 0);
-	--color-bg-atmo-dark-highlight: rgba(255, 255, 255, 0.12);
-
-	--color-bg-atmo-light-base-1: rgba(240, 234, 255, 1);
-	--color-bg-atmo-light-base-2: rgba(228, 216, 252, 1);
-	--color-bg-atmo-light-base-3: rgba(252, 240, 232, 1);
-	--color-bg-atmo-light-sheen-1: rgba(110, 74, 186, 0.1);
-	--color-bg-atmo-light-sheen-2: rgba(110, 74, 186, 0.03);
-	--color-bg-atmo-light-sheen-3: rgba(182, 92, 66, 0.1);
-	--color-bg-atmo-light-stripe-1: rgba(0, 0, 0, 0.025);
-	--color-bg-atmo-light-stripe-2: rgba(0, 0, 0, 0.015);
-	--color-bg-atmo-light-stripe-clear: rgba(0, 0, 0, 0);
-	--color-bg-atmo-light-highlight: rgba(255, 255, 255, 0.5);
-	--color-bg-atmo-light-highlight-clear: rgba(255, 255, 255, 0);
+	/* Name gradient */
+	--color-hero-start: #eceef6;
+	--color-hero-mid: #d2847a;
+	--color-hero-end: #fafafc;
 
 	/* Typography */
 	--font-sans:
@@ -60,8 +29,10 @@
 	--font-display:
 		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino,
 		"Times New Roman", serif;
+	--font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
 
 	/* Spacing scale */
+	--space-1: 0.25rem;
 	--space-2: 0.5rem;
 	--space-3: 0.75rem;
 	--space-4: 1rem;
@@ -75,20 +46,23 @@
 	--radius-1: 0.5rem;
 
 	/* Motion */
+	--dur-2: 180ms;
 	--dur-4: 400ms;
 }
 
 @media (prefers-color-scheme: light) {
 	:root {
 		--color-bg: #ffffff;
-		--color-surface: rgba(0, 0, 0, 0.04);
-		--color-text: rgba(0, 0, 0, 0.9);
-		--color-muted: rgba(0, 0, 0, 0.62);
+		--color-surface: #f5f5f7;
+		--color-text: #17171c;
+		--color-muted: #5d5d68;
+		--color-link: #4b3bc4;
+		--color-rule: #e3e3e8;
 		--color-accent: #4f46e5;
 
-		--color-hero-start: rgba(30, 28, 46, 1);
-		--color-hero-mid: rgba(120, 50, 40, 1);
-		--color-hero-end: rgba(20, 18, 36, 1);
-		--color-hero-shadow: transparent;
+		--bg-status: #eef2f8;
+		--bg-experience: #ffffff;
+		--bg-projects: #f6f3fb;
+		--bg-writing: #fbf8f2;
 	}
 }

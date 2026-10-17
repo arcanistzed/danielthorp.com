@@ -1,7 +1,7 @@
 {
 	"name": "Daniel Thorp",
 	"short_name": "Daniel Thorp",
-	"description": "Daniel Thorp's personal website. Software engineering student at the University of Ottawa. Sharing thoughts on technology, public policy, and life.",
+	"description": "Daniel Thorp is a final-year Software Engineering student at the University of Ottawa who works on AI ethics research, digital rights, and technology policy.",
 	"start_url": "/",
 	"display": "browser",
 	"background_color": "#0a0b0d",
