@@ -61,7 +61,7 @@ const orbs = [
 		>
 	</div>
 
-	<p class="sound-prompt" aria-live="polite" hidden>
+	<button type="button" class="sound-prompt" hidden>
 		<svg viewBox="0 0 24 24" aria-hidden="true">
 			<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"></path>
 			<path
@@ -71,8 +71,8 @@ const orbs = [
 				stroke-width="1.8"
 				stroke-linecap="round"></path>
 		</svg>
-		<span class="prompt-text">Click anywhere to turn on sound</span>
-	</p>
+		<span>Enable sound for the full experience</span>
+	</button>
 
 	<ul class="orbit" role="list" aria-label="Contact" data-sfx="none">
 		{
@@ -262,24 +262,25 @@ const orbs = [
 		running = false;
 	}
 
-	// Shows "Click anywhere to turn on sound". Any click on the page turns it on
-	// (see SoundToggle); after 2.5 s without one the intro carries on silently.
+	// The "Enable sound" button stays in the hero until sound is on. The intro
+	// waits up to 2.5 s for it, then carries on silently.
+	const showPrompt = () => {
+		prompt.hidden = isEnabled();
+	};
+	prompt.addEventListener("click", () => {
+		setEnabled(true);
+		if (!running) chord([60, 67, 72, 76], 1.8);
+	});
+	window.addEventListener("sound-change", showPrompt);
+	showPrompt();
+
 	function askForSound(): Promise<void> {
 		return new Promise(resolve => {
-			if (matchMedia("(hover: none)").matches) {
-				prompt.querySelector(".prompt-text")!.textContent = "Tap anywhere to turn on sound";
-			}
-			prompt.hidden = false;
-
+			showPrompt();
 			const done = (on: boolean | null) => {
 				endPrompt = null;
 				clearTimeout(timer);
 				window.removeEventListener("sound-change", onSound);
-				prompt.classList.add("leaving");
-				setTimeout(() => {
-					prompt.hidden = true;
-					prompt.classList.remove("leaving");
-				}, 300);
 				setTimeout(resolve, on ? 350 : 250);
 			};
 			const onSound = (event: Event) => {
@@ -600,39 +601,51 @@ const orbs = [
 	.sound-prompt {
 		position: absolute;
 		left: 50%;
-		bottom: 22%;
+		top: 64%;
 		translate: -50% 0;
 		display: flex;
 		align-items: center;
 		gap: var(--space-3);
 		margin: 0;
-		padding: var(--space-2) var(--space-4);
-		border: 1px solid rgba(255, 255, 255, 0.16);
+		padding: 0.85rem 1.6rem;
+		border: 0;
 		border-radius: 999px;
-		background: rgba(10, 10, 12, 0.55);
-		backdrop-filter: blur(6px);
+		background: linear-gradient(110deg, #ff4fae, #7b5cff 55%, #22d3ee);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+			0 10px 30px rgba(123, 92, 255, 0.35),
+			0 0 40px rgba(255, 79, 174, 0.25);
+		font: inherit;
 		font-family: var(--font-sans);
-		font-size: 0.95rem;
-		color: #e9e7ef;
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: #fff;
 		white-space: nowrap;
-		pointer-events: none;
+		cursor: pointer;
 		animation: fade-up 500ms ease-out 400ms both;
+		transition:
+			filter var(--dur-2),
+			box-shadow var(--dur-2);
+	}
+
+	.sound-prompt:hover,
+	.sound-prompt:focus-visible {
+		filter: brightness(1.12);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+			0 12px 36px rgba(123, 92, 255, 0.5),
+			0 0 56px rgba(34, 211, 238, 0.35);
 	}
 
 	.sound-prompt[hidden] {
 		display: none;
 	}
 
-	.sound-prompt.leaving {
-		opacity: 0;
-		transition: opacity 280ms ease;
-	}
-
 	.sound-prompt svg {
 		width: 1.1rem;
 		height: 1.1rem;
 		flex: none;
-		color: #9fe6ff;
+		color: #fff;
 		animation: pulse 1.6s ease-in-out infinite;
 	}
 
@@ -832,7 +845,9 @@ const orbs = [
 		}
 
 		.sound-prompt {
-			bottom: 16%;
+			top: 64%;
+			font-size: 0.95rem;
+			padding: 0.75rem 1.2rem;
 		}
 	}
 

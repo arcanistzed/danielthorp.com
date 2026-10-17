@@ -18,10 +18,16 @@
 </button>
 
 <script>
-	import { getPref, isEnabled, setEnabled, chord, click } from "../../scripts/sound";
+	import { isEnabled, setEnabled, chord, click } from "../../scripts/sound";
 
 	const button = document.querySelector<HTMLButtonElement>(".sound-toggle")!;
-	const render = () => button.setAttribute("aria-pressed", String(isEnabled()));
+	const render = () => {
+		const on = isEnabled();
+		const label = on ? "Mute sound" : "Enable sound";
+		button.setAttribute("aria-pressed", String(on));
+		button.setAttribute("aria-label", label);
+		button.title = label;
+	};
 
 	button.addEventListener("click", () => {
 		const on = !isEnabled();
@@ -36,17 +42,6 @@
 	});
 	window.addEventListener("sound-change", render);
 
-	// Any click or tap on the page turns sound on, unless the visitor turned it
-	// off with this button. A click counts as the gesture browsers need for audio.
-	window.addEventListener(
-		"click",
-		event => {
-			if (isEnabled() || getPref() === "off") return;
-			if ((event.target as Element | null)?.closest?.(".sound-toggle")) return;
-			setEnabled(true);
-		},
-		{ capture: true },
-	);
 	render();
 </script>
 
