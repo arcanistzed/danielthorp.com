@@ -40,7 +40,10 @@ const links = [
 </nav>
 
 <script>
+	import { installSmoothScroll } from "../../scripts/smooth-scroll";
 	import { click } from "../../scripts/sound";
+
+	installSmoothScroll();
 
 	const nav = document.querySelector<HTMLElement>(".site-nav")!;
 	const toggle = nav.querySelector<HTMLButtonElement>(".nav-toggle")!;
