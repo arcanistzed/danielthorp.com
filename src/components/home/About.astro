@@ -13,7 +13,7 @@ import CoatOfArms from "../icons/CoatOfArms.astro";
 import LionRampant from "../icons/LionRampant.astro";
 ---
 
-<section class="about" id="about" aria-labelledby="about-title">
+<section class="about" id="about" aria-labelledby="about-title" data-bed="box">
 	<svg class="defs" aria-hidden="true" focusable="false">
 		<filter id="deckle" x="-3%" y="-3%" width="106%" height="106%">
 			<feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="3" seed="7" result="noise"></feTurbulence>
@@ -168,42 +168,6 @@ import LionRampant from "../icons/LionRampant.astro";
 		</svg>
 	</article>
 </section>
-
-<script>
-	import { musicBox, type Melody } from "../../scripts/sound";
-
-	// Openings of O Canada and God Save the King (both public domain), in C,
-	// an octave up for a music-box sound. Each entry is [MIDI note, beats].
-	const melody: Melody = [
-		[76, 3], [79, 1.5], [79, 0.5], [72, 4],
-		[74, 1], [76, 1], [77, 1], [79, 1], [81, 1], [74, 4],
-		[null, 2],
-		[72, 1], [72, 1], [74, 1], [71, 1.5], [72, 0.5], [74, 1],
-		[76, 1], [76, 1], [77, 1], [76, 1.5], [74, 0.5], [72, 1],
-		[74, 1], [72, 1], [71, 1], [72, 3],
-		[null, 3],
-	];
-
-	const box = musicBox(melody, 76);
-	const section = document.getElementById("about")!;
-	let inView = false;
-
-	// Plays while a good part of the section is on screen, fading in and out.
-	new IntersectionObserver(
-		([entry]) => {
-			inView = entry.isIntersecting;
-			if (inView) box.start();
-			else box.stop();
-		},
-		{ rootMargin: "-30% 0px -30% 0px" },
-	).observe(section);
-
-	window.addEventListener("sound-change", event => {
-		const on = (event as CustomEvent<boolean>).detail;
-		if (on && inView) box.start();
-		if (!on) box.stop(0.05);
-	});
-</script>
 
 <style>
 	.about {

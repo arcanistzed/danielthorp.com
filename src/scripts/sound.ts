@@ -4,6 +4,9 @@
 
 const STORAGE_KEY = "sound";
 
+/** Tempo shared by the beds and the music box, in beats per minute. */
+export const BPM = 76;
+
 export type Pref = "on" | "off" | null;
 
 let ctx: AudioContext | null = null;
@@ -75,9 +78,10 @@ function ensureContext() {
 	master.gain.value = 0.5;
 	master.connect(compressor);
 
-	// A dark feedback delay gives the pads their synthwave space.
+	// A dark feedback delay on a dotted eighth at the site's tempo, so the
+	// echoes of chords and plucks land on the grid.
 	const delay = ctx.createDelay(1);
-	delay.delayTime.value = 0.34;
+	delay.delayTime.value = (60 / BPM) * 0.75;
 	const feedback = ctx.createGain();
 	feedback.gain.value = 0.38;
 	const tone = ctx.createBiquadFilter();
@@ -213,7 +217,7 @@ export function magnet(pan = 0) {
 }
 
 /** A music-box note. */
-function bell(note: number, now: number, destination: AudioNode, ring = 1.3) {
+export function bell(note: number, now: number, destination: AudioNode, ring = 1.3) {
 	if (!ctx) return;
 	const base = midiToHz(note);
 	const amp = ctx.createGain();
@@ -240,71 +244,6 @@ function bell(note: number, now: number, destination: AudioNode, ring = 1.3) {
 		scheduled.add(osc);
 		osc.onended = () => scheduled.delete(osc);
 	}
-}
-
-/** [MIDI note or null for a rest, length in beats] */
-export type Melody = [number | null, number][];
-
-/**
- * Loops a melody on a music box while `start` is in effect, fading in and out.
- * Notes are scheduled a little ahead of time so the rhythm stays steady.
- */
-export function musicBox(melody: Melody, bpm: number) {
-	let gain: GainNode | null = null;
-	let timer = 0;
-	let index = 0;
-	let nextTime = 0;
-	let playing = false;
-	const beat = 60 / bpm;
-
-	function tick() {
-		if (!ctx || !gain) return;
-		while (nextTime < ctx.currentTime + 0.4) {
-			const [note, beats] = melody[index];
-			if (note !== null) bell(note, nextTime, gain, Math.min(2.4, beats * beat + 0.9));
-			nextTime += beats * beat;
-			index = (index + 1) % melody.length;
-		}
-	}
-
-	return {
-		start() {
-			if (playing || !isEnabled() || !ctx || !master) return;
-			playing = true;
-			const now = ctx.currentTime;
-			if (!gain) {
-				gain = ctx.createGain();
-				gain.connect(master);
-				if (delaySend) {
-					const send = ctx.createGain();
-					send.gain.value = 0.5;
-					gain.connect(send);
-					send.connect(delaySend);
-				}
-			}
-			gain.gain.cancelScheduledValues(now);
-			gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), now);
-			gain.gain.exponentialRampToValueAtTime(0.9, now + 1.5);
-			if (nextTime < now) nextTime = now + 0.1;
-			clearInterval(timer);
-			timer = window.setInterval(tick, 100);
-			tick();
-		},
-		stop(fade = 1.5) {
-			if (!playing || !ctx || !gain) return;
-			playing = false;
-			const now = ctx.currentTime;
-			gain.gain.cancelScheduledValues(now);
-			gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), now);
-			gain.gain.exponentialRampToValueAtTime(0.0001, now + fade);
-			window.setTimeout(() => {
-				if (!playing) clearInterval(timer);
-			}, fade * 1000);
-		},
-		get playing() {
-			return playing;
-		},
-	};
 }
 
 /** Quiet interface sounds for hover and toggle. `semitones` shifts the pitch. */
