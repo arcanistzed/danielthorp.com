@@ -16,10 +16,23 @@
 }
 
 .projects {
+	position: relative;
+	isolation: isolate;
+	background: linear-gradient(to bottom, var(--bg-experience), var(--bg-projects) 14rem);
+}
+
+/* Blueprint grid that fades in at the top and out at the bottom. */
+.projects::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
 	background:
 		linear-gradient(color-mix(in srgb, var(--color-text) 4%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
-		linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
-		linear-gradient(to bottom, var(--bg-experience), var(--bg-projects) 14rem);
+		linear-gradient(90deg, color-mix(in srgb, var(--color-text) 4%, transparent) 1px, transparent 1px) 0 0 / 32px 32px;
+	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 12rem, #000 calc(100% - 12rem), transparent);
+	mask-image: linear-gradient(to bottom, transparent, #000 12rem, #000 calc(100% - 12rem), transparent);
+	pointer-events: none;
 }
 
 

@@ -15,7 +15,7 @@
 	--bg-status: #10131c;
 	--bg-experience: #0e0f12;
 	--bg-projects: #120f18;
-	--bg-writing: #15120f;
+	--bg-writing: #17130e;
 
 	/* Name gradient */
 	--color-hero-start: #eceef6;
@@ -63,6 +63,6 @@
 		--bg-status: #eef2f8;
 		--bg-experience: #ffffff;
 		--bg-projects: #f6f3fb;
-		--bg-writing: #fbf8f2;
+		--bg-writing: #f1ebdf;
 	}
 }

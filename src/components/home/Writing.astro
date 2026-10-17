@@ -229,11 +229,38 @@ const today = new Date().toLocaleDateString("en-CA", {
 		max-width: 66rem;
 	}
 
-	/* Newsprint: a faint grain over the section background. */
+	/* Newsprint: grain, faint fibres and a centre fold, fading in at the top
+	   and out at the bottom so the section blends into its neighbours. */
 	.writing {
-		background-image:
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-			linear-gradient(to bottom, var(--bg-projects), var(--bg-writing) 14rem);
+		position: relative;
+		isolation: isolate;
+		background: linear-gradient(to bottom, var(--bg-projects), var(--bg-writing) 14rem);
+	}
+
+	.writing::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: -1;
+		background:
+			linear-gradient(
+				to bottom,
+				transparent calc(50% - 1px),
+				rgba(0, 0, 0, 0.12) calc(50% - 1px),
+				rgba(255, 255, 255, 0.06) calc(50% + 1px),
+				transparent calc(50% + 3px)
+			),
+			linear-gradient(
+				to bottom,
+				transparent 40%,
+				rgba(0, 0, 0, 0.05) 50%,
+				transparent 60%
+			),
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.38' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.46 0 0 0 0 0.37 0 0 0 0.11 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.44 0 0 0 0 0.36 0 0 0 0.13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+		-webkit-mask-image: linear-gradient(to bottom, transparent, #000 10rem, #000 calc(100% - 10rem), transparent);
+		mask-image: linear-gradient(to bottom, transparent, #000 10rem, #000 calc(100% - 10rem), transparent);
+		pointer-events: none;
 	}
 
 	.writing article,
