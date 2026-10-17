@@ -83,7 +83,7 @@ const flaps = (text: string, width: number) =>
 </section>
 
 <script>
-	import { clack } from "../../scripts/sound";
+	import { clack, vibrate } from "../../scripts/sound";
 
 	const board = document.querySelector<HTMLElement>(".board")!;
 	const clock = board.querySelector<HTMLTimeElement>(".clock")!;
@@ -106,12 +106,14 @@ const flaps = (text: string, width: number) =>
 		let lastClack = 0;
 		rows.forEach((row, r) => {
 			const flaps = [...row.querySelectorAll<HTMLElement>(".flap")];
+			let settles = 0;
 			flaps.forEach((flap, i) => {
 				const target = flap.textContent ?? " ";
 				const steps = 6 + Math.floor(Math.random() * 8) + (i % 4);
 				let step = 0;
 				flap.textContent = " ";
 				const start = r * 260 + i * 25;
+				settles = Math.max(settles, start + steps * 55);
 				setTimeout(function next() {
 					step += 1;
 					const done = step >= steps;
@@ -129,6 +131,8 @@ const flaps = (text: string, width: number) =>
 					if (!done) setTimeout(next, 55);
 				}, start);
 			});
+			// One light tick per row as its last flap settles.
+			setTimeout(() => vibrate(8), settles);
 		});
 	}
 

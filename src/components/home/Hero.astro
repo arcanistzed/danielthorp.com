@@ -228,7 +228,7 @@ const orbs = [
 		// Stage 1: the full name shrinks and moves right as the English greeting
 		// appears beside it: "Hello! My name is Daniel Thorp".
 		chord([57, 64, 69, 72, 76]);
-		vibrate(18);
+		vibrate(14);
 		const reveal = track(
 			helloEn.animate(
 				[
@@ -247,7 +247,7 @@ const orbs = [
 
 		// Stage 2: the English greeting shrinks and the French one appears below it.
 		chord([53, 60, 64, 69, 72]);
-		vibrate([12, 60, 12]);
+		vibrate(12);
 		const fadeFr = track(
 			helloFr.animate(
 				[
@@ -314,6 +314,8 @@ const orbs = [
 		hello.getAnimations().forEach(a => a.cancel());
 		hello.removeAttribute("style");
 		if (skipped) return;
+		// The name has landed: one soft pulse as the chord settles.
+		vibrate(18);
 		finish();
 		anims.length = 0;
 		running = false;

@@ -4,7 +4,7 @@
 // sidechained progressive-house mix does. Sections opt in with
 // data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper" | "outro".
 
-import { audio, bell, BPM, holdOpen, setScrollSpeed, trackVoice, whiteNoise } from "./sound";
+import { audio, bell, BPM, holdOpen, setScrollSpeed, trackVoice, vibrate, whiteNoise } from "./sound";
 
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
 const LOOKAHEAD = 0.3;
@@ -853,7 +853,7 @@ export function installBeds() {
 	// and swaps the filters the way a DJ does: the outgoing bed is high-
 	// passed away while the incoming bed's low-pass opens. The swap lasts at
 	// least a bar so it reads as a transition even on a short glide.
-	let glide: { bed: Live; seconds: number; at: number } | null = null;
+	let glide: { bed: Live; seconds: number; at: number; to: number } | null = null;
 	// Beds on their way out keep fading slowly until the swap has finished,
 	// even after the scroll itself has stopped.
 	let slowUntil = 0;
@@ -920,7 +920,7 @@ export function installBeds() {
 		apply(0.3, best);
 		const at = nextBeat();
 		const seconds = duration / 1000;
-		glide = { bed: best, seconds, at };
+		glide = { bed: best, seconds, at, to };
 		slowUntil =
 			performance.now() + (at - g.ctx.currentTime + Math.max(seconds, BAR * STEP)) * 1000;
 		swap(best, seconds, at);
@@ -929,6 +929,9 @@ export function installBeds() {
 	});
 	window.addEventListener("glide-end", () => {
 		if (!glide) return;
+		// A glide that reached its target lands with one light tap; an
+		// interrupted one doesn't.
+		if (Math.abs(window.scrollY - glide.to) < 2) vibrate(10);
 		glide = null;
 		measure();
 	});

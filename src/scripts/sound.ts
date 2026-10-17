@@ -59,6 +59,8 @@ export function brake(seconds = 0.8) {
 	}
 	voices.clear();
 	air(700, 90, seconds, 0.04, 0.08);
+	// Two slowing thumps, like the platter catching as it stops.
+	vibrate([14, 90, 8]);
 	return seconds;
 }
 
@@ -475,12 +477,10 @@ export function rustle(long = false) {
 export function launch(echo = false) {
 	blip(520, 1180, 0.11, 0.06, "sine", echo ? 0.7 : 0);
 	air(900, 3400, 0.17, 0.03, 0.03);
-	vibrate(10);
 }
 
 /** Air moving past when jumping to another section. `down` is the direction. */
 export function whoosh(down = true) {
 	if (down) air(2600, 420, 0.4, 0.075, 0.12);
 	else air(420, 2600, 0.4, 0.075, 0.12);
-	vibrate(8);
 }
