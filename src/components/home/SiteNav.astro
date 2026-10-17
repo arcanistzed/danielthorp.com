@@ -60,6 +60,7 @@ const links = [
 		if (event.key !== "Escape" || !nav.classList.contains("open")) return;
 		nav.classList.remove("open");
 		toggle.setAttribute("aria-expanded", "false");
+		click(false);
 		toggle.focus();
 	});
 	for (const link of links) {
