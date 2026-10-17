@@ -4,6 +4,13 @@
 		const theme = localStorage.getItem("theme");
 		if (theme === "light" || theme === "dark") {
 			document.documentElement.dataset.theme = theme;
+			// Both theme-color tags take the chosen theme's colour, so the
+			// browser bar matches whichever one the system setting selects.
+			// data-color keeps each tag's own colour for the toggle below.
+			const metas = [...document.querySelectorAll('meta[name="theme-color"]')];
+			for (const meta of metas) meta.dataset.color = meta.content;
+			const color = metas.find(meta => meta.media.includes(theme))?.content;
+			if (color) for (const meta of metas) meta.content = color;
 		}
 	} catch {}
 </script>
@@ -31,6 +38,18 @@
 		(root.dataset.theme as "light" | "dark" | undefined) ??
 		(systemDark.matches ? "dark" : "light");
 
+	// The browser bar follows the chosen theme, not just the system setting.
+	// Each tag's own colour (saved in data-color if a saved theme already
+	// changed it) is kept so switching back can restore it.
+	const metas = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
+	const colors = Object.fromEntries(
+		metas.map(meta => [meta.media.includes("dark") ? "dark" : "light", meta.dataset.color ?? meta.content]),
+	);
+	function paintThemeColor(theme: "light" | "dark") {
+		const color = colors[theme];
+		if (color) for (const meta of metas) meta.content = color;
+	}
+
 	// The button shows the mode it switches to: a sun in dark mode, a moon in light.
 	function render() {
 		const next = current() === "dark" ? "light" : "dark";
@@ -43,6 +62,7 @@
 	button.addEventListener("click", () => {
 		const next = current() === "dark" ? "light" : "dark";
 		root.dataset.theme = next;
+		paintThemeColor(next);
 		try {
 			localStorage.setItem("theme", next);
 		} catch {}

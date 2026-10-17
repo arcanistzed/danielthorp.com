@@ -94,13 +94,36 @@ const links = [
 		moveIndicator();
 	}
 
+	// The section crossing the middle of the viewport is current, except at
+	// the very bottom of the page: a short last section on a tall screen
+	// never reaches the middle, so it takes over once there is no more to
+	// scroll.
+	const lastId = links[links.length - 1].dataset.section!;
+	let observed: string | null = null;
+	let shown: string | null | undefined;
+	function update() {
+		const root = document.documentElement;
+		const atBottom = observed !== null && window.scrollY + window.innerHeight >= root.scrollHeight - 2;
+		const id = atBottom ? lastId : observed;
+		if (id !== shown) setCurrent((shown = id));
+	}
+
 	const observer = new IntersectionObserver(
 		entries => {
 			for (const entry of entries) {
-				if (entry.isIntersecting) setCurrent(entry.target.id === "top" ? null : entry.target.id);
+				if (entry.isIntersecting) observed = entry.target.id === "top" ? null : entry.target.id;
 			}
+			update();
 		},
 		{ rootMargin: "-45% 0px -50% 0px" },
+	);
+	let frame = 0;
+	window.addEventListener(
+		"scroll",
+		() => {
+			if (!frame) frame = requestAnimationFrame(() => ((frame = 0), update()));
+		},
+		{ passive: true },
 	);
 	for (const id of ["top", ...links.map(link => link.dataset.section!)]) {
 		const section = document.getElementById(id);
