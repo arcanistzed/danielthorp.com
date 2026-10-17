@@ -68,25 +68,22 @@ try {
 	posts = [];
 }
 
+// Dates are read in UTC, like the ISO date below, so the shown date doesn't
+// depend on the build machine's time zone. An unparseable date gives "".
 function formatDate(dateString: string): string {
-	try {
-		const date = new Date(dateString);
-		return date.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
-	} catch {
-		return "";
-	}
+	const date = new Date(dateString);
+	if (Number.isNaN(date.getTime())) return "";
+	return date.toLocaleDateString("en-US", {
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+		timeZone: "UTC",
+	});
 }
 
 function isoDate(dateString: string): string {
-	try {
-		return new Date(dateString).toISOString().split("T")[0];
-	} catch {
-		return dateString;
-	}
+	const date = new Date(dateString);
+	return Number.isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
 }
 
 function stripHtml(html: string): string {
@@ -123,10 +120,10 @@ const NAMED_ENTITIES: Record<string, string> = {
 function decodeEntities(text: string): string {
 	return text
 		.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
-			String.fromCharCode(Number.parseInt(hex, 16)),
+			String.fromCodePoint(Number.parseInt(hex, 16)),
 		)
 		.replace(/&#(\d+);/g, (_, num) =>
-			String.fromCharCode(Number.parseInt(num, 10)),
+			String.fromCodePoint(Number.parseInt(num, 10)),
 		)
 		.replace(
 			/&([a-zA-Z]+);/g,
@@ -174,7 +171,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 				<article class="lead">
 					<a href={lead.link} target="_blank" rel="noopener noreferrer">
 						<h3>{lead.title}</h3>
-						{lead.pubDate && (
+						{formatDate(lead.pubDate) && (
 							<time datetime={isoDate(lead.pubDate)}>{formatDate(lead.pubDate)}</time>
 						)}
 						{lead.description && <p class="dek">{excerpt(lead.description)}</p>}
@@ -190,7 +187,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 					<li>
 						<a href={post.link} target="_blank" rel="noopener noreferrer">
 							<h3>{post.title}</h3>
-							{post.pubDate && (
+							{formatDate(post.pubDate) && (
 								<time datetime={isoDate(post.pubDate)}>{formatDate(post.pubDate)}</time>
 							)}
 							{post.description && <p class="dek">{excerpt(post.description)}</p>}

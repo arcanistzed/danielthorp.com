@@ -2,7 +2,7 @@
 // screen. Every bed shares one key (A minor) and one tempo, so overlapping
 // beds stay in tune, and most of them "pump" on every beat the way a
 // sidechained progressive-house mix does. Sections opt in with
-// data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper".
+// data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper" | "outro".
 
 import { audio, bell, BPM, glideSettle, glideSweep, setScrollSpeed, whiteNoise } from "./sound";
 
@@ -742,8 +742,8 @@ export function installBeds() {
 	);
 	if (!sections.length) return;
 
-	// One instance per bed name, so two sections with the same bed (the hero
-	// and the contact section both use "carbon") share it.
+	// One instance per bed name, so two sections that name the same bed
+	// share it.
 	const live = new Map<string, Live>();
 	for (const section of sections) {
 		const name = section.dataset.bed!;
