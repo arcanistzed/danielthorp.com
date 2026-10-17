@@ -42,8 +42,8 @@
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
   <g font-family="'Liberation Serif', 'Times New Roman', 'Noto Serif', serif">
-    <text x="575" y="292" text-anchor="end" font-size="44" fill="#d9d6e4">Hello! My name is</text>
-    <text x="575" y="350" text-anchor="end" font-size="44" fill="#d9d6e4">Bonjour! Je m’appelle</text>
-    <text x="600" y="358" font-size="150" font-weight="700" letter-spacing="-3" fill="url(#name)">Daniel</text>
+    <text x="463" y="295" text-anchor="end" font-size="36" fill="#d9d6e4">Hello! My name is</text>
+    <text x="463" y="342" text-anchor="end" font-size="36" fill="#d9d6e4">Bonjour! Je m’appelle</text>
+    <text x="485" y="352" font-size="104" font-weight="700" letter-spacing="-2" fill="url(#name)">Daniel Thorp</text>
   </g>
 </svg>
