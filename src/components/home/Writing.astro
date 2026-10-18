@@ -282,8 +282,10 @@ const today = new Date().toLocaleDateString("en-CA", {
 		border-bottom: 0;
 	}
 
+	/* Place, today's date, and byline on one line, aligned on their text. */
 	.dateline {
 		display: flex;
+		align-items: baseline;
 		justify-content: space-between;
 		gap: var(--space-4);
 		margin: 0;
@@ -340,7 +342,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 		text-underline-offset: 4px;
 	}
 
-	time {
+	article time {
 		display: block;
 		margin: var(--space-2) 0;
 		font-size: 0.82rem;
