@@ -23,8 +23,14 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 <section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
 	<div class="flat-inner">
 		<h2 id="experience-title">Experience</h2>
-		<div class="filters" role="group" aria-label="Show">
-			<button type="button" data-filter="all" aria-pressed="true">All</button>
+		<div class="tabs" role="group" aria-label="Kind of role">
+			<button type="button" data-kind="all" aria-pressed="true">All</button>
+			<button type="button" data-kind="work" aria-pressed="false">Employment</button>
+			<button type="button" data-kind="leadership" aria-pressed="false">Volunteer</button>
+		</div>
+
+		<div class="filters" role="group" aria-label="Subject">
+			<button type="button" data-filter="all" aria-pressed="true">All subjects</button>
 			{
 				areas.map(([id, label]) => (
 					<button type="button" data-filter={id} aria-pressed="false">
@@ -43,17 +49,14 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 							{entries
 								.filter(entry => Math.floor(entry.start) === year)
 								.map(role => (
-									<li data-area={role.area}>
+									<li data-kind={role.kind} data-area={role.area}>
 										<details class="role">
 											<summary>
 												<span class="role-head">
 													<span class="role-title">{role.title}</span>
 													<span class="role-org">{role.org}</span>
 												</span>
-												<span class="role-dates">
-													{role.dates}
-													{role.kind === "leadership" && <span class="volunteer">Volunteer</span>}
-												</span>
+												<span class="role-dates">{role.dates}</span>
 												<svg class="role-caret" viewBox="0 0 24 24" aria-hidden="true">
 													<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 												</svg>
@@ -79,17 +82,43 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	import { click, milestone, scribe } from "../../scripts/sound";
 
 	const section = document.getElementById("experience")!;
-	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
-	for (const button of filters) {
+	// Two filters combine: the kind of role (tabs) and its subject. Subjects
+	// with no roles under the chosen tab are hidden rather than left empty.
+	const tabs = [...section.querySelectorAll<HTMLButtonElement>(".tabs button")];
+	const subjects = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
+	const filters = [...tabs, ...subjects];
+	const items = [...section.querySelectorAll<HTMLElement>(".timeline li[data-area]")];
+	let kind = "all";
+	let area = "all";
+
+	function apply() {
+		const ofKind = items.filter(item => kind === "all" || item.dataset.kind === kind);
+		for (const button of subjects) {
+			const id = button.dataset.filter;
+			button.hidden = id !== "all" && !ofKind.some(item => item.dataset.area === id);
+			if (button.hidden && id === area) area = "all";
+		}
+		for (const button of tabs) button.setAttribute("aria-pressed", String(button.dataset.kind === kind));
+		for (const button of subjects) button.setAttribute("aria-pressed", String(button.dataset.filter === area));
+		for (const item of items) {
+			item.hidden = !ofKind.includes(item) || (area !== "all" && item.dataset.area !== area);
+		}
+		for (const year of section.querySelectorAll<HTMLElement>(".timeline .year")) {
+			year.hidden = !year.querySelector("li[data-area]:not([hidden])");
+		}
+	}
+
+	for (const button of tabs) {
 		button.addEventListener("click", () => {
-			const area = button.dataset.filter;
-			for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
-			for (const item of section.querySelectorAll<HTMLElement>(".timeline li[data-area]")) {
-				item.hidden = area !== "all" && item.dataset.area !== area;
-			}
-			for (const year of section.querySelectorAll<HTMLElement>(".timeline .year")) {
-				year.hidden = !year.querySelector("li[data-area]:not([hidden])");
-			}
+			kind = button.dataset.kind!;
+			apply();
+			click(true);
+		});
+	}
+	for (const button of subjects) {
+		button.addEventListener("click", () => {
+			area = button.dataset.filter!;
+			apply();
 			click(true);
 		});
 	}
@@ -149,11 +178,47 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 </script>
 
 <style>
+	/* Tabs: one segmented control for the kind of role. */
+	.tabs {
+		display: inline-flex;
+		margin-bottom: var(--space-3);
+		padding: 3px;
+		border: 1px solid var(--color-rule);
+		border-radius: 999px;
+	}
+
+	.tabs button {
+		font: inherit;
+		font-size: 0.95rem;
+		padding: 0.4em 1.1em;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+		transition:
+			background-color var(--dur-2),
+			color var(--dur-2);
+	}
+
+	.tabs button:hover {
+		color: var(--color-text);
+	}
+
+	.tabs button[aria-pressed="true"] {
+		background: var(--color-text);
+		color: var(--bg-experience);
+	}
+
 	.filters {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-2);
 		margin-bottom: var(--space-5);
+	}
+
+	.filters button[hidden] {
+		display: none;
 	}
 
 	.filters button {
@@ -333,16 +398,6 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		color: var(--color-muted);
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
-	}
-
-	/* Volunteer roles say so beside their dates. */
-	.volunteer {
-		margin-left: 0.6em;
-		padding: 0.1em 0.5em;
-		border: 1px solid var(--color-rule);
-		border-radius: 999px;
-		font-size: 0.75rem;
-		letter-spacing: 0.02em;
 	}
 
 	.role-caret {
