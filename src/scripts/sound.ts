@@ -592,8 +592,9 @@ export function milestone(index: number, reached: boolean) {
 	if (!isEnabled() || !ctx || !master) return;
 	const notes = [81, 79, 76, 74, 72, 69, 67, 64, 62, 60];
 	const note = notes[Math.min(index, notes.length - 1)];
+	// Loud enough to ring clear over the Experience pads and arpeggio.
 	const out = ctx.createGain();
-	out.gain.value = reached ? 0.45 : 0.22;
+	out.gain.value = reached ? 1.4 : 0.6;
 	out.connect(master);
 	if (delaySend) {
 		const echo = ctx.createGain();
@@ -607,7 +608,7 @@ export function milestone(index: number, reached: boolean) {
 		out.connect(room);
 		room.connect(reverbSend);
 	}
-	bell(note, ctx.currentTime, out, reached ? 1.4 : 0.8);
+	bell(note, ctx.currentTime, out, reached ? 2 : 1);
 }
 
 let pen: { amp: GainNode; idle: number } | null = null;
