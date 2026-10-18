@@ -33,14 +33,9 @@
 		const on = !isEnabled();
 		setEnabled(on);
 		if (!on) return;
-		// Near the top of the home page the hero replays its intro instead.
-		if (window.scrollY < window.innerHeight / 2 && document.querySelector(".hero")) {
-			window.dispatchEvent(new Event("sound-toggled-on"));
-		} else {
-			chord([60, 67, 72, 76], 1.8);
-			// Sound is on: one tap under the finger with the chord.
-			vibrate(12);
-		}
+		chord([60, 67, 72, 76], 1.8);
+		// Sound is on: one tap under the finger with the chord.
+		vibrate(12);
 	});
 	window.addEventListener("sound-change", render);
 
