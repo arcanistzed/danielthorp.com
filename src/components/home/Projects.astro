@@ -1,5 +1,7 @@
 ---
-import { projectGroups } from "../../data/projects";
+import { categories, projects } from "../../data/projects";
+
+const labelFor = Object.fromEntries(categories);
 ---
 
 <section class="flat projects" id="projects" aria-labelledby="projects-title" data-bed="matrix">
@@ -11,80 +13,211 @@ import { projectGroups } from "../../data/projects";
 			solve or something I thought could work better. The development work
 			I’ve done professionally is covered under Experience.
 		</p>
-		{
-			projectGroups.map(group => (
-				<>
-					<h3>{group.group}</h3>
-					<ul class="project-list" role="list">
-						{group.projects.map(project => (
-							<li class="project">
-								<h4>
-									<a
-										href={`https://github.com/${project.repo}`}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{project.name}
-										<span class="sr-only"> (opens in new tab)</span>
-									</a>
-								</h4>
-								<p>{project.summary}</p>
-								<ul class="tags" role="list" aria-label="Built with">
-									{project.tags.map(tag => (
-										<li class="tag">{tag}</li>
-									))}
-								</ul>
-							</li>
-						))}
-					</ul>
-				</>
-			))
-		}
+
+		<div class="filters" role="group" aria-label="Show">
+			<button type="button" data-filter="all" aria-pressed="true">All</button>
+			{
+				categories.map(([id, label]) => (
+					<button type="button" data-filter={id} aria-pressed="false">
+						{label}
+					</button>
+				))
+			}
+		</div>
+
+		<ul class="cards" role="list">
+			{
+				projects.map(project => (
+					<li class="card" data-category={project.category}>
+						<details>
+							<summary>
+								<span class="card-head">
+									<span class="card-title">{project.name}</span>
+									<span class="card-meta">
+										<span class="card-category">{labelFor[project.category]}</span>
+										{project.tags.join(" · ")}
+									</span>
+								</span>
+								<svg class="caret" viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</summary>
+							<p class="card-summary">{project.summary}</p>
+						</details>
+						<a
+							class="open"
+							href={`https://github.com/${project.repo}`}
+							target="_blank"
+							rel="noopener noreferrer"
+							aria-label={`${project.name} on GitHub (opens in new tab)`}
+							title="Open on GitHub"
+						>
+							<svg viewBox="0 0 24 24" aria-hidden="true">
+								<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+							</svg>
+						</a>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </section>
 
+<script>
+	import { click } from "../../scripts/sound";
+
+	const section = document.getElementById("projects")!;
+	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
+	for (const button of filters) {
+		button.addEventListener("click", () => {
+			const kind = button.dataset.filter;
+			for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
+			for (const card of section.querySelectorAll<HTMLElement>(".card")) {
+				card.hidden = kind !== "all" && card.dataset.category !== kind;
+			}
+			click(true);
+		});
+	}
+
+	// Hovering a summary is covered by the shared interaction sounds.
+	for (const details of section.querySelectorAll<HTMLDetailsElement>(".card details")) {
+		details.addEventListener("toggle", () => click(details.open));
+	}
+</script>
+
 <style>
-	.project-list {
-		display: grid;
-		gap: 0;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.project {
-		padding: var(--space-4) 0;
-	}
-
-	.project h4 {
-		display: flex;
-		align-items: center;
-		gap: var(--space-3);
-		margin: 0 0 var(--space-2);
-		font-size: 1.08rem;
-	}
-
-	.project h4 a {
-		color: var(--color-text);
-		text-decoration-color: var(--color-rule);
-	}
-
-	.project h4 a:hover {
-		text-decoration-color: currentColor;
-	}
-
-	.project p {
-		margin: 0 0 var(--space-3);
-		max-width: 68ch;
-		line-height: 1.6;
-	}
-
-	.tags {
+	.filters {
 		display: flex;
 		flex-wrap: wrap;
+		gap: var(--space-2);
+		margin-bottom: var(--space-5);
+	}
+
+	.filters button {
+		font: inherit;
+		font-size: 0.9rem;
+		padding: 0.35em 0.9em;
+		border: 1px solid var(--color-rule);
+		border-radius: 999px;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+	}
+
+	.filters button[aria-pressed="true"] {
+		background: var(--color-text);
+		border-color: var(--color-text);
+		color: var(--bg-projects);
+	}
+
+	.cards {
+		display: grid;
 		gap: var(--space-2);
 		margin: 0;
 		padding: 0;
 		list-style: none;
+	}
+
+	/* Each project is a card: a light outline and tint on hover. */
+	.card {
+		position: relative;
+		border: 1px solid transparent;
+		border-radius: var(--radius-1);
+		transition:
+			border-color var(--dur-2),
+			background-color var(--dur-2);
+	}
+
+	.card[hidden] {
+		display: none;
+	}
+
+	.card:hover,
+	.card:focus-within {
+		border-color: color-mix(in srgb, var(--color-text) 18%, transparent);
+		background: color-mix(in srgb, var(--color-text) 5%, transparent);
+	}
+
+	summary {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: var(--space-3);
+		padding: var(--space-4) calc(var(--space-4) + 2.75rem) var(--space-4) var(--space-4);
+		cursor: pointer;
+		list-style: none;
+		border-radius: var(--radius-1);
+	}
+
+	summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.card-head {
+		display: grid;
+		gap: 0.2rem;
+	}
+
+	.card-title {
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+
+	.card-meta {
+		font-size: 0.85rem;
+		color: var(--color-muted);
+	}
+
+	.card-category {
+		margin-right: 0.6em;
+		color: var(--color-accent);
+		font-weight: 600;
+	}
+
+	.caret {
+		width: 1.1rem;
+		height: 1.1rem;
+		color: var(--color-muted);
+		transition: transform var(--dur-2);
+	}
+
+	details[open] .caret {
+		transform: rotate(180deg);
+	}
+
+	.card-summary {
+		margin: 0;
+		padding: 0 calc(var(--space-4) + 2.75rem) var(--space-5) var(--space-4);
+		max-width: 68ch;
+		line-height: 1.6;
+	}
+
+	/* The arrow opens the project; the rest of the card expands it. */
+	.open {
+		position: absolute;
+		top: var(--space-3);
+		right: var(--space-3);
+		display: grid;
+		place-items: center;
+		width: 2.4rem;
+		height: 2.4rem;
+		border-radius: 50%;
+		color: var(--color-muted);
+		transition:
+			color var(--dur-2),
+			background-color var(--dur-2),
+			transform var(--dur-2);
+	}
+
+	.open svg {
+		width: 1.15rem;
+		height: 1.15rem;
+	}
+
+	.open:hover,
+	.open:focus-visible {
+		color: var(--color-text);
+		background: color-mix(in srgb, var(--color-text) 10%, transparent);
+		transform: translate(1px, -1px);
 	}
 </style>
