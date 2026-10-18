@@ -45,14 +45,12 @@
 		radial-gradient(circle, color-mix(in srgb, var(--color-text) 10%, transparent) 1px, transparent 1.6px) 0 0 / 16px 16px;
 }
 
-/* On the pale lavender the dots need more weight to show at all, so in
-   light mode they start below the heading, which stays on plain colour. */
+/* On the pale lavender the dots need a little more weight to show, but stay
+   light enough to sit behind the heading too. */
 :root[data-theme="light"] .status::before {
 	background:
 		radial-gradient(ellipse 50% 40% at 82% 28%, rgba(255, 181, 71, 0.12), transparent 70%),
-		radial-gradient(circle, color-mix(in srgb, #3b3a78 26%, transparent) 1.1px, transparent 1.7px) 0 0 / 16px 16px;
-	-webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent 9rem, #000 13rem, #000 calc(100% - 8rem), transparent);
-	mask-image: linear-gradient(to bottom, transparent 0, transparent 9rem, #000 13rem, #000 calc(100% - 8rem), transparent);
+		radial-gradient(circle, color-mix(in srgb, #3b3a78 15%, transparent) 1px, transparent 1.6px) 0 0 / 16px 16px;
 }
 
 /* Experience: a workbench of walnut planks (pale maple in light mode), with
