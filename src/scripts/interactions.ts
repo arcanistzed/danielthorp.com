@@ -1,13 +1,13 @@
 // Sounds for the interactions every page shares: pointing at a link or
 // button, moving focus with the keyboard, jumping to a section, and opening
 // a link somewhere else. An ancestor's data-sfx picks the flavour:
-//   "paper" rustles, "flap" clacks like the status board, "echo" lets link
-//   cues ring out, "none" is silent.
+//   "paper" rustles, "flap" clacks like the status board, "terminal" clicks
+//   like a keystroke, "echo" lets link cues ring out, "none" is silent.
 // Components with their own sounds (the hero icons, the filters) set "none"
 // or handle their clicks themselves. Anything else that should respond to
 // the pointer, like a row of the status board, carries data-sfx-hover.
 
-import { clack, isEnabled, launch, rustle, setMuffled, tick, vibrate, whoosh } from "./sound";
+import { clack, isEnabled, key, launch, rustle, setMuffled, tick, vibrate, whoosh } from "./sound";
 
 const INTERACTIVE = "a[href], button, summary, [data-sfx-hover]";
 
@@ -27,6 +27,8 @@ function hover(el: Element, keyboard = false) {
 			return rustle();
 		case "flap":
 			return clack();
+		case "terminal":
+			return key();
 		default: {
 			// Items in a list step up in pitch, so moving down it plays a scale.
 			const item = el.closest("li");

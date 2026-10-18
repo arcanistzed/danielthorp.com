@@ -2,7 +2,7 @@
 import { categories, projects } from "../../data/projects";
 ---
 
-<section class="flat projects" id="projects" aria-labelledby="projects-title" data-bed="matrix">
+<section class="flat projects" id="projects" aria-labelledby="projects-title" data-bed="matrix" data-sfx="terminal">
 	<div class="flat-inner">
 		<h2 id="projects-title">
 			<span class="prompt" aria-hidden="true">~/</span>projects<span class="prompt" aria-hidden="true"> $</span><span class="cursor" aria-hidden="true"></span>
@@ -63,7 +63,7 @@ import { categories, projects } from "../../data/projects";
 </section>
 
 <script>
-	import { click } from "../../scripts/sound";
+	import { beep } from "../../scripts/sound";
 
 	const section = document.getElementById("projects")!;
 	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
@@ -74,13 +74,13 @@ import { categories, projects } from "../../data/projects";
 			for (const card of section.querySelectorAll<HTMLElement>(".card")) {
 				card.hidden = kind !== "all" && card.dataset.category !== kind;
 			}
-			click(true);
+			beep(true);
 		});
 	}
 
 	// Hovering a summary is covered by the shared interaction sounds.
 	for (const details of section.querySelectorAll<HTMLDetailsElement>(".card details")) {
-		details.addEventListener("toggle", () => click(details.open));
+		details.addEventListener("toggle", () => beep(details.open));
 	}
 </script>
 

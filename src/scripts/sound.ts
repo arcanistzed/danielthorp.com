@@ -645,11 +645,64 @@ export function scribe(speed: number) {
 /** Quiet interface sounds for hover and toggle. `semitones` shifts the pitch. */
 export function tick(semitones = 0) {
 	const ratio = 2 ** (semitones / 12);
-	blip(1900 * ratio, 1700 * ratio, 0.025, 0.025, "triangle");
+	blip(1900 * ratio, 1700 * ratio, 0.025, 0.04, "triangle");
 }
 
 export function click(open: boolean) {
-	blip(open ? 620 : 880, open ? 880 : 620, 0.07, 0.06, "sine");
+	blip(open ? 620 : 880, open ? 880 : 620, 0.07, 0.1, "sine");
+}
+
+/** A keystroke on the terminal: a click of noise with a short square blip. */
+export function key() {
+	if (!isEnabled() || !ctx || !master) return;
+	const buffer = whiteNoise();
+	if (!buffer) return;
+	const now = ctx.currentTime;
+	const source = ctx.createBufferSource();
+	source.buffer = buffer;
+	source.loop = true;
+	const high = ctx.createBiquadFilter();
+	high.type = "highpass";
+	high.frequency.value = 2500;
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, now);
+	amp.gain.exponentialRampToValueAtTime(0.26, now + 0.002);
+	amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
+	source.connect(high);
+	high.connect(amp);
+	amp.connect(master);
+	source.start(now, Math.random() * 1.5);
+	source.stop(now + 0.03);
+	blip(2400, 2200, 0.02, 0.08, "square");
+}
+
+/**
+ * The terminal's beep: two square-wave tones a fourth apart, rising to open
+ * and falling to close, bright enough to cut through the Projects drop.
+ */
+export function beep(open: boolean) {
+	if (!isEnabled() || !ctx || !master) return;
+	const now = ctx.currentTime;
+	const tones = open ? [880, 1174.7] : [1174.7, 880];
+	tones.forEach((frequency, i) => {
+		const at = now + i * 0.055;
+		const osc = ctx!.createOscillator();
+		osc.type = "square";
+		osc.frequency.value = frequency;
+		const low = ctx!.createBiquadFilter();
+		low.type = "lowpass";
+		low.frequency.value = 5000;
+		const amp = ctx!.createGain();
+		amp.gain.setValueAtTime(0.0001, at);
+		amp.gain.exponentialRampToValueAtTime(0.3, at + 0.004);
+		amp.gain.setValueAtTime(0.3, at + 0.04);
+		amp.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
+		osc.connect(low);
+		low.connect(amp);
+		amp.connect(master);
+		osc.start(at);
+		osc.stop(at + 0.07);
+	});
 }
 
 function blip(
