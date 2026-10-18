@@ -2,10 +2,22 @@
 // leadership list puts current roles first, then the rest roughly by date.
 // Taken from the CV; bullets are lightly trimmed for the web.
 
+// What a role was about, for the filters. Work and leadership (paid and
+// volunteer) are a separate axis: the two lists below.
+export type Area = "software" | "civic" | "student" | "community";
+
+export const areas: [Area, string][] = [
+	["software", "Software and web"],
+	["civic", "Policy and civic"],
+	["student", "Student government"],
+	["community", "Tech community"],
+];
+
 export interface Role {
 	title: string;
 	org: string;
 	dates: string;
+	area: Area;
 	points: string[];
 }
 
@@ -14,6 +26,7 @@ export const work: Role[] = [
 		title: "Power Platform Governance Analyst",
 		org: "Canadian Forces Morale and Welfare Services",
 		dates: "May 2026 to Aug 2026",
+		area: "software",
 		points: [
 			"Analyzed the Microsoft Power Platform inventory in Power BI to assess app and flow usage, ownership, governance risk, and migration readiness across the Default Environment.",
 			"Coordinated the organization-wide rollout of updated data loss prevention policies: change management planning, documentation, stakeholder communications, and inquiry support.",
@@ -24,6 +37,7 @@ export const work: Role[] = [
 		title: "Web Content and Newsletter Writer",
 		org: "University of Ottawa",
 		dates: "Jan 2026 to Mar 2026",
+		area: "software",
 		points: [
 			"Reviewed, edited, and drafted content for The Gee, the University of Ottawa student newsletter, on campus events, services, and opportunities.",
 			"Supported content planning and communications strategy to improve student awareness and engagement across digital channels.",
@@ -34,6 +48,7 @@ export const work: Role[] = [
 		title: "DevOps Automation Developer",
 		org: "Vretta",
 		dates: "May 2025 to Aug 2025",
+		area: "software",
 		points: [
 			"Designed and delivered a self-service deployment platform that reduced staging environment provisioning from several hours of manual work to 8 to 25 minutes of automated setup.",
 			"Built a one-click Angular and Feathers interface backed by a TypeScript/Express orchestration service using SQLite, deployment queues, status monitoring, cancellation, and secure polling.",
@@ -46,6 +61,7 @@ export const work: Role[] = [
 		title: "Deputy Returning Officer",
 		org: "Elections Canada",
 		dates: "Apr 2025",
+		area: "civic",
 		points: [
 			"Administered ballot counting during the federal election, following Elections Canada rules and keeping the process sound.",
 		],
@@ -54,6 +70,7 @@ export const work: Role[] = [
 		title: "Information Technology Consultant",
 		org: "University of Ottawa Students’ Union",
 		dates: "Jun 2024 to Aug 2024",
+		area: "software",
 		points: [
 			"Recruited and onboarded web and IT staff: wrote job descriptions, ran interviews, and made hiring recommendations.",
 			"Managed the Students’ Union website, including job postings and content updates.",
@@ -65,6 +82,7 @@ export const work: Role[] = [
 		title: "DevOps and Data Developer",
 		org: "BlackBerry QNX",
 		dates: "May 2023 to Aug 2023",
+		area: "software",
 		points: [
 			"Built interactive internal dashboards from customer usage and licensing data to support decisions.",
 			"Built a sortable, paginated, searchable PHP table of customer license data for compliance analysis.",
@@ -77,6 +95,7 @@ export const work: Role[] = [
 		title: "Software Developer",
 		org: "The Forge VTT",
 		dates: "Jun 2022 to May 2023",
+		area: "software",
 		points: [
 			"Led the overhaul of the content conversion process with an automated CLI script and programmatic image manipulation for tokenization.",
 			"Improved data processing with new algorithms and regex pattern matching (about 30% better).",
@@ -88,6 +107,7 @@ export const work: Role[] = [
 		title: "Open-Source Module Developer",
 		org: "Self-employed",
 		dates: "Apr 2021 to Jan 2023",
+		area: "software",
 		points: [
 			"Built more than 12 open-source modules for the Foundry Virtual Tabletop platform, with more than 22,000 downloads combined.",
 			"Funded the work through freelance commissions and Patreon sponsorships.",
@@ -101,6 +121,7 @@ export const leadership: Role[] = [
 		title: "Co-President (previously Board Chair, President, VP, and Director)",
 		org: "Capital Technology Network (Hack the Hill)",
 		dates: "Nov 2022 to present",
+		area: "community",
 		points: [
 			"Co-led Hack the Hill III, bringing together more than 350 attendees and generating nearly 100 project submissions, including a civic technology collaboration.",
 			"Led Hack the Hill II as president: 826 participants, 113 projects, and more than $95,000 raised.",
@@ -115,6 +136,7 @@ export const leadership: Role[] = [
 		title: "Web Designer",
 		org: "ClimaTalk",
 		dates: "May 2026 to present",
+		area: "software",
 		points: [
 			"Designing and developing ClimaTalk’s website, including an interactive explorer of United Nations climate change conferences (COPs).",
 		],
@@ -123,6 +145,7 @@ export const leadership: Role[] = [
 		title: "Board Director",
 		org: "OpenMedia",
 		dates: "Sep 2025 to present",
+		area: "civic",
 		points: [
 			"OpenMedia is a nonprofit that defends digital rights by promoting privacy, access, and free expression online.",
 			"As a director, I support its mission through governance and oversight.",
@@ -133,6 +156,7 @@ export const leadership: Role[] = [
 		title: "President and Co-Founder",
 		org: "uOttawa Digital Policy Association",
 		dates: "Oct 2024 to present",
+		area: "civic",
 		points: [
 			"Co-founded and lead a student organization focused on technology law, digital governance, and public policy.",
 			"Drafted the constitution, chair meetings, and run finances, communications, and the website.",
@@ -143,6 +167,7 @@ export const leadership: Role[] = [
 		title: "Systems, Automation, and Web Lead",
 		org: "Federal election campaign, Ottawa–Vanier–Gloucester",
 		dates: "Jan 2025 to Apr 2025",
+		area: "civic",
 		points: [
 			"Ran the campaign’s digital infrastructure across web, email, volunteer management, and campaign systems.",
 			"Maintained the campaign website and added API-based features for real-time updates.",
@@ -155,6 +180,7 @@ export const leadership: Role[] = [
 		title: "Vice-President of Internal Affairs",
 		org: "Engineering Students’ Society, University of Ottawa",
 		dates: "May 2025 to Sep 2025",
+		area: "student",
 		points: [
 			"Oversaw the Society’s sub-associations and led the team organizing the uOttawa Engineering Competition, a qualifier for the Ontario Engineering Competition.",
 			"Led National Engineering Month events, managed internal operations, and recorded and published officer meeting minutes.",
@@ -165,6 +191,7 @@ export const leadership: Role[] = [
 		title: "Board Chair",
 		org: "Engineering Students’ Society, University of Ottawa",
 		dates: "May 2024 to Apr 2025",
+		area: "student",
 		points: [
 			"Chaired Board and member meetings under Robert’s Rules of Order.",
 			"Led by-law and policy revisions, and created the Society’s first accountability tracker for executives and directors.",
@@ -174,6 +201,7 @@ export const leadership: Role[] = [
 		title: "Board Chair",
 		org: "Canadian Federation of Engineering Students",
 		dates: "May 2024 to Aug 2024",
+		area: "student",
 		points: [
 			"Chaired the national Board of Directors and organized the Federation’s first online seasonal updates meeting.",
 			"Created simplified bilingual agenda and motion templates.",
@@ -183,6 +211,7 @@ export const leadership: Role[] = [
 		title: "Executive (Communications Commissioner)",
 		org: "University of Ottawa Students’ Union",
 		dates: "Nov 2023 to Apr 2024",
+		area: "student",
 		points: [
 			"Member of the executive committee of a $17.4M+ not-for-profit serving more than 40,000 members, overseeing communications, marketing, sponsorship, and outreach.",
 			"Directed the 2024 General Elections: introduced a modern election platform and in-person voting, fixed email delivery with University IT, worked with legal counsel on voting integrity, and built a live turnout tracker.",
@@ -197,6 +226,7 @@ export const leadership: Role[] = [
 		title: "Director (Engineering Representative)",
 		org: "University of Ottawa Students’ Union",
 		dates: "May 2023 to Aug 2023",
+		area: "student",
 		points: [
 			"Represented the Faculty of Engineering on the Board of Directors.",
 			"Drafted policy and by-law reforms adopted by the Board, and chaired committee meetings.",
@@ -206,6 +236,7 @@ export const leadership: Role[] = [
 		title: "Advisory Committee Member",
 		org: "University of Ottawa Engineering Endowment Fund",
 		dates: "May 2023 to Jan 2025",
+		area: "student",
 		points: [
 			"Reviewed funding proposals and budgets, and helped allocate more than $400,000 to student engineering initiatives.",
 		],
@@ -214,6 +245,7 @@ export const leadership: Role[] = [
 		title: "Co-Founder and Chair",
 		org: "uOttawa Cybersecurity Club",
 		dates: "Mar 2023 to May 2024",
+		area: "community",
 		points: [
 			"Founded the club and drafted its constitution.",
 			"Built a full-stack Next.js capture-the-flag leaderboard for an event with more than 60 participants, hosted on AWS EC2 with Docker and Caddy.",
@@ -223,6 +255,7 @@ export const leadership: Role[] = [
 		title: "Branch Executive",
 		org: "IEEE uOttawa Student Branch",
 		dates: "Feb 2023 to Apr 2024",
+		area: "community",
 		points: [
 			"Served as Vice-President Communications, Vice-President External Affairs, and Software Engineering Academic Commissioner.",
 			"Co-organized a capture-the-flag competition and a large networking event.",

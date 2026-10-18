@@ -1,5 +1,5 @@
 ---
-import { leadership, work, type Role } from "../../data/experience";
+import { areas, leadership, work, type Role } from "../../data/experience";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -18,10 +18,6 @@ const entries: Entry[] = [
 	.sort((a, b) => b.start - a.start);
 
 const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
-
-// The two most recent years show by default; earlier ones wait behind a button.
-const RECENT = 2;
-const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT - 1] ?? 0)).length;
 ---
 
 <section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
@@ -29,29 +25,35 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 		<h2 id="experience-title">Experience</h2>
 		<div class="filters" role="group" aria-label="Show">
 			<button type="button" data-filter="all" aria-pressed="true">All</button>
-			<button type="button" data-filter="work" aria-pressed="false">Work</button>
-			<button type="button" data-filter="leadership" aria-pressed="false">
-				Leadership and volunteering
-			</button>
+			{
+				areas.map(([id, label]) => (
+					<button type="button" data-filter={id} aria-pressed="false">
+						{label}
+					</button>
+				))
+			}
 		</div>
 
-		<div class="timeline" id="experience-timeline">
+		<div class="timeline">
 			{
-				years.map((year, index) => (
-					<div class:list={["year", { earlier: index >= RECENT }]}>
+				years.map(year => (
+					<div class="year">
 						<h3 class="year-label">{year}</h3>
 						<ul class="roles" role="list">
 							{entries
 								.filter(entry => Math.floor(entry.start) === year)
 								.map(role => (
-									<li data-kind={role.kind}>
+									<li data-area={role.area}>
 										<details class="role">
 											<summary>
 												<span class="role-head">
 													<span class="role-title">{role.title}</span>
 													<span class="role-org">{role.org}</span>
 												</span>
-												<span class="role-dates">{role.dates}</span>
+												<span class="role-dates">
+													{role.dates}
+													{role.kind === "leadership" && <span class="volunteer">Volunteer</span>}
+												</span>
 												<svg class="role-caret" viewBox="0 0 24 24" aria-hidden="true">
 													<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 												</svg>
@@ -70,19 +72,6 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 			}
 		</div>
 
-		{
-			earlier > 0 && (
-				<button
-					type="button"
-					class="more"
-					aria-expanded="false"
-					aria-controls="experience-timeline"
-					data-more={`Show ${earlier} earlier roles, ${years.at(-1)} to ${years[RECENT]}`}
-				>
-					Show {earlier} earlier roles, {years.at(-1)} to {years[RECENT]}
-				</button>
-			)
-		}
 	</div>
 </section>
 
@@ -93,29 +82,17 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
 	for (const button of filters) {
 		button.addEventListener("click", () => {
-			const kind = button.dataset.filter;
+			const area = button.dataset.filter;
 			for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
-			for (const item of section.querySelectorAll<HTMLElement>(".timeline li[data-kind]")) {
-				item.hidden = kind !== "all" && item.dataset.kind !== kind;
+			for (const item of section.querySelectorAll<HTMLElement>(".timeline li[data-area]")) {
+				item.hidden = area !== "all" && item.dataset.area !== area;
 			}
 			for (const year of section.querySelectorAll<HTMLElement>(".timeline .year")) {
-				year.hidden = !year.querySelector("li[data-kind]:not([hidden])");
+				year.hidden = !year.querySelector("li[data-area]:not([hidden])");
 			}
 			click(true);
 		});
 	}
-
-	// Earlier years open and close under the button.
-	const more = section.querySelector<HTMLButtonElement>(".more");
-	more?.addEventListener("click", () => {
-		const open = more.getAttribute("aria-expanded") !== "true";
-		more.setAttribute("aria-expanded", String(open));
-		more.textContent = open ? "Show fewer roles" : more.dataset.more!;
-		timeline.classList.toggle("expanded", open);
-		if (!open) more.scrollIntoView({ block: "nearest" });
-		click(open);
-		queueFill();
-	});
 
 	// The rail fills to a line 60% of the way down the screen. Each year's bulb
 	// fills from the top as the liquid passes through it (--level), and the
@@ -137,9 +114,9 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 		if (settled && depth !== lastDepth) scribe(Math.abs(depth - lastDepth));
 		lastDepth = depth;
 		const radius = parseFloat(getComputedStyle(timeline).getPropertyValue("--bulb")) / 2;
-		// Several dots can be reached in one frame, as when the earlier years
-		// unfold below a rail that already passes them; their bells cascade a
-		// beat apart instead of landing together.
+		// Several dots can be reached in one frame, as on a long jump or when a
+		// filter brings years back below a rail that already passes them; their
+		// bells cascade a beat apart instead of landing together.
 		let burst = 0;
 		years.forEach((year, index) => {
 			const shown = year.offsetParent !== null;
@@ -252,8 +229,7 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 		margin-bottom: var(--space-5);
 	}
 
-	.year[hidden],
-	.timeline:not(.expanded) .year.earlier {
+	.year[hidden] {
 		display: none;
 	}
 
@@ -294,29 +270,6 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 
 	.year.reached::after {
 		box-shadow: 0 0 10px color-mix(in srgb, var(--liquid) 45%, transparent);
-	}
-
-	/* Earlier years, under the timeline. */
-	.more {
-		display: block;
-		margin: 0 0 0 var(--gutter);
-		padding: 0.45em 1.1em;
-		font: inherit;
-		font-size: 0.9rem;
-		color: var(--color-text);
-		border: 1px solid var(--color-rule);
-		border-radius: 999px;
-		background: transparent;
-		cursor: pointer;
-		transition:
-			border-color var(--dur-2),
-			background-color var(--dur-2);
-	}
-
-	.more:hover,
-	.more:focus-visible {
-		border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
-		background: color-mix(in srgb, var(--color-text) 6%, transparent);
 	}
 
 	.year .year-label {
@@ -380,6 +333,16 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 		color: var(--color-muted);
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
+	}
+
+	/* Volunteer roles say so beside their dates. */
+	.volunteer {
+		margin-left: 0.6em;
+		padding: 0.1em 0.5em;
+		border: 1px solid var(--color-rule);
+		border-radius: 999px;
+		font-size: 0.75rem;
+		letter-spacing: 0.02em;
 	}
 
 	.role-caret {
