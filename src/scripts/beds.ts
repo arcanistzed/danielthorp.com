@@ -522,6 +522,96 @@ function carriageReturn(g: Graph, out: AudioNode, time: number, level: number) {
 	zip.stop(time + 0.26);
 }
 
+/** A reverse cymbal: bright noise swelling up to `until`, then gone, so a landing has a run-up. */
+function swell(g: Graph, out: AudioNode, from: number, until: number, level: number) {
+	const { ctx } = g;
+	const buffer = whiteNoise();
+	if (!buffer || until - from < 0.25) return;
+	const source = ctx.createBufferSource();
+	source.buffer = buffer;
+	source.loop = true;
+	const high = ctx.createBiquadFilter();
+	high.type = "highpass";
+	high.frequency.setValueAtTime(1200, from);
+	high.frequency.exponentialRampToValueAtTime(5000, until);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, from);
+	amp.gain.exponentialRampToValueAtTime(level, until);
+	amp.gain.setValueAtTime(0.0001, until + 0.002);
+	source.connect(high);
+	high.connect(amp);
+	amp.connect(out);
+	source.start(from, Math.random() * 1.5);
+	source.stop(until + 0.02);
+}
+
+/** A marimba note: a wooden bar's fundamental with its bright fourth partial and the mallet's tap. */
+function marimba(g: Graph, out: AudioNode, note: number, time: number, level: number, pan = 0) {
+	const { ctx } = g;
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, time);
+	amp.gain.exponentialRampToValueAtTime(level, time + 0.003);
+	amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.4);
+	let tail: AudioNode = amp;
+	if (pan) {
+		const panner = ctx.createStereoPanner();
+		panner.pan.value = pan;
+		amp.connect(panner);
+		tail = panner;
+	}
+	tail.connect(out);
+	sendTo(g, tail, 0.45);
+	const oscs: OscillatorNode[] = [];
+	for (const [ratio, part, decay] of [
+		[1, 1, 0.4],
+		[4, 0.3, 0.12],
+		[9.2, 0.08, 0.05],
+	] as const) {
+		const osc = ctx.createOscillator();
+		osc.type = "sine";
+		osc.frequency.value = hz(note) * ratio;
+		const gain = ctx.createGain();
+		gain.gain.setValueAtTime(part, time);
+		gain.gain.exponentialRampToValueAtTime(part * 0.02, time + decay);
+		osc.connect(gain);
+		gain.connect(amp);
+		osc.start(time);
+		osc.stop(time + 0.45);
+		oscs.push(osc);
+	}
+	trackVoice(amp, ...oscs);
+	noiseBurst(g, tail, time, { band: 1800, attack: 0.001, length: 0.012, level: level * 0.6 });
+}
+
+/** The two-note chime before an announcement, soft-edged, in key. */
+function chime(g: Graph, out: AudioNode, time: number, level: number) {
+	const { ctx } = g;
+	const oscs: OscillatorNode[] = [];
+	const amp = ctx.createGain();
+	amp.gain.value = 1;
+	amp.connect(out);
+	sendTo(g, amp, 0.35);
+	[
+		[76, 0],
+		[72, 0.42],
+	].forEach(([note, offset]) => {
+		const at = time + offset;
+		const osc = ctx.createOscillator();
+		osc.type = "sine";
+		osc.frequency.value = hz(note);
+		const env = ctx.createGain();
+		env.gain.setValueAtTime(0.0001, at);
+		env.gain.exponentialRampToValueAtTime(level, at + 0.03);
+		env.gain.exponentialRampToValueAtTime(0.0001, at + 0.9);
+		osc.connect(env);
+		env.connect(amp);
+		osc.start(at);
+		osc.stop(at + 0.95);
+		oscs.push(osc);
+	});
+	trackVoice(amp, ...oscs);
+}
+
 /** An endless loop of filtered noise. */
 function noiseFloor(g: Graph, out: AudioNode, type: BiquadFilterType, frequency: number, level: number) {
 	const { ctx } = g;
@@ -604,7 +694,7 @@ const BEDS: Record<string, Bed> = {
 	// supersaw pad breathing against a beat that isn't there yet, and a slow
 	// filter sweeping across sixteen bars.
 	carbon: {
-		level: 0.75,
+		level: 0.6,
 		reverb: 0.35,
 		pump: true,
 		build(g, out, pump) {
@@ -713,6 +803,8 @@ const BEDS: Record<string, Bed> = {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
 					keep(s, t);
+					// The announcement chime, once every eight bars.
+					if (share >= 0.5 && s % LOOP === 0) chime(g, out, t, 0.09);
 					if (share >= 0.7 && i % 4 === 0) kick(g, out, t, 0.22, true);
 					if (share >= 0.5 && i % 4 === 2) {
 						stab(g, pump, chord, t, STEP * 0.9, {
@@ -740,7 +832,7 @@ const BEDS: Record<string, Bed> = {
 	// Experience: something growing. Warm pads, a low root, and plucks that
 	// climb the chord and bounce back off the dotted-eighth delay.
 	tree: {
-		level: 1,
+		level: 0.85,
 		reverb: 0.3,
 		pump: true,
 		build(g, out, pump) {
@@ -771,14 +863,15 @@ const BEDS: Record<string, Bed> = {
 						const ladder = [...chord, ...chord.map(n => n + 12), chord[0] + 24];
 						const i = (s / 2) % (ladder.length + 1);
 						if (i < ladder.length) {
-							pluck(g, pump, ladder[i], t + jitter(8), {
-								type: "triangle",
-								cutoff: 2800,
-								decay: 0.45,
-								level: vary(0.06),
-								send: 0.7,
-								pan: (i / (ladder.length - 1)) * 0.8 - 0.4,
-							});
+							// Wooden bars in the workshop, climbing the chord.
+							marimba(
+								g,
+								pump,
+								ladder[i],
+								t + jitter(8),
+								vary(0.07),
+								(i / (ladder.length - 1)) * 0.8 - 0.4,
+							);
 						}
 					}
 				},
@@ -791,7 +884,7 @@ const BEDS: Record<string, Bed> = {
 	// the off-beats, an off-beat bass, sidechained supersaw stabs, and a
 	// riser through the last bar of every eight.
 	matrix: {
-		level: 3.4,
+		level: 4.2,
 		reverb: 0.1,
 		pump: true,
 		build(g, out, pump) {
@@ -1006,6 +1099,8 @@ interface Live {
 	weight: number;
 	/** The section's raw share of the viewport, before the fade curve. */
 	share: number;
+	/** The share as the arrangement sees it: sampled on the bar, so layers come in on the one. */
+	barShare: number;
 	/** The share at the previous measurement, to tell arriving from leaving. */
 	lastShare: number;
 	arriving: boolean;
@@ -1049,6 +1144,7 @@ export function installBeds() {
 			voice: null,
 			weight: 0,
 			share: 0,
+			barShare: 0,
 			lastShare: 0,
 			arriving: true,
 			audible: false,
@@ -1066,9 +1162,11 @@ export function installBeds() {
 		const now = g.ctx.currentTime;
 		if (nextTime < now - 1) nextTime = now;
 		while (nextTime < now + LOOKAHEAD) {
+			// Layers join and leave on the downbeat, the way a DJ brings a part in.
+			if (step % BAR === 0) for (const entry of live.values()) entry.barShare = entry.share;
 			for (const entry of live.values()) {
 				if (!entry.audible) continue;
-				entry.voice?.step?.(step, nextTime, entry.share);
+				entry.voice?.step?.(step, nextTime, entry.barShare);
 				if (entry.bed.pump && entry.pump && !holdKey && step % 4 === 0) duck(entry.pump, nextTime);
 			}
 			nextTime += STEP;
@@ -1186,6 +1284,8 @@ export function installBeds() {
 		const at = nextBeat();
 		const seconds = duration / 1000;
 		glide = { bed: best, seconds, at, to };
+		// A reverse cymbal runs up to the beat the swap lands on.
+		swell(g, g.music, g.ctx.currentTime, at, 0.08);
 		slowUntil =
 			performance.now() + (at - g.ctx.currentTime + Math.max(seconds, BAR * STEP)) * 1000;
 		swap(best, seconds, at);
@@ -1301,7 +1401,11 @@ export function installBeds() {
 				entry.pump.connect(entry.gain);
 				entry.voice = entry.bed.build(g, entry.gain, entry.pump);
 			}
-			if (audible && !entry.audible) entry.voice?.wake?.(step);
+			if (audible && !entry.audible) {
+				entry.voice?.wake?.(step);
+				entry.barShare = entry.share;
+			}
+			if (at) entry.barShare = entry.share;
 			entry.audible = audible;
 			entry.voice?.approach?.(entry.share);
 			// The same filter swap as a nav glide, driven by the scroll: a bed
