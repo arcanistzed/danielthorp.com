@@ -4,8 +4,6 @@ import { leadership, work, type Role } from "../../data/experience";
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const now = new Date();
 const NOW = now.getFullYear() + now.getMonth() / 12;
-const FIRST = 2021;
-const LAST = Math.max(NOW, 2026 + 11 / 12);
 
 // "May 2025 to Aug 2025", "Apr 2025", "Nov 2022 to present" -> fractional years.
 function span(dates: string): [number, number] {
@@ -32,7 +30,6 @@ const entries: Entry[] = [
 	.sort((a, b) => b.start - a.start);
 
 const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
-const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toFixed(2)}%`;
 ---
 
 <section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
@@ -62,15 +59,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 													<span class="role-title">{role.title}</span>
 													<span class="role-org">{role.org}</span>
 												</span>
-												<span class="role-meta">
-													<span class="role-dates">{role.dates}</span>
-													<span class="span-track" aria-hidden="true">
-														<span
-															class:list={["span-bar", role.kind]}
-															style={`left: ${pct(role.start)}; width: calc(${pct(role.end)} - ${pct(role.start)});`}
-														/>
-													</span>
-												</span>
+												<span class="role-dates">{role.dates}</span>
 												<svg class="role-caret" viewBox="0 0 24 24" aria-hidden="true">
 													<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 												</svg>
@@ -88,11 +77,6 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 				))
 			}
 		</div>
-
-		<p class="legend" aria-hidden="true">
-			<span class="span-bar work"></span> Work
-			<span class="span-bar leadership"></span> Leadership and volunteering
-		</p>
 
 	</div>
 </section>
@@ -291,60 +275,11 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		color: var(--color-muted);
 	}
 
-	.role-meta {
-		display: grid;
-		justify-items: end;
-		gap: 0.35rem;
-	}
-
 	.role-dates {
 		font-size: 0.85rem;
 		color: var(--color-muted);
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
-	}
-
-	.span-track {
-		position: relative;
-		width: 8rem;
-		height: 4px;
-		border-radius: 2px;
-		background: var(--color-rule);
-	}
-
-	.span-track .span-bar {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		min-width: 3px;
-	}
-
-	.span-bar {
-		display: inline-block;
-		border-radius: 2px;
-	}
-
-	.span-bar.work {
-		background: var(--color-accent);
-	}
-
-	.span-bar.leadership {
-		background: #e0569b;
-	}
-
-	.legend {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: var(--space-2) var(--space-3);
-		margin: var(--space-3) 0 0 4.5rem;
-		font-size: 0.85rem;
-		color: var(--color-muted);
-	}
-
-	.legend .span-bar {
-		width: 1.4rem;
-		height: 4px;
 	}
 
 	.role-caret {
@@ -394,19 +329,14 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 			gap: var(--space-2) var(--space-3);
 		}
 
-		.role-meta {
+		.role-dates {
 			grid-column: 1;
 			grid-row: 2;
-			justify-items: start;
 		}
 
 		.role-caret {
 			grid-column: 2;
 			grid-row: 1 / span 2;
-		}
-
-		.legend {
-			margin-left: 1.5rem;
 		}
 	}
 </style>
