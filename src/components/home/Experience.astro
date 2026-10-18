@@ -208,6 +208,13 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		text-shadow: 0 1px 0 rgba(255, 240, 210, 0.45);
 	}
 
+	/* On maple the darker light-mode brass is too dark under dark text, so the
+	   selected tag uses pale polished brass instead. */
+	:global(:root[data-theme="light"]) .filters button[aria-pressed="true"] {
+		background: linear-gradient(to bottom, #f6e2b0, #e3c07a 55%, #c99c52);
+		border-color: #a77a33;
+	}
+
 	/* A glass tube down the left with the year each group of roles started.
 	   Liquid runs down it as you scroll, and at each year the tube widens into
 	   a bulb that fills from the top as the liquid passes through. Layers, back
