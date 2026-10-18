@@ -94,3 +94,9 @@ html.sound-none .sound-prompt {
 		transition: none !important;
 	}
 }
+
+/* Avoid paragraphs that end on a single word. */
+p,
+li {
+	text-wrap: pretty;
+}

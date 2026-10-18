@@ -45,10 +45,12 @@ import profile from "../../assets/profile.png";
 		object-fit: cover;
 	}
 
+	/* Balanced lines, so the centred paragraph never ends on a lone word. */
 	p {
 		max-width: 60ch;
 		margin: 0 auto var(--space-5);
 		line-height: 1.6;
+		text-wrap: balance;
 	}
 
 	/* The same frosted pill as the hero's sound prompt. */
