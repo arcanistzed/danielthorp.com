@@ -10,13 +10,125 @@ interface Props {
 	description?: string;
 }
 
-const {
-	title = "Daniel Thorp",
-	description = "Daniel Thorp is a Software Engineering student at the University of Ottawa interested in technology, public policy, digital rights, and building things that work better.",
-} = Astro.props;
+const site = "https://danielthorp.com";
+const defaultDescription =
+	"Daniel Thorp is a Software Engineering student at the University of Ottawa interested in technology, public policy, digital rights, and building things that work better.";
 
-const canonicalURL = new URL(Astro.url.pathname, "https://danielthorp.com");
-const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
+const { title, description = defaultDescription } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, site);
+// The home page names who Daniel is, so search results can tell him apart
+// from others with the same name.
+const pageTitle = title
+	? `${title} · Daniel Thorp`
+	: "Daniel Thorp · Software Engineering Student, University of Ottawa";
+const isHome = Astro.url.pathname === "/";
+const ogImageAlt =
+	"A card reading “Hello! My name is” and “Bonjour! Je m’appelle” above the name Daniel Thorp.";
+
+const person = {
+	"@type": "Person",
+	"@id": `${site}/#person`,
+	name: "Daniel Thorp",
+	givenName: "Daniel",
+	familyName: "Thorp",
+	url: `${site}/`,
+	email: "daniel@danielthorp.com",
+	description: defaultDescription,
+	jobTitle: "Software Engineering Student",
+	knowsLanguage: ["en", "fr"],
+	nationality: { "@type": "Country", name: "Canada" },
+	homeLocation: {
+		"@type": "Place",
+		name: "Ottawa, Ontario, Canada",
+		address: {
+			"@type": "PostalAddress",
+			addressLocality: "Ottawa",
+			addressRegion: "ON",
+			addressCountry: "CA",
+		},
+	},
+	knowsAbout: [
+		"Software engineering",
+		"Requirements engineering",
+		"AI ethics",
+		"Digital rights",
+		"Digital policy",
+		"Public policy",
+		"Web development",
+		"DevOps",
+	],
+	affiliation: [
+		{
+			"@type": "CollegeOrUniversity",
+			name: "University of Ottawa",
+			url: "https://www.uottawa.ca/",
+		},
+		{
+			"@type": "ResearchOrganization",
+			name: "Canadian Robotics and Artificial Intelligence Ethical Design Lab",
+			alternateName: "CRAIEDL",
+			url: "https://www.craiedl.ca/",
+		},
+	],
+	memberOf: [
+		{
+			"@type": "Organization",
+			name: "OpenMedia",
+			url: "https://openmedia.org/",
+		},
+		{
+			"@type": "Organization",
+			name: "Capital Technology Network",
+			url: "https://hackthehill.com/",
+		},
+		{
+			"@type": "Organization",
+			name: "uOttawa Digital Policy Association",
+			url: "https://uodpa-apnuo.org/",
+		},
+	],
+	sameAs: [
+		"https://github.com/arcanistzed",
+		"https://www.linkedin.com/in/daniel-a-thorp/",
+		"https://arcanistzed.substack.com",
+		"https://bsky.app/profile/danielthorp.bsky.social",
+		"https://x.com/arcanistzed",
+		"https://instagram.com/daniel.a.thorp",
+	],
+};
+
+// One graph: the site, the person it's about, and on the home page a
+// ProfilePage whose main entity is that person.
+const structuredData = {
+	"@context": "https://schema.org",
+	"@graph": [
+		{
+			"@type": "WebSite",
+			"@id": `${site}/#website`,
+			name: "Daniel Thorp",
+			url: `${site}/`,
+			inLanguage: "en-CA",
+			author: { "@id": person["@id"] },
+			publisher: { "@id": person["@id"] },
+		},
+		person,
+		...(isHome
+			? [
+					{
+						"@type": "ProfilePage",
+						"@id": `${site}/#profile`,
+						url: `${site}/`,
+						name: pageTitle,
+						inLanguage: "en-CA",
+						isPartOf: { "@id": `${site}/#website` },
+						mainEntity: { "@id": person["@id"] },
+						about: { "@id": person["@id"] },
+					},
+				]
+			: []),
+	],
+};
 ---
 
 <!doctype html>
@@ -37,12 +149,15 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 		<meta property="og:title" content={pageTitle} />
 		<meta property="og:description" content={description} />
 		<meta property="og:site_name" content="Daniel Thorp" />
+		<meta property="og:locale" content="en_CA" />
+		<meta property="og:locale:alternate" content="fr_CA" />
 		<meta
 			property="og:image"
 			content="https://danielthorp.com/og-image.png"
 		/>
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content={ogImageAlt} />
 
 		<!-- Twitter Card -->
 		<meta name="twitter:card" content="summary_large_image" />
@@ -52,6 +167,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 			name="twitter:image"
 			content="https://danielthorp.com/og-image.png"
 		/>
+		<meta name="twitter:image:alt" content={ogImageAlt} />
 
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
@@ -77,60 +193,7 @@ const pageTitle = title === "Daniel Thorp" ? title : `${title} · Daniel Thorp`;
 		/>
 
 		<!-- Structured data -->
-		<script
-			type="application/ld+json"
-			set:html={JSON.stringify({
-				"@context": "https://schema.org",
-				"@type": "WebSite",
-				name: "Daniel Thorp",
-				url: "https://danielthorp.com",
-				author: {
-					"@type": "Person",
-					name: "Daniel Thorp",
-					url: "https://danielthorp.com",
-					email: "daniel@danielthorp.com",
-					jobTitle: "Software Engineering Student",
-					knowsLanguage: ["en", "fr"],
-					affiliation: [
-						{
-							"@type": "CollegeOrUniversity",
-							name: "University of Ottawa",
-							url: "https://www.uottawa.ca/",
-						},
-						{
-							"@type": "ResearchOrganization",
-							name: "Canadian Robotics and Artificial Intelligence Ethical Design Lab",
-							alternateName: "CRAIEDL",
-							url: "https://www.craiedl.ca/",
-						},
-					],
-					memberOf: [
-						{
-							"@type": "Organization",
-							name: "OpenMedia",
-							url: "https://openmedia.org/",
-						},
-						{
-							"@type": "Organization",
-							name: "Capital Technology Network",
-							url: "https://hackthehill.com/",
-						},
-						{
-							"@type": "Organization",
-							name: "uOttawa Digital Policy Association",
-							url: "https://uodpa-apnuo.org/",
-						},
-					],
-					sameAs: [
-						"https://github.com/arcanistzed",
-						"https://www.linkedin.com/in/daniel-a-thorp/",
-						"https://arcanistzed.substack.com",
-						"https://bsky.app/profile/danielthorp.bsky.social",
-						"https://instagram.com/daniel.a.thorp",
-					],
-				},
-			})}
-		/>
+		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
 		<title>{pageTitle}</title>
 
