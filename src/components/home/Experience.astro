@@ -156,21 +156,52 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	}
 
 
+	/* The section is a workbench (see sections.css): brass for the fittings,
+	   amber in the glass. */
+	.experience {
+		--brass: #d4a75a;
+		--brass-hi: #f0d08e;
+		--brass-lo: #94692a;
+		--engrave: 0 1px 0 rgba(0, 0, 0, 0.55);
+		--year: var(--brass-hi);
+	}
+
+	:global(:root[data-theme="light"]) .experience {
+		--brass: #9a6b22;
+		--brass-hi: #c89a48;
+		--brass-lo: #6c4812;
+		--engrave: 0 1px 0 rgba(255, 255, 255, 0.6);
+		--year: var(--brass-lo);
+	}
+
+	.experience h2 {
+		border-bottom-color: color-mix(in srgb, var(--brass) 55%, transparent);
+	}
+
+	/* Filters are small brass tags; the selected one is polished. */
 	.filters button {
 		font: inherit;
 		font-size: 0.9rem;
 		padding: 0.35em 0.9em;
-		border: 1px solid var(--color-rule);
-		border-radius: 999px;
-		background: transparent;
-		color: var(--color-muted);
+		border: 1px solid color-mix(in srgb, var(--brass) 55%, transparent);
+		border-radius: 4px;
+		background: color-mix(in srgb, var(--brass) 8%, transparent);
+		color: var(--color-text);
 		cursor: pointer;
+		transition:
+			background-color var(--dur-2),
+			border-color var(--dur-2);
+	}
+
+	.filters button:hover {
+		border-color: var(--brass);
 	}
 
 	.filters button[aria-pressed="true"] {
-		background: var(--color-text);
-		border-color: var(--color-text);
-		color: var(--bg-experience);
+		background: linear-gradient(to bottom, var(--brass-hi), var(--brass) 55%, var(--brass-lo));
+		border-color: var(--brass-lo);
+		color: #2a1a0c;
+		text-shadow: 0 1px 0 rgba(255, 240, 210, 0.45);
 	}
 
 	/* A glass tube down the left with the year each group of roles started.
@@ -185,14 +216,21 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		--fill: 0px;
 		--tube: 6px;
 		--bulb: 18px;
-		--liquid: var(--color-accent);
-		--liquid-deep: color-mix(in oklch, var(--color-accent) 82%, #2b0fd6);
-		--glass: color-mix(in srgb, var(--color-accent) 10%, var(--bg-experience));
-		--glass-edge: color-mix(in srgb, var(--color-accent) 38%, transparent);
+		--liquid: #f0a531;
+		--liquid-deep: #cf7a16;
+		--glass: color-mix(in srgb, #fff 7%, var(--bg-experience));
+		--glass-edge: rgba(255, 255, 255, 0.28);
 		--glint: inset 1.5px 0 0 rgba(255, 255, 255, 0.22);
 		position: relative;
 		isolation: isolate;
 		padding-left: var(--gutter);
+	}
+
+	:global(:root[data-theme="light"]) .timeline {
+		--liquid: #d98a1c;
+		--liquid-deep: #b0620c;
+		--glass: color-mix(in srgb, #fff 45%, var(--bg-experience));
+		--glass-edge: rgba(90, 60, 25, 0.35);
 	}
 
 	.timeline::before,
@@ -283,7 +321,8 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		white-space: nowrap;
 		font-family: var(--font-display);
 		font-size: 1.05rem;
-		color: var(--color-text);
+		color: var(--year);
+		text-shadow: var(--engrave);
 		text-align: right;
 	}
 
@@ -314,7 +353,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	}
 
 	summary:hover {
-		background: var(--color-surface);
+		background: color-mix(in srgb, var(--brass) 10%, transparent);
 	}
 
 	.role-head {
