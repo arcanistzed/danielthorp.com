@@ -100,7 +100,7 @@ const links = [
 			return;
 		}
 		if (event.key !== "Tab") return;
-		const items = [toggle, ...links, themeButton];
+		const items: HTMLElement[] = [toggle, ...links, themeButton];
 		const i = items.indexOf(document.activeElement as HTMLElement);
 		const next = event.shiftKey
 			? items[(i - 1 + items.length) % items.length]

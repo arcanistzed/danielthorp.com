@@ -1,7 +1,8 @@
-# Keeps the "Writing" list current. The Substack feed is fetched at build time
-# and Substack has no publish webhook, so this checks three times a day whether
-# the newest post is on the live site and rebuilds only when it isn't. Running it
-# by hand always rebuilds.
+# Keeps the Writing ("Opinion") list current. The Substack feed is fetched at
+# build time and Substack has no publish webhook, so this checks three times a
+# day whether the newest post is on the live site, or whether the last build
+# fell back to the hand-written list, and rebuilds only then. Running it by
+# hand always rebuilds.
 #
 # Setup: create a deploy hook for this project in the Cloudflare dashboard and
 # save its URL as the CLOUDFLARE_DEPLOY_HOOK repository secret.
@@ -40,6 +41,14 @@ jobs:
           except Exception as error:
               print("stale=true")
               print(f"::warning::Couldn't check for a new post ({error}), so rebuilding anyway.", file=sys.stderr)
+              sys.exit(0)
+
+          # The last build couldn't read the feed and shows the hand-written
+          # list instead, which can include the newest post. Rebuild until the
+          # feed is read again.
+          if 'data-feed="fallback"' in live:
+              print("stale=true")
+              print("The live site shows the fallback post list, so rebuilding.", file=sys.stderr)
               sys.exit(0)
 
           item = re.search(r"<item>(.*?)</item>", feed, re.S)

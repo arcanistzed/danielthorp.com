@@ -10,27 +10,36 @@ interface FeedItem {
 
 let posts: FeedItem[] = [];
 
-// Shown when the Substack feed can't be fetched at build time.
+// Shown when the Substack feed can't be fetched at build time: the four newest
+// posts, as many as the page shows. Keep it in step with the feed, since a
+// build that falls back marks the section (data-feed="fallback") and the
+// scheduled rebuild retries until the feed is read again.
 const fallbackPosts: FeedItem[] = [
 	{
 		title: "The Safe Social Media Act Has a Chatbot Problem",
 		link: "https://arcanistzed.substack.com/p/the-safe-social-media-act-has-a-chatbot",
-		pubDate: "12 Jun 2026 12:00:00 GMT",
-		description: "Bill C-34 is mostly a social media bill, and it shows.",
+		pubDate: "Fri, 12 Jun 2026 03:16:48 GMT",
+		description: "Bill C-34 is mostly a social media bill, and it shows",
 	},
 	{
 		title: "At the Supreme Court for Facebook, Inc. v. Privacy Commissioner of Canada",
 		link: "https://arcanistzed.substack.com/p/at-the-supreme-court-for-facebook",
-		pubDate: "24 Mar 2026 12:00:00 GMT",
-		description:
-			"What the case reveals about the limits of consent in privacy law.",
+		pubDate: "Tue, 24 Mar 2026 16:30:27 GMT",
+		description: "What this case reveals about the limits of consent in privacy law",
 	},
 	{
-		title: "Do You Really Own Your Phone?",
-		link: "https://arcanistzed.substack.com/p/do-you-really-own-your-phone",
-		pubDate: "12 Oct 2025 12:00:00 GMT",
+		title: "Effective Accelerationism Has Joined the Culture War",
+		link: "https://arcanistzed.substack.com/p/effective-accelerationism-has-joined",
+		pubDate: "Fri, 12 Dec 2025 14:06:29 GMT",
 		description:
-			"How platform power can narrow digital freedom and meaningful ownership.",
+			"Trump's Executive Order to Block States from Regulating Artificial Intelligence",
+	},
+	{
+		title: "Canada's AI Strategy Should be Focused on Responsible Innovation",
+		link: "https://arcanistzed.substack.com/p/canadas-ai-strategy-should-be-focused",
+		pubDate: "Sat, 01 Nov 2025 13:14:27 GMT",
+		description:
+			"An Open Letter to the Minister of AI from the uOttawa Digital Policy Association",
 	},
 ];
 
@@ -136,6 +145,7 @@ function excerpt(text?: string): string {
 	return `${truncated.slice(0, lastSpace > 0 ? lastSpace : 180)}…`;
 }
 // The newest four: one lead story and a row of three beneath it.
+const feed = posts.length ? "live" : "fallback";
 const [lead, ...rest] = (posts.length ? posts : fallbackPosts).slice(0, 4);
 const today = new Date().toLocaleDateString("en-CA", {
 	weekday: "long",
@@ -146,7 +156,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 });
 ---
 
-<section class="flat writing" id="writing" aria-labelledby="writing-title" data-bed="paper" data-sfx="paper">
+<section class="flat writing" id="writing" aria-labelledby="writing-title" data-bed="paper" data-sfx="paper" data-feed={feed}>
 	<div class="flat-inner">
 		<header class="masthead">
 			<h2 id="writing-title" class="nameplate">Opinion</h2>
