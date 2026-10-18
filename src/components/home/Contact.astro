@@ -6,13 +6,27 @@
 			technology, public policy, and the public interest. Reach out if you’d
 			like to discuss an idea, collaborate, or just say hello.
 		</p>
-		<a class="email" href="mailto:daniel@danielthorp.com">daniel@danielthorp.com</a>
+		<a class="email-button" href="mailto:daniel@danielthorp.com">
+			<svg viewBox="0 0 24 24" aria-hidden="true">
+				<path d="M3 6.5h18v11H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+				<path d="M3.5 7l8.5 6.5L20.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+			</svg>
+			Email me
+		</a>
+		<p class="address">daniel@danielthorp.com</p>
+		<p class="facts">
+			Ottawa · Eastern Time · English or French
+			<span class="nowrap">· <a
+				href="https://www.linkedin.com/in/daniel-a-thorp/"
+				target="_blank"
+				rel="noopener noreferrer me">LinkedIn<span class="sr-only"> (opens in new tab)</span></a
+			></span>
+		</p>
 	</div>
 </section>
 
 <style>
 	.contact {
-		background: var(--bg-writing);
 		text-align: center;
 	}
 
@@ -22,16 +36,59 @@
 		line-height: 1.6;
 	}
 
-	.email {
-		display: inline-block;
-		font-family: var(--font-display);
-		font-size: clamp(1.4rem, 4vw, 2rem);
-		color: var(--color-text);
-		text-decoration-thickness: 1px;
-		text-underline-offset: 6px;
+	.email-button {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6em;
+		padding: 0.8em 1.6em;
+		border-radius: 999px;
+		font-family: var(--font-sans);
+		font-size: 1.05rem;
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--bg-contact);
+		background: var(--color-text);
+		transition:
+			transform var(--dur-2),
+			box-shadow var(--dur-2);
 	}
 
-	.email:hover {
-		color: var(--color-link);
+	.email-button svg {
+		width: 1.2em;
+		height: 1.2em;
+	}
+
+	.email-button:hover,
+	.email-button:focus-visible {
+		color: var(--bg-contact);
+		transform: translateY(-1px);
+		box-shadow:
+			0 6px 20px color-mix(in srgb, var(--color-accent) 35%, transparent),
+			0 0 0 1px color-mix(in srgb, var(--color-text) 30%, transparent);
+	}
+
+	.address {
+		margin: var(--space-3) auto var(--space-5);
+		font-size: 0.9rem;
+		color: var(--color-muted);
+		user-select: all;
+	}
+
+	.facts {
+		margin: 0 auto;
+		font-size: 0.9rem;
+		color: var(--color-muted);
+	}
+
+	.nowrap {
+		white-space: nowrap;
+	}
+
+	.facts a {
+		color: var(--color-muted);
+	}
+
+	.facts a:hover {
+		color: var(--color-text);
 	}
 </style>

@@ -27,6 +27,9 @@ if (tooLong.length) {
 	throw new Error(`src/data/now.ts: ${tooLong.join("; ")}.`);
 }
 
+// Flap letters live in data-ch and the script writes them in, so tools that read
+// the HTML as text get the readable copy beside each row instead of one letter
+// per element.
 const flaps = (text: string, width: number) =>
 	[...text.padEnd(width, " ")].slice(0, width);
 ---
@@ -37,8 +40,12 @@ const flaps = (text: string, width: number) =>
 
 		<div class="board" data-sfx="flap">
 			<div class="board-bar" aria-hidden="true">
-				<span>Ottawa</span>
-				<time class="clock"></time>
+				<span class="flaps bar-city">
+					{flaps("Ottawa", 6).map(ch => <span class="flap" data-ch={ch} />)}
+				</span>
+				<span class="flaps bar-clock">
+					{flaps("", 5).map(ch => <span class="flap">{ch}</span>)}
+				</span>
 			</div>
 			<div class="board-head" aria-hidden="true">
 				<span>Role</span>
@@ -54,7 +61,7 @@ const flaps = (text: string, width: number) =>
 							</p>
 							<span class="flaps role-flaps" aria-hidden="true" data-text={item.role}>
 								{flaps(item.role, ROLE).map(ch => (
-									<span class="flap">{ch}</span>
+									<span class="flap" data-ch={ch} />
 								))}
 							</span>
 							<span class="where">
@@ -69,7 +76,7 @@ const flaps = (text: string, width: number) =>
 							</span>
 							<span class="flaps state" aria-hidden="true" data-text={item.status}>
 								{flaps(item.status, STATUS).map(ch => (
-									<span class="flap">{ch}</span>
+									<span class="flap" data-ch={ch} />
 								))}
 							</span>
 							<span class="detail">{item.detail}</span>
@@ -86,12 +93,26 @@ const flaps = (text: string, width: number) =>
 	import { clack, vibrate } from "../../scripts/sound";
 
 	const board = document.querySelector<HTMLElement>(".board")!;
-	const clock = board.querySelector<HTMLTimeElement>(".clock")!;
+	for (const flap of board.querySelectorAll<HTMLElement>(".flap[data-ch]")) {
+		flap.textContent = flap.dataset.ch ?? " ";
+	}
+	// Ottawa time on flaps, 24-hour like a station board. A flap that changes
+	// flips over.
+	const clockFlaps = [...board.querySelectorAll<HTMLElement>(".bar-clock .flap")];
 	const tickClock = () => {
-		clock.textContent = new Date().toLocaleTimeString("en-CA", {
-			hour: "numeric",
+		const time = new Date().toLocaleTimeString("en-GB", {
+			hour: "2-digit",
 			minute: "2-digit",
+			hourCycle: "h23",
 			timeZone: "America/Toronto",
+		});
+		[...time.padEnd(5)].forEach((ch, i) => {
+			const flap = clockFlaps[i];
+			if (!flap || flap.textContent === ch) return;
+			flap.textContent = ch;
+			flap.classList.remove("flip");
+			void flap.offsetWidth;
+			flap.classList.add("flip");
 		});
 	};
 	tickClock();
@@ -188,9 +209,17 @@ const flaps = (text: string, width: number) =>
 		color: var(--amber);
 	}
 
-	.board-bar time {
-		font-variant-numeric: tabular-nums;
-		color: var(--flap-text);
+	.board-bar {
+		align-items: center;
+	}
+
+	/* Without the script, show the letters the script would have written. */
+	:global(html:not(.js)) .flap[data-ch]::before {
+		content: attr(data-ch);
+	}
+
+	.bar-city .flap {
+		color: var(--amber);
 	}
 
 	.board-head,
