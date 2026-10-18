@@ -21,7 +21,7 @@ const entries: Entry[] = [
 const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 ---
 
-<section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
+<section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree" data-sfx="wood">
 	<div class="flat-inner">
 		<h2 id="experience-title">Experience</h2>
 		<div class="filters" role="group" aria-label="Show">
@@ -75,7 +75,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 </section>
 
 <script>
-	import { click, milestone, scribe } from "../../scripts/sound";
+	import { drawer, knock, milestone, scribe } from "../../scripts/sound";
 
 	const section = document.getElementById("experience")!;
 	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
@@ -89,7 +89,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 			for (const year of section.querySelectorAll<HTMLElement>(".timeline .year")) {
 				year.hidden = !year.querySelector("li[data-group]:not([hidden])");
 			}
-			click(true);
+			knock();
 		});
 	}
 
@@ -143,7 +143,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 
 	// Hovering a summary is covered by the shared interaction sounds.
 	for (const details of document.querySelectorAll<HTMLDetailsElement>("details.role")) {
-		details.addEventListener("toggle", () => click(details.open));
+		details.addEventListener("toggle", () => drawer(details.open));
 	}
 </script>
 

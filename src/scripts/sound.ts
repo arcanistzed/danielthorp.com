@@ -584,31 +584,117 @@ export function bell(note: number, now: number, destination: AudioNode, ring = 1
 }
 
 /**
- * A bell as the Experience rail reaches a year's dot. `index` 0 is the newest
- * year at the top; older years ring lower. Un-reaching one on the way back up
- * rings it again, softer and shorter.
+ * A brass tink as the liquid reaches a year's bulb in the workshop's glass
+ * tube. `index` 0 is the newest year at the top; older years ring lower.
+ * Un-reaching one on the way back up rings it again, softer and shorter.
  */
 export function milestone(index: number, reached: boolean) {
 	if (!isEnabled() || !ctx || !master) return;
 	const notes = [81, 79, 76, 74, 72, 69, 67, 64, 62, 60];
-	const note = notes[Math.min(index, notes.length - 1)];
-	// Clear of the Experience pads and arpeggio without ringing over them.
+	const base = midiToHz(notes[Math.min(index, notes.length - 1)]);
+	const now = ctx.currentTime;
+	const ring = reached ? 1.1 : 0.55;
 	const out = ctx.createGain();
-	out.gain.value = reached ? 0.9 : 0.4;
+	out.gain.setValueAtTime(0.0001, now);
+	out.gain.exponentialRampToValueAtTime(reached ? 0.22 : 0.1, now + 0.004);
+	out.gain.exponentialRampToValueAtTime(0.0001, now + ring);
 	out.connect(master);
-	if (delaySend) {
-		const echo = ctx.createGain();
-		echo.gain.value = 0.3;
-		out.connect(echo);
-		echo.connect(delaySend);
-	}
 	if (reverbSend) {
 		const room = ctx.createGain();
-		room.gain.value = 0.4;
+		room.gain.value = 0.5;
 		out.connect(room);
 		room.connect(reverbSend);
 	}
-	bell(note, ctx.currentTime, out, reached ? 2 : 1);
+	// Metal rings with partials that aren't in tune with each other.
+	const partials: [number, number][] = [
+		[1, 1],
+		[2.76, 0.45],
+		[5.4, 0.2],
+		[8.9, 0.08],
+	];
+	const oscs: OscillatorNode[] = [];
+	for (const [ratio, level] of partials) {
+		const osc = ctx.createOscillator();
+		osc.type = "sine";
+		osc.frequency.value = base * ratio;
+		const gain = ctx.createGain();
+		gain.gain.setValueAtTime(level, now);
+		gain.gain.exponentialRampToValueAtTime(level * 0.05, now + ring * (ratio > 2 ? 0.35 : 1));
+		osc.connect(gain);
+		gain.connect(out);
+		osc.start(now);
+		osc.stop(now + ring + 0.05);
+		oscs.push(osc);
+	}
+	trackVoice(out, ...oscs);
+}
+
+/** A soft knock on wood: hovering a drawer in the workshop. */
+export function knock() {
+	if (!isEnabled() || !ctx || !master) return;
+	const buffer = whiteNoise();
+	if (!buffer) return;
+	const now = ctx.currentTime;
+	const source = ctx.createBufferSource();
+	source.buffer = buffer;
+	source.loop = true;
+	const low = ctx.createBiquadFilter();
+	low.type = "lowpass";
+	low.frequency.value = 900;
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, now);
+	amp.gain.exponentialRampToValueAtTime(0.3, now + 0.003);
+	amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+	source.connect(low);
+	low.connect(amp);
+	amp.connect(master);
+	source.start(now, Math.random() * 1.5);
+	source.stop(now + 0.06);
+	blip(210, 150, 0.05, 0.12, "sine");
+}
+
+/**
+ * A drawer sliding in the workshop: the brass knob clicks, wood slides on
+ * wood, and it stops with a thump, firmer when it closes.
+ */
+export function drawer(open: boolean) {
+	if (!isEnabled() || !ctx || !master) return;
+	const buffer = whiteNoise();
+	if (!buffer) return;
+	const now = ctx.currentTime;
+	// The knob.
+	blip(3200, 2600, 0.015, 0.1, "square");
+	// The slide.
+	const slide = ctx.createBufferSource();
+	slide.buffer = buffer;
+	slide.loop = true;
+	const band = ctx.createBiquadFilter();
+	band.type = "bandpass";
+	band.Q.value = 0.9;
+	band.frequency.setValueAtTime(open ? 380 : 900, now + 0.02);
+	band.frequency.exponentialRampToValueAtTime(open ? 900 : 380, now + 0.3);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, now + 0.02);
+	amp.gain.exponentialRampToValueAtTime(0.11, now + 0.07);
+	amp.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+	slide.connect(band);
+	band.connect(amp);
+	amp.connect(master);
+	slide.start(now + 0.02, Math.random() * 1.5);
+	slide.stop(now + 0.35);
+	// The stop.
+	const thump = ctx.createOscillator();
+	thump.type = "sine";
+	thump.frequency.setValueAtTime(open ? 110 : 140, now + 0.3);
+	thump.frequency.exponentialRampToValueAtTime(60, now + 0.4);
+	const thumpAmp = ctx.createGain();
+	thumpAmp.gain.setValueAtTime(0.0001, now + 0.3);
+	thumpAmp.gain.exponentialRampToValueAtTime(open ? 0.14 : 0.26, now + 0.305);
+	thumpAmp.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+	thump.connect(thumpAmp);
+	thumpAmp.connect(master);
+	thump.start(now + 0.3);
+	thump.stop(now + 0.45);
 }
 
 let pen: { amp: GainNode; idle: number } | null = null;
