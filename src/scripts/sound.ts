@@ -3,9 +3,119 @@
 // turns sound on, and browsers only allow that from a click, tap or key press.
 
 const STORAGE_KEY = "sound";
+const TIER_KEY = "sound-tier";
 
 /** Tempo shared by the beds and the music box, in beats per minute. */
 export const BPM = 76;
+
+/**
+ * How much of the experience this device gets. "full" is everything; "lite"
+ * drops the convolution reverb and uses fewer oscillators per note; "none"
+ * hides the sound controls, because a page that stutters is worse than a
+ * quiet one. Decided from what the device reports, then stepped down while
+ * playing if the audio thread can't keep up.
+ */
+export type Tier = "full" | "lite" | "none";
+
+function detectTier(): Tier {
+	const hasAudio =
+		"AudioContext" in window ||
+		"webkitAudioContext" in (window as unknown as Record<string, unknown>);
+	if (!hasAudio) return "none";
+	// A step-down from an earlier visit holds for a week.
+	try {
+		const saved = JSON.parse(localStorage.getItem(TIER_KEY) ?? "null") as {
+			tier: Tier;
+			until: number;
+		} | null;
+		if (saved && saved.until > Date.now() && (saved.tier === "lite" || saved.tier === "none")) {
+			return saved.tier;
+		}
+	} catch {}
+	const nav = navigator as Navigator & {
+		deviceMemory?: number;
+		connection?: { saveData?: boolean };
+	};
+	const cores = nav.hardwareConcurrency ?? 4;
+	const memory = nav.deviceMemory ?? 4;
+	if (cores <= 2 || memory <= 2 || nav.connection?.saveData) return "none";
+	const phone = matchMedia("(pointer: coarse)").matches;
+	if (cores <= 4 || memory <= 4 || phone) return "lite";
+	return "full";
+}
+
+let tier: Tier = detectTier();
+if (tier === "none") document.documentElement.classList.add("sound-none");
+
+/** The current tier. */
+export function soundTier() {
+	return tier;
+}
+
+/** Whether this device gets sound at all. */
+export function supported() {
+	return tier !== "none";
+}
+
+function stepDown() {
+	const next: Tier = tier === "full" ? "lite" : "none";
+	tier = next;
+	try {
+		localStorage.setItem(
+			TIER_KEY,
+			JSON.stringify({ tier: next, until: Date.now() + 7 * 24 * 3600 * 1000 }),
+		);
+	} catch {}
+	if (next === "none") {
+		document.documentElement.classList.add("sound-none");
+		if (enabled) setEnabled(false);
+	} else {
+		dropReverb();
+	}
+	window.dispatchEvent(new CustomEvent("sound-tier", { detail: next }));
+}
+
+// Watch the audio thread. Chromium reports underruns directly; elsewhere the
+// context clock is compared with the wall clock, which only catches a stall.
+// Three bad seconds in a row step the tier down.
+let strikes = 0;
+function report(underrun: number, load: number) {
+	if (underrun > 0.02 || load > 0.9) strikes += 1;
+	else strikes = Math.max(0, strikes - 1);
+	if (strikes >= 3) {
+		strikes = 0;
+		stepDown();
+	}
+}
+
+function monitor(context: AudioContext) {
+	const capacity = (
+		context as AudioContext & {
+			renderCapacity?: EventTarget & { start(options?: { updateInterval: number }): void };
+		}
+	).renderCapacity;
+	if (capacity) {
+		capacity.addEventListener("update", event => {
+			const { underrunRatio, averageLoad } = event as Event & {
+				underrunRatio: number;
+				averageLoad: number;
+			};
+			if (enabled && !document.hidden) report(underrunRatio, averageLoad);
+		});
+		capacity.start({ updateInterval: 1 });
+		return;
+	}
+	let lastClock = context.currentTime;
+	let lastWall = performance.now();
+	window.setInterval(() => {
+		const clock = context.currentTime - lastClock;
+		const wall = (performance.now() - lastWall) / 1000;
+		lastClock = context.currentTime;
+		lastWall = performance.now();
+		if (!enabled || document.hidden || context.state !== "running" || wall < 0.5) return;
+		report(clock / wall < 0.9 ? 1 - clock / wall : 0, 0);
+	}, 1000);
+}
 
 export type Pref = "on" | "off" | null;
 
@@ -13,6 +123,7 @@ let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let delaySend: GainNode | null = null;
 let reverbSend: GainNode | null = null;
+let reverb: { convolver: ConvolverNode; damp: BiquadFilterNode } | null = null;
 // The space: the delay's feedback and return, and the reverb's return. A
 // mute closes them so the page goes quiet; turning sound on reopens them.
 let delayFeedbacks: GainNode[] = [];
@@ -138,6 +249,7 @@ export function audio() {
 
 /** Call from a click, tap or key handler so the browser lets audio start. */
 export function setEnabled(on: boolean) {
+	if (on && tier === "none") return;
 	// Turning off brakes whatever is playing, then the delay and the room
 	// close so the page is quiet within about a second; the beds tear down
 	// once it has stopped.
@@ -203,20 +315,26 @@ function ensureContext() {
 
 	// A room, from a generated impulse: two and a half seconds of noise that
 	// dies away, darkened so the tail sits behind the music rather than on it.
-	const convolver = ctx.createConvolver();
-	convolver.buffer = impulse(ctx, 2.5, 3.4);
-	const damp = ctx.createBiquadFilter();
-	damp.type = "lowpass";
-	damp.frequency.value = 4200;
-	const wet = ctx.createGain();
-	wet.gain.value = 0.9;
-	convolver.connect(damp);
-	damp.connect(wet);
-	wet.connect(master);
-	reverbWet = wet;
+	// The convolution is the costliest node here, so the lite tier goes
+	// without it; the sends then lead nowhere.
 	reverbSend = ctx.createGain();
 	reverbSend.gain.value = 1;
-	reverbSend.connect(convolver);
+	const wet = ctx.createGain();
+	wet.gain.value = 0.9;
+	reverbWet = wet;
+	if (tier === "full") {
+		const convolver = ctx.createConvolver();
+		convolver.buffer = impulse(ctx, 2.5, 3.4);
+		const damp = ctx.createBiquadFilter();
+		damp.type = "lowpass";
+		damp.frequency.value = 4200;
+		reverbSend.connect(convolver);
+		convolver.connect(damp);
+		damp.connect(wet);
+		wet.connect(master);
+		reverb = { convolver, damp };
+	}
+	monitor(ctx);
 
 	// The section beds go through one filter that closes a little while the
 	// visitor scrolls quickly, like wind over the music.
@@ -228,6 +346,22 @@ function ensureContext() {
 	music = ctx.createGain();
 	music.gain.value = 0.8;
 	music.connect(musicFilter);
+}
+
+/** Stepping down to lite while playing: fade the room out, then unplug it. */
+function dropReverb() {
+	if (!ctx || !reverb || !reverbWet || !reverbSend) return;
+	const now = ctx.currentTime;
+	const { convolver, damp } = reverb;
+	reverb = null;
+	reverbWet.gain.setTargetAtTime(0, now, 0.4);
+	window.setTimeout(() => {
+		try {
+			reverbSend?.disconnect(convolver);
+			convolver.disconnect();
+			damp.disconnect();
+		} catch {}
+	}, 2500);
 }
 
 /** A stereo impulse response: decaying noise after a short pre-delay. */

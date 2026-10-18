@@ -125,6 +125,7 @@ const orbs = [
 		isEnabled,
 		magnet,
 		setEnabled,
+		supported,
 		vibrate,
 	} from "../../scripts/sound";
 
@@ -369,7 +370,8 @@ const orbs = [
 	}
 
 	if (root.classList.contains("intro")) {
-		play(getPref() !== "off");
+		// No point waiting for an answer about sound on a device that gets none.
+		play(getPref() !== "off" && supported());
 	} else {
 		finish();
 	}

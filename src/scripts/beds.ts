@@ -4,7 +4,17 @@
 // sidechained progressive-house mix does. Sections opt in with
 // data-bed="carbon" | "box" | "status" | "tree" | "matrix" | "paper" | "outro".
 
-import { audio, bell, BPM, holdOpen, setScrollSpeed, trackVoice, vibrate, whiteNoise } from "./sound";
+import {
+	audio,
+	bell,
+	BPM,
+	holdOpen,
+	setScrollSpeed,
+	soundTier,
+	trackVoice,
+	vibrate,
+	whiteNoise,
+} from "./sound";
 
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
 const LOOKAHEAD = 0.3;
@@ -28,8 +38,10 @@ const cycle = (step: number, period: number) =>
 
 type Graph = NonNullable<ReturnType<typeof audio>>;
 
-// Wide pads cost oscillators; phones with few cores get two voices per note.
-const MAX_VOICES = (navigator.hardwareConcurrency ?? 8) <= 4 ? 2 : 3;
+// Wide pads cost oscillators; the lite tier gets two voices per note and no
+// drift oscillators.
+const maxVoices = () => (soundTier() === "full" ? 3 : 2);
+const lite = () => soundTier() !== "full";
 
 /** A few milliseconds either side of the grid, so hits don't land as a machine. */
 const jitter = (ms: number) => ((Math.random() - 0.5) * ms) / 1000;
@@ -119,15 +131,18 @@ function pad(
 	}
 
 	// A slow, slightly random drift in pitch, like an analogue oscillator warming.
-	const drift = ctx.createOscillator();
-	drift.frequency.value = 0.07 + Math.random() * 0.1;
-	const driftDepth = ctx.createGain();
-	driftDepth.gain.value = 3;
-	drift.connect(driftDepth);
-	drift.start(start);
-	drift.stop(end + o.release + 0.1);
+	let driftDepth: GainNode | null = null;
+	if (!lite()) {
+		const drift = ctx.createOscillator();
+		drift.frequency.value = 0.07 + Math.random() * 0.1;
+		driftDepth = ctx.createGain();
+		driftDepth.gain.value = 3;
+		drift.connect(driftDepth);
+		drift.start(start);
+		drift.stop(end + o.release + 0.1);
+	}
 
-	const voices = Math.min(o.voices ?? 2, MAX_VOICES);
+	const voices = Math.min(o.voices ?? 2, maxVoices());
 	const spread = o.detune ?? 7;
 	const width = o.width ?? 0.55;
 	const oscs: OscillatorNode[] = [];
@@ -139,7 +154,7 @@ function pad(
 			const place = voices === 1 ? 0 : -1 + (2 * v) / (voices - 1);
 			osc.detune.value = spread * place;
 			depth?.connect(osc.detune);
-			driftDepth.connect(osc.detune);
+			driftDepth?.connect(osc.detune);
 			if (place === 0) {
 				osc.connect(filter);
 			} else {
@@ -232,7 +247,7 @@ function stab(
 	amp.connect(out);
 	sendTo(g, amp, o.send ?? 0.25);
 
-	const voices = Math.min(o.voices ?? 2, MAX_VOICES);
+	const voices = Math.min(o.voices ?? 2, maxVoices());
 	const spread = o.detune ?? 6;
 	const oscs: OscillatorNode[] = [];
 	for (const note of notes) {
@@ -636,30 +651,46 @@ const BEDS: Record<string, Bed> = {
 			const BASS = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1];
 			// A riser that builds as the grid scrolls into view and drops away as
 			// it fills the screen, so a slow scroll gets a build and a drop too.
+			// Noise and a sawtooth climbing two octaves share one opening filter.
+			// It feeds the music bus directly, so its level follows the approach
+			// alone rather than the bed's fade.
 			const { ctx } = g;
 			const buffer = whiteNoise();
 			const rise = ctx.createBiquadFilter();
 			rise.type = "lowpass";
-			rise.Q.value = 1.4;
-			rise.frequency.value = 150;
+			rise.Q.value = 2;
+			rise.frequency.value = 300;
 			const riseGain = ctx.createGain();
 			riseGain.gain.value = 0;
 			rise.connect(riseGain);
-			riseGain.connect(out);
+			riseGain.connect(g.music);
 			let riseSource: AudioBufferSourceNode | null = null;
 			if (buffer) {
 				riseSource = ctx.createBufferSource();
 				riseSource.buffer = buffer;
 				riseSource.loop = true;
-				riseSource.connect(rise);
+				const noiseLevel = ctx.createGain();
+				noiseLevel.gain.value = 0.6;
+				riseSource.connect(noiseLevel);
+				noiseLevel.connect(rise);
 				riseSource.start();
 			}
+			const riseTone = ctx.createOscillator();
+			riseTone.type = "sawtooth";
+			riseTone.frequency.value = hz(45);
+			const toneLevel = ctx.createGain();
+			toneLevel.gain.value = 0.35;
+			riseTone.connect(toneLevel);
+			toneLevel.connect(rise);
+			riseTone.start();
 			return {
 				approach(p) {
 					const now = ctx.currentTime;
-					const level = p < 0.85 ? 0.11 * (p / 0.85) ** 2 : 0.11 * (1 - (p - 0.85) / 0.15);
+					// Loud enough to ride over the beds by the top of the build.
+					const level = p < 0.85 ? 0.7 * (p / 0.85) ** 1.2 : 0.7 * (1 - (p - 0.85) / 0.15);
 					riseGain.gain.setTargetAtTime(Math.max(0, level), now, 0.15);
-					rise.frequency.setTargetAtTime(150 * 40 ** p, now, 0.15);
+					rise.frequency.setTargetAtTime(300 * 27 ** p, now, 0.15);
+					riseTone.frequency.setTargetAtTime(hz(45 + 24 * p), now, 0.15);
 				},
 				step(s, t) {
 					const [bass, chord] = chordAt(s);
@@ -689,6 +720,8 @@ const BEDS: Record<string, Bed> = {
 				},
 				stop() {
 					riseSource?.stop();
+					riseTone.stop();
+					riseGain.disconnect();
 				},
 			};
 		},
@@ -823,6 +856,9 @@ interface Live {
 	weight: number;
 	/** The section's raw share of the viewport, before the fade curve. */
 	share: number;
+	/** The share at the previous measurement, to tell arriving from leaving. */
+	lastShare: number;
+	arriving: boolean;
 	audible: boolean;
 }
 
@@ -863,6 +899,8 @@ export function installBeds() {
 			voice: null,
 			weight: 0,
 			share: 0,
+			lastShare: 0,
+			arriving: true,
 			audible: false,
 		});
 	}
@@ -1115,6 +1153,20 @@ export function installBeds() {
 			if (audible && !entry.audible) entry.voice?.wake?.(step);
 			entry.audible = audible;
 			entry.voice?.approach?.(entry.share);
+			// The same filter swap as a nav glide, driven by the scroll: a bed
+			// on its way in opens its low-pass as it takes the screen, a bed on
+			// its way out loses its bass as it leaves. Reversing the scroll
+			// reverses the roles. A glide drives the filters itself.
+			if (entry.share !== entry.lastShare) entry.arriving = entry.share > entry.lastShare;
+			if (entry.high && entry.low && at === 0 && performance.now() >= slowUntil) {
+				const high = entry.arriving ? 20 : 20 * 120 ** (1 - entry.share);
+				const low = entry.arriving
+					? 220 * (16000 / 220) ** Math.min(1, entry.share * 1.15)
+					: 16000;
+				entry.high.frequency.setTargetAtTime(high, now, 0.2);
+				entry.low.frequency.setTargetAtTime(low, now, 0.2);
+			}
+			entry.lastShare = entry.share;
 			if (audible) any = true;
 			entry.gain?.gain.setTargetAtTime(
 				entry.weight * entry.bed.level,

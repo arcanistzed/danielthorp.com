@@ -76,6 +76,12 @@ a:hover {
 	outline-offset: 2px;
 }
 
+/* Devices that can't render the sound well get no sound controls at all. */
+html.sound-none .sound-toggle,
+html.sound-none .sound-prompt {
+	display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
