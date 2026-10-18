@@ -2,34 +2,26 @@
 import { leadership, work, type Role } from "../../data/experience";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const now = new Date();
-const NOW = now.getFullYear() + now.getMonth() / 12;
 
-// "May 2025 to Aug 2025", "Apr 2025", "Nov 2022 to present" -> fractional years.
-function span(dates: string): [number, number] {
-	const parse = (part: string) => {
-		if (/present/i.test(part)) return NOW;
-		const [month, year] = part.trim().split(/\s+/);
-		return Number(year) + Math.max(0, MONTHS.indexOf(month)) / 12;
-	};
-	const [from, to] = dates.split(/\s+to\s+/);
-	const start = parse(from);
-	const end = to ? parse(to) : start;
-	return [start, Math.max(end + 1 / 12, start + 1 / 12)];
+// "May 2025 to Aug 2025" -> 2025.33, the fractional year a role started.
+function started(dates: string): number {
+	const [month, year] = dates.split(/\s+to\s+/)[0].trim().split(/\s+/);
+	return Number(year) + Math.max(0, MONTHS.indexOf(month)) / 12;
 }
 
-type Entry = Role & { kind: "work" | "leadership"; start: number; end: number };
+type Entry = Role & { kind: "work" | "leadership"; start: number };
 const entries: Entry[] = [
 	...work.map(role => ({ ...role, kind: "work" as const })),
 	...leadership.map(role => ({ ...role, kind: "leadership" as const })),
 ]
-	.map(role => {
-		const [start, end] = span(role.dates);
-		return { ...role, start, end };
-	})
+	.map(role => ({ ...role, start: started(role.dates) }))
 	.sort((a, b) => b.start - a.start);
 
 const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
+
+// The two most recent years show by default; earlier ones wait behind a button.
+const RECENT = 2;
+const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT - 1] ?? 0)).length;
 ---
 
 <section class="flat experience" id="experience" aria-labelledby="experience-title" data-bed="tree">
@@ -43,10 +35,10 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 			</button>
 		</div>
 
-		<div class="timeline">
+		<div class="timeline" id="experience-timeline">
 			{
-				years.map(year => (
-					<div class="year">
+				years.map((year, index) => (
+					<div class:list={["year", { earlier: index >= RECENT }]}>
 						<h3 class="year-label">{year}</h3>
 						<ul class="roles" role="list">
 							{entries
@@ -78,6 +70,19 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 			}
 		</div>
 
+		{
+			earlier > 0 && (
+				<button
+					type="button"
+					class="more"
+					aria-expanded="false"
+					aria-controls="experience-timeline"
+					data-more={`Show ${earlier} earlier roles, ${years.at(-1)} to ${years[RECENT]}`}
+				>
+					Show {earlier} earlier roles, {years.at(-1)} to {years[RECENT]}
+				</button>
+			)
+		}
 	</div>
 </section>
 
@@ -100,8 +105,21 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		});
 	}
 
-	// The rail fills to a line 60% of the way down the screen, and each year's
-	// dot fills once the rail reaches it.
+	// Earlier years open and close under the button.
+	const more = section.querySelector<HTMLButtonElement>(".more");
+	more?.addEventListener("click", () => {
+		const open = more.getAttribute("aria-expanded") !== "true";
+		more.setAttribute("aria-expanded", String(open));
+		more.textContent = open ? "Show fewer roles" : more.dataset.more!;
+		timeline.classList.toggle("expanded", open);
+		if (!open) more.scrollIntoView({ block: "nearest" });
+		click(open);
+		queueFill();
+	});
+
+	// The rail fills to a line 60% of the way down the screen. Each year's bulb
+	// fills from the top as the liquid passes through it (--level), and the
+	// year counts as reached once the liquid is at the bulb's centre.
 	const timeline = section.querySelector<HTMLElement>(".timeline")!;
 	const years = [...timeline.querySelectorAll<HTMLElement>(".year")];
 	let fillFrame = 0;
@@ -118,11 +136,16 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		// reaches its dot; not on the first layout, and not for hidden years.
 		if (settled && depth !== lastDepth) scribe(Math.abs(depth - lastDepth));
 		lastDepth = depth;
+		const radius = parseFloat(getComputedStyle(timeline).getPropertyValue("--bulb")) / 2;
 		years.forEach((year, index) => {
-			const reached = !year.hidden && year.offsetTop + dotOffset <= depth;
+			const shown = year.offsetParent !== null;
+			const centre = year.offsetTop + dotOffset;
+			const level = Math.min(Math.max((depth - (centre - radius)) / (2 * radius), 0), 1);
+			year.style.setProperty("--level", String(shown ? level : 0));
+			const reached = shown && centre <= depth;
 			const was = year.classList.contains("reached");
 			year.classList.toggle("reached", reached);
-			if (settled && !year.hidden && reached !== was) milestone(index, reached);
+			if (settled && shown && reached !== was) milestone(index, reached);
 		});
 		settled = true;
 	}
@@ -165,14 +188,26 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		color: var(--bg-experience);
 	}
 
-	/* A vertical rail with the year each group of roles started. The rail
-	   fills downward as you scroll, and each year's dot fills as it's reached. */
+	/* A glass tube down the left with the year each group of roles started.
+	   Liquid runs down it as you scroll, and at each year the tube widens into
+	   a bulb that fills from the top as the liquid passes through. Layers, back
+	   to front: the tube, the liquid in it, each bulb's glass (which hides the
+	   tube's liquid inside it), then the bulb's own liquid. */
 	.timeline {
 		--rail: 3.1rem;
+		--gutter: 4.5rem;
 		--dot-top: 1.2rem;
 		--fill: 0px;
+		--tube: 6px;
+		--bulb: 18px;
+		--liquid: var(--color-accent);
+		--liquid-deep: color-mix(in oklch, var(--color-accent) 82%, #2b0fd6);
+		--glass: color-mix(in srgb, var(--color-accent) 10%, var(--bg-experience));
+		--glass-edge: color-mix(in srgb, var(--color-accent) 38%, transparent);
+		--glint: inset 1.5px 0 0 rgba(255, 255, 255, 0.22);
 		position: relative;
-		padding-left: 4.5rem;
+		isolation: isolate;
+		padding-left: var(--gutter);
 	}
 
 	.timeline::before,
@@ -181,57 +216,104 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		position: absolute;
 		top: 0;
 		left: var(--rail);
-		width: 2px;
 		translate: -50% 0;
-		border-radius: 1px;
 	}
 
 	.timeline::before {
+		z-index: 0;
 		bottom: 0;
-		background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+		width: var(--tube);
+		border: 1px solid var(--glass-edge);
+		border-radius: var(--tube);
+		background: var(--glass);
+		box-shadow: var(--glint);
+		box-sizing: border-box;
 	}
 
 	.timeline::after {
+		z-index: 1;
 		height: var(--fill);
-		background: linear-gradient(to bottom, var(--color-accent), #e0569b);
+		width: calc(var(--tube) - 2px);
+		border-radius: 0 0 var(--tube) var(--tube);
+		background: var(--liquid);
 	}
 
 	.year {
+		--level: 0;
 		position: relative;
 		margin-bottom: var(--space-5);
 	}
 
-	.year[hidden] {
+	.year[hidden],
+	.timeline:not(.expanded) .year.earlier {
 		display: none;
 	}
 
-	/* The dot sits exactly on the rail. */
-	.year::before {
+	.year::before,
+	.year::after {
 		content: "";
 		position: absolute;
-		z-index: 1;
-		left: calc(var(--rail) - 4.5rem);
+		left: calc(var(--rail) - var(--gutter));
 		top: var(--dot-top);
-		width: 12px;
-		height: 12px;
 		translate: -50% -50%;
 		border-radius: 50%;
-		border: 2px solid var(--color-accent);
-		background: var(--bg-experience);
 		box-sizing: border-box;
-		transition:
-			background-color 300ms ease,
-			box-shadow 300ms ease;
 	}
 
-	.year.reached::before {
-		background: var(--color-accent);
-		box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent);
+	/* The bulb's glass, drawn over the tube so the two read as one vessel. */
+	.year::before {
+		z-index: 2;
+		width: var(--bulb);
+		height: var(--bulb);
+		border: 1px solid var(--glass-edge);
+		background: var(--glass);
+		box-shadow: var(--glint);
+	}
+
+	/* The liquid inside the bulb, filled to --level from the top, and a
+	   little deeper in colour where the vessel is wider. */
+	.year::after {
+		z-index: 3;
+		width: calc(var(--bulb) - 3px);
+		height: calc(var(--bulb) - 3px);
+		background: linear-gradient(
+			to bottom,
+			var(--liquid-deep) calc(var(--level) * 100%),
+			transparent calc(var(--level) * 100%)
+		);
+		transition: box-shadow 400ms ease;
+	}
+
+	.year.reached::after {
+		box-shadow: 0 0 10px color-mix(in srgb, var(--liquid) 45%, transparent);
+	}
+
+	/* Earlier years, under the timeline. */
+	.more {
+		display: block;
+		margin: 0 0 0 var(--gutter);
+		padding: 0.45em 1.1em;
+		font: inherit;
+		font-size: 0.9rem;
+		color: var(--color-text);
+		border: 1px solid var(--color-rule);
+		border-radius: 999px;
+		background: transparent;
+		cursor: pointer;
+		transition:
+			border-color var(--dur-2),
+			background-color var(--dur-2);
+	}
+
+	.more:hover,
+	.more:focus-visible {
+		border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+		background: color-mix(in srgb, var(--color-text) 6%, transparent);
 	}
 
 	.year .year-label {
 		position: absolute;
-		left: -4.5rem;
+		left: calc(-1 * var(--gutter));
 		top: 0.7rem;
 		margin: 0;
 		width: 2.6rem;
@@ -317,13 +399,9 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	@media (max-width: 640px) {
 		/* A slim rail at the left edge, with the year above its roles. */
 		.timeline {
-			--rail: 0.4rem;
+			--rail: 0.5rem;
+			--gutter: 1.6rem;
 			--dot-top: 0.7rem;
-			padding-left: 1.5rem;
-		}
-
-		.year::before {
-			left: calc(var(--rail) - 1.5rem);
 		}
 
 		.year .year-label {
