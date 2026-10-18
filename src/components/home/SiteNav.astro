@@ -43,9 +43,6 @@ const links = [
 				</li>
 			))
 		}
-		<li class="menu-theme-row">
-			<button class="menu-theme" type="button">Switch to light mode</button>
-		</li>
 	</ul>
 </nav>
 
@@ -63,7 +60,6 @@ const links = [
 	// Phones: the toggle opens a full-screen menu. "menu-open" and "menu-close"
 	// are dispatched on window for sound to follow.
 	const list = nav.querySelector<HTMLElement>("ul")!;
-	const themeButton = nav.querySelector<HTMLButtonElement>(".menu-theme")!;
 	const isOpen = () => nav.classList.contains("open");
 
 	function setOpen(open: boolean, { restoreFocus = true, keyboard = true } = {}) {
@@ -100,31 +96,13 @@ const links = [
 			return;
 		}
 		if (event.key !== "Tab") return;
-		const items: HTMLElement[] = [toggle, ...links, themeButton];
+		const items: HTMLElement[] = [toggle, ...links];
 		const i = items.indexOf(document.activeElement as HTMLElement);
 		const next = event.shiftKey
 			? items[(i - 1 + items.length) % items.length]
 			: items[(i + 1) % items.length];
 		event.preventDefault();
 		next.focus();
-	});
-
-	// The theme control lives in the menu on phones and drives the corner
-	// toggle. Its label comes from the theme itself, not the corner toggle's
-	// label, which may not be set yet when this runs.
-	const themeToggle = () => document.querySelector<HTMLButtonElement>(".theme-toggle");
-	const syncTheme = () => {
-		const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-		themeButton.textContent = `Switch to ${next} mode`;
-	};
-	themeButton.addEventListener("click", () => {
-		themeToggle()?.click();
-		syncTheme();
-	});
-	syncTheme();
-	new MutationObserver(syncTheme).observe(document.documentElement, {
-		attributes: true,
-		attributeFilter: ["data-theme"],
 	});
 
 	// A pill slides to the link for the section in the middle of the viewport.
@@ -286,10 +264,6 @@ const links = [
 		pointer-events: none;
 	}
 
-	.menu-theme-row {
-		display: none;
-	}
-
 	.icon-close {
 		display: none;
 	}
@@ -388,22 +362,6 @@ const links = [
 			text-decoration-color: var(--color-accent);
 			text-decoration-thickness: 2px;
 			text-underline-offset: 0.18em;
-		}
-
-		:global(html.js) .site-nav.open .menu-theme-row {
-			display: block;
-			margin-top: var(--space-6);
-		}
-
-		.menu-theme {
-			font: inherit;
-			font-size: 1rem;
-			padding: 0.5em 1.1em;
-			color: #e4e1ec;
-			background: transparent;
-			border: 1px solid rgba(255, 255, 255, 0.25);
-			border-radius: 999px;
-			cursor: pointer;
 		}
 
 		@keyframes menu-in {

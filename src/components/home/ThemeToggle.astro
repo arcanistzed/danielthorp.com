@@ -109,10 +109,10 @@
 		pointer-events: none;
 	}
 
-	/* Phones: the theme control lives in the menu instead (it clicks this one). */
+	/* Phones: the menu button takes the corner, so this sits left of sound. */
 	@media (max-width: 760px) {
 		.theme-toggle {
-			display: none;
+			right: calc(var(--space-4) + 2 * (2.6rem + var(--space-2)));
 		}
 	}
 </style>
