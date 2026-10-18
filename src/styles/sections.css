@@ -92,7 +92,22 @@
 	--bg-next: var(--bg-contact);
 }
 
-.contact::before {
+/* The footer carries on the same surface, so the page ends on one piece. */
+.site-footer {
+	position: relative;
+	isolation: isolate;
+}
+
+.site-footer::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+}
+
+.contact::before,
+.site-footer::before {
 	background:
 		linear-gradient(27deg, rgba(0, 0, 0, 0.28) 5px, transparent 5px) 0 5px,
 		linear-gradient(207deg, rgba(0, 0, 0, 0.28) 5px, transparent 5px) 10px 0,
@@ -101,11 +116,21 @@
 	background-size: 20px 20px;
 }
 
-/* In light mode, brushed aluminium, as the hero does, with a soft sheen. */
-:root[data-theme="light"] .contact::before {
+/* Contact fades its texture in at the top only: the footer carries it on
+   below, so fading it out at the bottom would leave a seam at the join. */
+.contact::before {
+	-webkit-mask-image: linear-gradient(to bottom, transparent, #000 8rem);
+	mask-image: linear-gradient(to bottom, transparent, #000 8rem);
+}
+
+/* In light mode, brushed aluminium, as the hero does. */
+:root[data-theme="light"] .contact::before,
+:root[data-theme="light"] .site-footer::before {
 	background:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E"),
-		linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35) 45%, transparent 70%);
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E");
+	/* Anchored to the window, so the grain runs on unbroken from Contact
+	   into the footer instead of restarting at the join. */
+	background-attachment: fixed;
 	opacity: 0.8;
 }
 
