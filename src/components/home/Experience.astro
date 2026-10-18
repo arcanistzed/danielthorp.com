@@ -1,13 +1,5 @@
 ---
-import * as icons from "simple-icons";
-import { leadership, skills, work, type Role } from "../../data/experience";
-
-type SimpleIcon = { path: string; title: string };
-const iconFor = (slug: string | null): SimpleIcon | undefined => {
-	if (!slug) return undefined;
-	const key = `si${slug[0].toUpperCase()}${slug.slice(1)}`;
-	return (icons as unknown as Record<string, SimpleIcon>)[key];
-};
+import { leadership, work, type Role } from "../../data/experience";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const now = new Date();
@@ -102,57 +94,50 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 			<span class="span-bar leadership"></span> Leadership and volunteering
 		</p>
 
-		<h3>Technical skills</h3>
-		<dl class="skills">
-			{
-				skills.map(group => (
-					<div class="skill-group">
-						<dt>{group.group}</dt>
-						<dd>
-							<ul role="list">
-								{group.items.map(([name, slug]) => {
-									const icon = iconFor(slug);
-									return (
-										<li class="tag">
-											{icon ? (
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<path d={icon.path} fill="currentColor" />
-												</svg>
-											) : (
-												<svg viewBox="0 0 24 24" aria-hidden="true">
-													<circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2.5" />
-												</svg>
-											)}
-											{name}
-										</li>
-									);
-								})}
-							</ul>
-						</dd>
-					</div>
-				))
-			}
-		</dl>
 	</div>
 </section>
 
 <script>
 	import { click } from "../../scripts/sound";
 
-	const filters = [...document.querySelectorAll<HTMLButtonElement>(".filters button")];
+	const section = document.getElementById("experience")!;
+	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
 	for (const button of filters) {
 		button.addEventListener("click", () => {
 			const kind = button.dataset.filter;
 			for (const other of filters) other.setAttribute("aria-pressed", String(other === button));
-			for (const item of document.querySelectorAll<HTMLElement>(".timeline li[data-kind]")) {
+			for (const item of section.querySelectorAll<HTMLElement>(".timeline li[data-kind]")) {
 				item.hidden = kind !== "all" && item.dataset.kind !== kind;
 			}
-			for (const year of document.querySelectorAll<HTMLElement>(".timeline .year")) {
+			for (const year of section.querySelectorAll<HTMLElement>(".timeline .year")) {
 				year.hidden = !year.querySelector("li[data-kind]:not([hidden])");
 			}
 			click(true);
 		});
 	}
+
+	// The rail fills to a line 60% of the way down the screen, and each year's
+	// dot fills once the rail reaches it.
+	const timeline = section.querySelector<HTMLElement>(".timeline")!;
+	const years = [...timeline.querySelectorAll<HTMLElement>(".year")];
+	let fillFrame = 0;
+	function fill() {
+		fillFrame = 0;
+		const box = timeline.getBoundingClientRect();
+		const depth = Math.min(Math.max(window.innerHeight * 0.6 - box.top, 0), box.height);
+		timeline.style.setProperty("--fill", `${depth}px`);
+		const dotOffset = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.2;
+		for (const year of years) {
+			year.classList.toggle("reached", !year.hidden && year.offsetTop + dotOffset <= depth);
+		}
+	}
+	const queueFill = () => {
+		if (!fillFrame) fillFrame = requestAnimationFrame(fill);
+	};
+	window.addEventListener("scroll", queueFill, { passive: true });
+	window.addEventListener("resize", queueFill);
+	for (const button of filters) button.addEventListener("click", queueFill);
+	fill();
 
 	// Hovering a summary is covered by the shared interaction sounds.
 	for (const details of document.querySelectorAll<HTMLDetailsElement>("details.role")) {
@@ -185,24 +170,34 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		color: var(--bg-experience);
 	}
 
-	/* A vertical rail with the year each group of roles started. */
+	/* A vertical rail with the year each group of roles started. The rail
+	   fills downward as you scroll, and each year's dot fills as it's reached. */
 	.timeline {
+		--rail: 3.1rem;
+		--fill: 0px;
 		position: relative;
 		padding-left: 4.5rem;
 	}
 
-	.timeline::before {
+	.timeline::before,
+	.timeline::after {
 		content: "";
 		position: absolute;
-		top: 0.4rem;
-		bottom: 0;
-		left: 3.1rem;
+		top: 0;
+		left: var(--rail);
 		width: 2px;
-		background: linear-gradient(
-			to bottom,
-			var(--color-accent),
-			color-mix(in srgb, var(--color-accent) 15%, transparent)
-		);
+		translate: -50% 0;
+		border-radius: 1px;
+	}
+
+	.timeline::before {
+		bottom: 0;
+		background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+	}
+
+	.timeline::after {
+		height: var(--fill);
+		background: linear-gradient(to bottom, var(--color-accent), #e0569b);
 	}
 
 	.year {
@@ -212,6 +207,30 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 
 	.year[hidden] {
 		display: none;
+	}
+
+	/* The dot sits exactly on the rail. */
+	.year::before {
+		content: "";
+		position: absolute;
+		z-index: 1;
+		left: calc(var(--rail) - 4.5rem);
+		top: 1.2rem;
+		width: 12px;
+		height: 12px;
+		translate: -50% -50%;
+		border-radius: 50%;
+		border: 2px solid var(--color-accent);
+		background: var(--bg-experience);
+		box-sizing: border-box;
+		transition:
+			background-color 300ms ease,
+			box-shadow 300ms ease;
+	}
+
+	.year.reached::before {
+		background: var(--color-accent);
+		box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 22%, transparent);
 	}
 
 	.year .year-label {
@@ -224,18 +243,6 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		font-size: 1.05rem;
 		color: var(--color-text);
 		text-align: right;
-	}
-
-	.year .year-label::after {
-		content: "";
-		position: absolute;
-		right: -0.95rem;
-		top: 0.45em;
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: var(--bg-experience);
-		border: 2px solid var(--color-accent);
 	}
 
 	.roles {
@@ -360,55 +367,14 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		line-height: 1.55;
 	}
 
-	.skills {
-		display: grid;
-		gap: var(--space-4);
-		margin: 0;
-	}
-
-	.skill-group {
-		display: grid;
-		grid-template-columns: 10rem 1fr;
-		gap: var(--space-3);
-		align-items: start;
-	}
-
-	.skill-group dt {
-		padding-top: 0.2em;
-		font-size: 0.9rem;
-		color: var(--color-muted);
-	}
-
-	.skill-group dd {
-		margin: 0;
-	}
-
-	.skill-group ul {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-2);
-		margin: 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.tag svg {
-		width: 0.95em;
-		height: 0.95em;
-		flex: none;
-	}
-
-	.skills .tag {
-		font-size: 0.85rem;
-		color: var(--color-text);
-	}
-
 	@media (max-width: 640px) {
 		.timeline {
 			padding-left: 0;
 		}
 
-		.timeline::before {
+		.timeline::before,
+		.timeline::after,
+		.year::before {
 			display: none;
 		}
 
@@ -419,9 +385,6 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 			text-align: left;
 		}
 
-		.year .year-label::after {
-			display: none;
-		}
 
 		summary {
 			grid-template-columns: 1fr auto;
@@ -440,11 +403,6 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 
 		.legend {
 			margin-left: 0;
-		}
-
-		.skill-group {
-			grid-template-columns: 1fr;
-			gap: var(--space-2);
 		}
 	}
 </style>
