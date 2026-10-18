@@ -768,24 +768,26 @@ export function key() {
  */
 export function beep(open: boolean) {
 	if (!isEnabled() || !ctx || !master) return;
-	const now = ctx.currentTime;
+	const context = ctx;
+	const out = master;
+	const now = context.currentTime;
 	const tones = open ? [880, 1174.7] : [1174.7, 880];
 	tones.forEach((frequency, i) => {
 		const at = now + i * 0.055;
-		const osc = ctx!.createOscillator();
+		const osc = context.createOscillator();
 		osc.type = "square";
 		osc.frequency.value = frequency;
-		const low = ctx!.createBiquadFilter();
+		const low = context.createBiquadFilter();
 		low.type = "lowpass";
 		low.frequency.value = 5000;
-		const amp = ctx!.createGain();
+		const amp = context.createGain();
 		amp.gain.setValueAtTime(0.0001, at);
 		amp.gain.exponentialRampToValueAtTime(0.3, at + 0.004);
 		amp.gain.setValueAtTime(0.3, at + 0.04);
 		amp.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
 		osc.connect(low);
 		low.connect(amp);
-		amp.connect(master);
+		amp.connect(out);
 		osc.start(at);
 		osc.stop(at + 0.07);
 	});
