@@ -49,8 +49,12 @@ const jitter = (ms: number) => ((Math.random() - 0.5) * ms) / 1000;
 const vary = (level: number, amount = 0.15) => level * (1 + (Math.random() * 2 - 1) * amount);
 
 interface Voice {
-	/** Called once per sixteenth while the bed is audible. */
-	step?(step: number, time: number): void;
+	/**
+	 * Called once per sixteenth while the bed is audible. `share` is how much
+	 * of the screen the section holds, 0 to 1: beds bring their layers in one
+	 * at a time as it rises and drop them in reverse as it falls.
+	 */
+	step?(step: number, time: number, share: number): void;
 	/** Called when the bed becomes audible after silence. */
 	wake?(step: number): void;
 	/** How far through its section the page is, 0 to 1. */
@@ -561,19 +565,19 @@ const BEDS: Record<string, Bed> = {
 				}),
 			);
 			return {
-				step(s, t) {
+				step(s, t, share) {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
 					keep(s, t);
-					if (i % 4 === 0) kick(g, out, t, 0.22, true);
-					if (i % 4 === 2) {
+					if (share >= 0.7 && i % 4 === 0) kick(g, out, t, 0.22, true);
+					if (share >= 0.5 && i % 4 === 2) {
 						stab(g, pump, chord, t, STEP * 0.9, {
 							cutoff: 350 + 2400 * cycle(s, LOOP * 2),
 							level: 0.045,
 							send: 0.15,
 						});
 					}
-					if (i % 2 === 0) {
+					if (share >= 0.3 && i % 2 === 0) {
 						pluck(g, out, bass, t, {
 							cutoff: i % 4 === 0 ? 520 : 360,
 							decay: 0.24,
@@ -616,10 +620,10 @@ const BEDS: Record<string, Bed> = {
 				});
 			});
 			return {
-				step(s, t) {
+				step(s, t, share) {
 					const [, chord] = chordAt(s);
 					keep(s, t);
-					if (s % 2 === 0) {
+					if (share >= 0.45 && s % 2 === 0) {
 						const ladder = [...chord, ...chord.map(n => n + 12), chord[0] + 24];
 						const i = (s / 2) % (ladder.length + 1);
 						if (i < ladder.length) {
@@ -649,59 +653,44 @@ const BEDS: Record<string, Bed> = {
 		build(g, out, pump) {
 			const GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
 			const BASS = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1];
-			// A riser that builds as the grid scrolls into view and drops away as
-			// it fills the screen, so a slow scroll gets a build and a drop too.
-			// Noise and a sawtooth climbing two octaves share one opening filter.
-			// It feeds the music bus directly, so its level follows the approach
-			// alone rather than the bed's fade.
+			// A soft noise riser under the build as the grid scrolls into view,
+			// gone once it fills the screen. The real build is the layering below.
 			const { ctx } = g;
 			const buffer = whiteNoise();
 			const rise = ctx.createBiquadFilter();
 			rise.type = "lowpass";
-			rise.Q.value = 2;
-			rise.frequency.value = 300;
+			rise.Q.value = 1.4;
+			rise.frequency.value = 150;
 			const riseGain = ctx.createGain();
 			riseGain.gain.value = 0;
 			rise.connect(riseGain);
-			riseGain.connect(g.music);
+			riseGain.connect(out);
 			let riseSource: AudioBufferSourceNode | null = null;
 			if (buffer) {
 				riseSource = ctx.createBufferSource();
 				riseSource.buffer = buffer;
 				riseSource.loop = true;
-				const noiseLevel = ctx.createGain();
-				noiseLevel.gain.value = 0.6;
-				riseSource.connect(noiseLevel);
-				noiseLevel.connect(rise);
+				riseSource.connect(rise);
 				riseSource.start();
 			}
-			const riseTone = ctx.createOscillator();
-			riseTone.type = "sawtooth";
-			riseTone.frequency.value = hz(45);
-			const toneLevel = ctx.createGain();
-			toneLevel.gain.value = 0.35;
-			riseTone.connect(toneLevel);
-			toneLevel.connect(rise);
-			riseTone.start();
 			return {
 				approach(p) {
 					const now = ctx.currentTime;
-					// Loud enough to ride over the beds by the top of the build.
-					const level = p < 0.85 ? 0.7 * (p / 0.85) ** 1.2 : 0.7 * (1 - (p - 0.85) / 0.15);
+					const level = p < 0.85 ? 0.11 * (p / 0.85) ** 2 : 0.11 * (1 - (p - 0.85) / 0.15);
 					riseGain.gain.setTargetAtTime(Math.max(0, level), now, 0.15);
-					rise.frequency.setTargetAtTime(300 * 27 ** p, now, 0.15);
-					riseTone.frequency.setTargetAtTime(hz(45 + 24 * p), now, 0.15);
+					rise.frequency.setTargetAtTime(150 * 40 ** p, now, 0.15);
 				},
-				step(s, t) {
+				step(s, t, share) {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
 					const loop = s % LOOP;
-					if (i % 4 === 0) kick(g, out, t, 0.34);
-					if (i === 4 || i === 12) clap(g, out, t, 0.09);
-					if (i % 4 === 2) hat(g, out, t, 0.03);
-					if (i === 14) hat(g, out, t, 0.035, true);
-					if (loop === 0) hat(g, out, t, 0.05, true);
-					if (GATE[i]) {
+					// The build, layer by layer: hats, bass, stabs, clap, then the kick.
+					if (share >= 0.85 && i % 4 === 0) kick(g, out, t, 0.34);
+					if (share >= 0.7 && (i === 4 || i === 12)) clap(g, out, t, 0.09);
+					if (share >= 0.15 && i % 4 === 2) hat(g, out, t, 0.03);
+					if (share >= 0.15 && i === 14) hat(g, out, t, 0.035, true);
+					if (share >= 0.85 && loop === 0) hat(g, out, t, 0.05, true);
+					if (share >= 0.55 && GATE[i]) {
 						stab(g, pump, [chord[0] - 12, ...chord], t, STEP * 0.65, {
 							cutoff: 1900,
 							level: 0.055,
@@ -709,19 +698,17 @@ const BEDS: Record<string, Bed> = {
 							detune: 12,
 						});
 					}
-					if (BASS[i]) {
+					if (share >= 0.35 && BASS[i]) {
 						pluck(g, out, i === 15 ? bass + 12 : bass, t, {
 							cutoff: 700,
 							decay: 0.19,
 							level: 0.16,
 						});
 					}
-					if (loop === LOOP - BAR) riser(g, out, t, BAR * STEP, 0.07);
+					if (share >= 0.85 && loop === LOOP - BAR) riser(g, out, t, BAR * STEP, 0.07);
 				},
 				stop() {
 					riseSource?.stop();
-					riseTone.stop();
-					riseGain.disconnect();
 				},
 			};
 		},
@@ -756,13 +743,13 @@ const BEDS: Record<string, Bed> = {
 				}),
 			);
 			return {
-				step(s, t) {
+				step(s, t, share) {
 					const [, chord] = chordAt(s);
 					keep(s, t);
-					if (s % BAR === 0) {
+					if (share >= 0.4 && s % BAR === 0) {
 						for (const note of chord) keys(g, lofi, note - 12, t, 0.05);
 					}
-					if (s % 8 === 0) {
+					if (share >= 0.6 && s % 8 === 0) {
 						const note = MELODY[(s / 8) % MELODY.length];
 						if (note !== null) keys(g, lofi, note, t + jitter(18), vary(0.06), 0.7);
 					}
@@ -918,7 +905,7 @@ export function installBeds() {
 		while (nextTime < now + LOOKAHEAD) {
 			for (const entry of live.values()) {
 				if (!entry.audible) continue;
-				entry.voice?.step?.(step, nextTime);
+				entry.voice?.step?.(step, nextTime, entry.share);
 				if (entry.bed.pump && entry.pump && step % 4 === 0) duck(entry.pump, nextTime);
 			}
 			nextTime += STEP;
