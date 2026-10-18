@@ -45,13 +45,6 @@
 		radial-gradient(circle, color-mix(in srgb, var(--color-text) 10%, transparent) 1px, transparent 1.6px) 0 0 / 16px 16px;
 }
 
-/* On the pale lavender the dots need more weight to show at all. */
-:root[data-theme="light"] .status::before {
-	background:
-		radial-gradient(ellipse 50% 40% at 82% 28%, rgba(255, 181, 71, 0.12), transparent 70%),
-		radial-gradient(circle, color-mix(in srgb, #3b3a78 26%, transparent) 1.1px, transparent 1.7px) 0 0 / 16px 16px;
-}
-
 /* Experience: a workbench of walnut planks (pale maple in light mode), with
    staggered joints and long grain. The glass tube and brass fittings in
    Experience.astro sit on it like tools on a bench. */
