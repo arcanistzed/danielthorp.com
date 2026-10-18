@@ -16,11 +16,7 @@ const site = "https://danielthorp.com";
 const { title, description = defaultDescription } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, site);
-// The home page names who Daniel is, so search results can tell this Daniel
-// Thorp apart from others with the same name.
-const pageTitle = title
-	? `${title} · Daniel Thorp`
-	: "Daniel Thorp · Software Engineering Student, University of Ottawa";
+const pageTitle = title ? `${title} · Daniel Thorp` : "Daniel Thorp";
 const isHome = Astro.url.pathname === "/";
 const ogImageAlt =
 	"A card reading “Hello! My name is” and “Bonjour! Je m’appelle” above the name Daniel Thorp.";
