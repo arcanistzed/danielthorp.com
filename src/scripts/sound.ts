@@ -583,6 +583,64 @@ export function bell(note: number, now: number, destination: AudioNode, ring = 1
 	trackVoice(amp, ...oscs);
 }
 
+/**
+ * A bell as the Experience rail reaches a year's dot. `index` 0 is the newest
+ * year at the top; older years ring lower. Un-reaching one on the way back up
+ * rings it again, softer and shorter.
+ */
+export function milestone(index: number, reached: boolean) {
+	if (!isEnabled() || !ctx || !master) return;
+	const notes = [81, 79, 76, 74, 72, 69, 67, 64, 62, 60];
+	const note = notes[Math.min(index, notes.length - 1)];
+	const out = ctx.createGain();
+	out.gain.value = reached ? 0.45 : 0.22;
+	out.connect(master);
+	if (delaySend) {
+		const echo = ctx.createGain();
+		echo.gain.value = 0.3;
+		out.connect(echo);
+		echo.connect(delaySend);
+	}
+	if (reverbSend) {
+		const room = ctx.createGain();
+		room.gain.value = 0.4;
+		out.connect(room);
+		room.connect(reverbSend);
+	}
+	bell(note, ctx.currentTime, out, reached ? 1.4 : 0.8);
+}
+
+let pen: { amp: GainNode; idle: number } | null = null;
+
+/** The scratch of a pen drawing the rail. `speed` is how far it moved this frame, in pixels. */
+export function scribe(speed: number) {
+	if (!isEnabled() || !ctx || !master) return;
+	if (!pen) {
+		const buffer = whiteNoise();
+		if (!buffer) return;
+		const source = ctx.createBufferSource();
+		source.buffer = buffer;
+		source.loop = true;
+		const band = ctx.createBiquadFilter();
+		band.type = "bandpass";
+		band.frequency.value = 3200;
+		band.Q.value = 0.8;
+		const amp = ctx.createGain();
+		amp.gain.value = 0;
+		source.connect(band);
+		band.connect(amp);
+		amp.connect(master);
+		source.start();
+		pen = { amp, idle: 0 };
+	}
+	const now = ctx.currentTime;
+	pen.amp.gain.setTargetAtTime(Math.min(0.04, speed / 500), now, 0.06);
+	clearTimeout(pen.idle);
+	pen.idle = window.setTimeout(() => {
+		if (pen && ctx) pen.amp.gain.setTargetAtTime(0, ctx.currentTime, 0.1);
+	}, 120);
+}
+
 /** Quiet interface sounds for hover and toggle. `semitones` shifts the pitch. */
 export function tick(semitones = 0) {
 	const ratio = 2 ** (semitones / 12);

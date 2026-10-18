@@ -82,7 +82,7 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 </section>
 
 <script>
-	import { click } from "../../scripts/sound";
+	import { click, milestone, scribe } from "../../scripts/sound";
 
 	const section = document.getElementById("experience")!;
 	const filters = [...section.querySelectorAll<HTMLButtonElement>(".filters button")];
@@ -105,6 +105,8 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	const timeline = section.querySelector<HTMLElement>(".timeline")!;
 	const years = [...timeline.querySelectorAll<HTMLElement>(".year")];
 	let fillFrame = 0;
+	let lastDepth = 0;
+	let settled = false;
 	function fill() {
 		fillFrame = 0;
 		const box = timeline.getBoundingClientRect();
@@ -112,9 +114,17 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		timeline.style.setProperty("--fill", `${depth}px`);
 		const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
 		const dotOffset = parseFloat(getComputedStyle(timeline).getPropertyValue("--dot-top")) * rem;
-		for (const year of years) {
-			year.classList.toggle("reached", !year.hidden && year.offsetTop + dotOffset <= depth);
-		}
+		// The line scratches as it draws, and each year rings as the rail
+		// reaches its dot; not on the first layout, and not for hidden years.
+		if (settled && depth !== lastDepth) scribe(Math.abs(depth - lastDepth));
+		lastDepth = depth;
+		years.forEach((year, index) => {
+			const reached = !year.hidden && year.offsetTop + dotOffset <= depth;
+			const was = year.classList.contains("reached");
+			year.classList.toggle("reached", reached);
+			if (settled && !year.hidden && reached !== was) milestone(index, reached);
+		});
+		settled = true;
 	}
 	const queueFill = () => {
 		if (!fillFrame) fillFrame = requestAnimationFrame(fill);
