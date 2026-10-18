@@ -12,10 +12,12 @@
 
 	/* Section backgrounds, top to bottom */
 	--bg-about-top: #240b0e;
-	--bg-status: #10131c;
-	--bg-experience: #0e0f12;
-	--bg-projects: #120f18;
+	--bg-about-end: #2e0f13;
+	--bg-status: #10122a;
+	--bg-experience: #0b1916;
+	--bg-projects: #0a1730;
 	--bg-writing: #17130e;
+	--bg-contact: #141416;
 
 	/* Name gradient */
 	--color-hero-start: #eceef6;
@@ -62,10 +64,11 @@
 		--color-rule: #e3e3e8;
 		--color-accent: #4f46e5;
 
-		--bg-status: #eef2f8;
-		--bg-experience: #ffffff;
-		--bg-projects: #f6f3fb;
+		--bg-status: #ecebf8;
+		--bg-experience: #e8f4ef;
+		--bg-projects: #e4edf9;
 		--bg-writing: #f1ebdf;
+		--bg-contact: #dfe1e5;
 	}
 }
 
@@ -79,10 +82,11 @@
 	--color-rule: #e3e3e8;
 	--color-accent: #4f46e5;
 
-	--bg-status: #eef2f8;
-	--bg-experience: #ffffff;
-	--bg-projects: #f6f3fb;
+	--bg-status: #ecebf8;
+	--bg-experience: #e8f4ef;
+	--bg-projects: #e4edf9;
 	--bg-writing: #f1ebdf;
+	--bg-contact: #dfe1e5;
 }
 
 :root[data-theme="dark"] {
