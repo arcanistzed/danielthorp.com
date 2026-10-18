@@ -1,7 +1,5 @@
 ---
 import { categories, projects } from "../../data/projects";
-
-const labelFor = Object.fromEntries(categories);
 ---
 
 <section class="flat projects" id="projects" aria-labelledby="projects-title" data-bed="matrix">
@@ -32,9 +30,20 @@ const labelFor = Object.fromEntries(categories);
 						<details>
 							<summary>
 								<span class="card-head">
-									<span class="card-title">{project.name}</span>
+									<a
+										class="card-title"
+										href={`https://github.com/${project.repo}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										title="Open on GitHub"
+									>
+										{project.name}
+										<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+											<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+										</svg>
+										<span class="sr-only"> on GitHub (opens in new tab)</span>
+									</a>
 									<span class="card-meta">
-										<span class="card-category">{labelFor[project.category]}</span>
 										{project.tags.join(" · ")}
 									</span>
 								</span>
@@ -44,18 +53,6 @@ const labelFor = Object.fromEntries(categories);
 							</summary>
 							<p class="card-summary">{project.summary}</p>
 						</details>
-						<a
-							class="open"
-							href={`https://github.com/${project.repo}`}
-							target="_blank"
-							rel="noopener noreferrer"
-							aria-label={`${project.name} on GitHub (opens in new tab)`}
-							title="Open on GitHub"
-						>
-							<svg viewBox="0 0 24 24" aria-hidden="true">
-								<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-							</svg>
-						</a>
 					</li>
 				))
 			}
@@ -143,7 +140,7 @@ const labelFor = Object.fromEntries(categories);
 		grid-template-columns: 1fr auto;
 		align-items: center;
 		gap: var(--space-3);
-		padding: var(--space-4) calc(var(--space-4) + 2.75rem) var(--space-4) var(--space-4);
+		padding: var(--space-4);
 		cursor: pointer;
 		list-style: none;
 		border-radius: var(--radius-1);
@@ -158,20 +155,42 @@ const labelFor = Object.fromEntries(categories);
 		gap: 0.2rem;
 	}
 
+	/* The title opens the project; the rest of the card expands it. */
 	.card-title {
+		justify-self: start;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
 		font-weight: 600;
 		font-size: 1.05rem;
+		color: inherit;
+		text-decoration: none;
+		text-underline-offset: 0.2em;
+	}
+
+	.card-title:hover,
+	.card-title:focus-visible {
+		text-decoration: underline;
+	}
+
+	.arrow {
+		width: 0.85em;
+		height: 0.85em;
+		color: var(--color-muted);
+		transition:
+			color var(--dur-2),
+			transform var(--dur-2);
+	}
+
+	.card-title:hover .arrow,
+	.card-title:focus-visible .arrow {
+		color: var(--color-text);
+		transform: translate(1px, -1px);
 	}
 
 	.card-meta {
 		font-size: 0.85rem;
 		color: var(--color-muted);
-	}
-
-	.card-category {
-		margin-right: 0.6em;
-		color: var(--color-accent);
-		font-weight: 600;
 	}
 
 	.caret {
@@ -187,37 +206,8 @@ const labelFor = Object.fromEntries(categories);
 
 	.card-summary {
 		margin: 0;
-		padding: 0 calc(var(--space-4) + 2.75rem) var(--space-5) var(--space-4);
+		padding: 0 var(--space-4) var(--space-5);
 		max-width: 68ch;
 		line-height: 1.6;
-	}
-
-	/* The arrow opens the project; the rest of the card expands it. */
-	.open {
-		position: absolute;
-		top: var(--space-3);
-		right: var(--space-3);
-		display: grid;
-		place-items: center;
-		width: 2.4rem;
-		height: 2.4rem;
-		border-radius: 50%;
-		color: var(--color-muted);
-		transition:
-			color var(--dur-2),
-			background-color var(--dur-2),
-			transform var(--dur-2);
-	}
-
-	.open svg {
-		width: 1.15rem;
-		height: 1.15rem;
-	}
-
-	.open:hover,
-	.open:focus-visible {
-		color: var(--color-text);
-		background: color-mix(in srgb, var(--color-text) 10%, transparent);
-		transform: translate(1px, -1px);
 	}
 </style>
