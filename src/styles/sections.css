@@ -73,7 +73,8 @@
 	--deep: rgba(190, 110, 140, 0.18);
 }
 
-/* Projects: blueprint blue with a drafting grid. */
+/* Projects: a terminal, blue-black with the drafting grid and faint
+   scanlines. */
 .projects {
 	--bg: var(--bg-projects);
 	--bg-prev: var(--bg-experience);
@@ -85,7 +86,8 @@
 		linear-gradient(color-mix(in srgb, #6aa8ff 16%, transparent) 1px, transparent 1px) 0 0 / 128px 128px,
 		linear-gradient(90deg, color-mix(in srgb, #6aa8ff 16%, transparent) 1px, transparent 1px) 0 0 / 128px 128px,
 		linear-gradient(color-mix(in srgb, #6aa8ff 7%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
-		linear-gradient(90deg, color-mix(in srgb, #6aa8ff 7%, transparent) 1px, transparent 1px) 0 0 / 32px 32px;
+		linear-gradient(90deg, color-mix(in srgb, #6aa8ff 7%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+		repeating-linear-gradient(to bottom, color-mix(in srgb, var(--color-text) 3%, transparent) 0 1px, transparent 1px 3px);
 }
 
 /* Writing: newsprint (its texture lives in Writing.astro). */
