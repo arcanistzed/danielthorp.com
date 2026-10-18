@@ -45,8 +45,8 @@
 		radial-gradient(circle, color-mix(in srgb, var(--color-text) 10%, transparent) 1px, transparent 1.6px) 0 0 / 16px 16px;
 }
 
-/* Experience: graph paper on slate, so the timeline reads as plotted on a
-   chart. A faint stone grain keeps the slate from looking flat. */
+/* Experience: fine graph paper on slate, so the timeline reads as plotted
+   on a chart. A barely-there stone grain keeps the slate from looking flat. */
 .experience {
 	--bg: var(--bg-experience);
 	--bg-prev: var(--bg-status);
@@ -60,11 +60,9 @@
 
 .experience::before {
 	background:
-		linear-gradient(color-mix(in srgb, var(--grid) 16%, transparent) 1px, transparent 1px) 0 0 / 128px 128px,
-		linear-gradient(90deg, color-mix(in srgb, var(--grid) 16%, transparent) 1px, transparent 1px) 0 0 / 128px 128px,
-		linear-gradient(color-mix(in srgb, var(--grid) 7%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
-		linear-gradient(90deg, color-mix(in srgb, var(--grid) 7%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02 0.05' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.66 0 0 0 0 0.72 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+		linear-gradient(color-mix(in srgb, var(--grid) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+		linear-gradient(90deg, color-mix(in srgb, var(--grid) 9%, transparent) 1px, transparent 1px) 0 0 / 28px 28px,
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02 0.05' numOctaves='3' seed='4' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.6 0 0 0 0 0.66 0 0 0 0 0.72 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
 }
 
 /* Projects: a terminal screen, near black with faint scanlines and a soft
