@@ -342,7 +342,8 @@ const today = new Date().toLocaleDateString("en-CA", {
 		text-underline-offset: 4px;
 	}
 
-	article time {
+	/* Each story's date (not the dateline's, which sits in the rule above). */
+	a time {
 		display: block;
 		margin: var(--space-2) 0;
 		font-size: 0.82rem;
