@@ -59,8 +59,7 @@ try {
 			pubDate: extractTag(item, "pubDate").trim(),
 			description: extractTag(item, "description"),
 		}))
-		.filter(post => post.link)
-		.slice(0, 5);
+		.filter(post => post.link);
 } catch {
 	posts = [];
 }
@@ -136,7 +135,8 @@ function excerpt(text?: string): string {
 	const lastSpace = truncated.lastIndexOf(" ");
 	return `${truncated.slice(0, lastSpace > 0 ? lastSpace : 180)}…`;
 }
-const [lead, ...rest] = posts.length ? posts : fallbackPosts;
+// The newest four: one lead story and a row of three beneath it.
+const [lead, ...rest] = (posts.length ? posts : fallbackPosts).slice(0, 4);
 const today = new Date().toLocaleDateString("en-CA", {
 	weekday: "long",
 	year: "numeric",
