@@ -31,12 +31,21 @@ jobs:
               request = urllib.request.Request(url, headers={"User-Agent": "danielthorp.com rebuild check"})
               return urllib.request.urlopen(request, timeout=30).read().decode("utf-8", "replace")
 
-          feed = get("https://arcanistzed.substack.com/feed")
+          # Substack blocks some GitHub runner addresses (HTTP 403). If either
+          # page can't be read, rebuild anyway: an extra build is cheap, and
+          # Cloudflare's builders can reach the feed.
+          try:
+              feed = get("https://arcanistzed.substack.com/feed")
+              live = get("https://danielthorp.com/")
+          except Exception as error:
+              print("stale=true")
+              print(f"::warning::Couldn't check for a new post ({error}), so rebuilding anyway.", file=sys.stderr)
+              sys.exit(0)
+
           item = re.search(r"<item>(.*?)</item>", feed, re.S)
           if not item:
               sys.exit("No posts found in the Substack feed.")
           link = re.search(r"<link>\s*(.*?)\s*</link>", item.group(1), re.S).group(1)
-          live = get("https://danielthorp.com/")
           print(f"stale={'false' if link in live else 'true'}")
           print(f"Newest post: {link} ({'already live' if link in live else 'not on the site yet'})", file=sys.stderr)
           EOF
