@@ -2,12 +2,11 @@
 // leadership list puts current roles first, then the rest roughly by date.
 // Taken from the CV; bullets are lightly trimmed for the web.
 
-// What a role was about, for the filters. Work and leadership (paid and
-// volunteer) are a separate axis: the two lists below.
-export type Area = "software" | "civic" | "student" | "community";
+// Volunteer roles are grouped by what they were about, for the filters;
+// employment is its own group.
+export type Area = "civic" | "student" | "community";
 
 export const areas: [Area, string][] = [
-	["software", "Software and web"],
 	["civic", "Policy and civic"],
 	["student", "Student government"],
 	["community", "Tech community"],
@@ -17,7 +16,6 @@ export interface Role {
 	title: string;
 	org: string;
 	dates: string;
-	area: Area;
 	points: string[];
 }
 
@@ -26,7 +24,6 @@ export const work: Role[] = [
 		title: "Power Platform Governance Analyst",
 		org: "Canadian Forces Morale and Welfare Services",
 		dates: "May 2026 to Aug 2026",
-		area: "software",
 		points: [
 			"Analyzed the Microsoft Power Platform inventory in Power BI to assess app and flow usage, ownership, governance risk, and migration readiness across the Default Environment.",
 			"Coordinated the organization-wide rollout of updated data loss prevention policies: change management planning, documentation, stakeholder communications, and inquiry support.",
@@ -37,7 +34,6 @@ export const work: Role[] = [
 		title: "Web Content and Newsletter Writer",
 		org: "University of Ottawa",
 		dates: "Jan 2026 to Mar 2026",
-		area: "software",
 		points: [
 			"Reviewed, edited, and drafted content for The Gee, the University of Ottawa student newsletter, on campus events, services, and opportunities.",
 			"Supported content planning and communications strategy to improve student awareness and engagement across digital channels.",
@@ -48,7 +44,6 @@ export const work: Role[] = [
 		title: "DevOps Automation Developer",
 		org: "Vretta",
 		dates: "May 2025 to Aug 2025",
-		area: "software",
 		points: [
 			"Designed and delivered a self-service deployment platform that reduced staging environment provisioning from several hours of manual work to 8 to 25 minutes of automated setup.",
 			"Built a one-click Angular and Feathers interface backed by a TypeScript/Express orchestration service using SQLite, deployment queues, status monitoring, cancellation, and secure polling.",
@@ -61,7 +56,6 @@ export const work: Role[] = [
 		title: "Deputy Returning Officer",
 		org: "Elections Canada",
 		dates: "Apr 2025",
-		area: "civic",
 		points: [
 			"Administered ballot counting during the federal election, following Elections Canada rules and keeping the process sound.",
 		],
@@ -70,7 +64,6 @@ export const work: Role[] = [
 		title: "Information Technology Consultant",
 		org: "University of Ottawa Students’ Union",
 		dates: "Jun 2024 to Aug 2024",
-		area: "software",
 		points: [
 			"Recruited and onboarded web and IT staff: wrote job descriptions, ran interviews, and made hiring recommendations.",
 			"Managed the Students’ Union website, including job postings and content updates.",
@@ -82,7 +75,6 @@ export const work: Role[] = [
 		title: "DevOps and Data Developer",
 		org: "BlackBerry QNX",
 		dates: "May 2023 to Aug 2023",
-		area: "software",
 		points: [
 			"Built interactive internal dashboards from customer usage and licensing data to support decisions.",
 			"Built a sortable, paginated, searchable PHP table of customer license data for compliance analysis.",
@@ -95,7 +87,6 @@ export const work: Role[] = [
 		title: "Software Developer",
 		org: "The Forge VTT",
 		dates: "Jun 2022 to May 2023",
-		area: "software",
 		points: [
 			"Led the overhaul of the content conversion process with an automated CLI script and programmatic image manipulation for tokenization.",
 			"Improved data processing with new algorithms and regex pattern matching (about 30% better).",
@@ -107,7 +98,6 @@ export const work: Role[] = [
 		title: "Open-Source Module Developer",
 		org: "Self-employed",
 		dates: "Apr 2021 to Jan 2023",
-		area: "software",
 		points: [
 			"Built more than 12 open-source modules for the Foundry Virtual Tabletop platform, with more than 22,000 downloads combined.",
 			"Funded the work through freelance commissions and Patreon sponsorships.",
@@ -116,7 +106,7 @@ export const work: Role[] = [
 	},
 ];
 
-export const leadership: Role[] = [
+export const leadership: (Role & { area: Area })[] = [
 	{
 		title: "Co-President (previously Board Chair, President, VP, and Director)",
 		org: "Capital Technology Network (Hack the Hill)",
@@ -136,7 +126,7 @@ export const leadership: Role[] = [
 		title: "Web Designer",
 		org: "ClimaTalk",
 		dates: "May 2026 to present",
-		area: "software",
+		area: "civic",
 		points: [
 			"Designing and developing ClimaTalk’s website, including an interactive explorer of United Nations climate change conferences (COPs).",
 		],
