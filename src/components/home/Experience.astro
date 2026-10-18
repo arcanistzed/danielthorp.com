@@ -340,6 +340,23 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		display: none;
 	}
 
+	/* An open role pulls out like a drawer: the title and its points sit in
+	   one shallow recess in the bench, edged in brass down the left. The edge
+	   is always there (transparent when closed) so nothing shifts on opening. */
+	.role {
+		border-left: 2px solid transparent;
+		border-radius: 6px;
+		transition:
+			background-color var(--dur-2),
+			border-color var(--dur-2);
+	}
+
+	.role[open] {
+		border-left-color: var(--brass);
+		background: var(--drawer);
+		box-shadow: var(--drawer-shadow);
+	}
+
 	summary {
 		display: grid;
 		grid-template-columns: 1fr auto auto;
@@ -393,21 +410,16 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 		transform: rotate(180deg);
 	}
 
-	/* An open role pulls out like a drawer: a shallow recess in the bench
-	   with a brass edge, its points marked with brass studs. */
+	/* The points line up with the title above, each marked with a brass stud. */
 	.points {
-		margin: var(--space-1) var(--space-2) var(--space-4);
-		padding: var(--space-3) var(--space-4) var(--space-2) calc(var(--space-4) + 0.9rem);
-		max-width: 68ch;
+		margin: 0;
+		padding: var(--space-1) var(--space-4) var(--space-3) calc(var(--space-2) + 1.1rem);
 		list-style: none;
-		border-left: 2px solid var(--brass);
-		border-radius: 0 4px 4px 0;
-		background: var(--drawer);
-		box-shadow: var(--drawer-shadow);
 	}
 
 	.points li {
 		position: relative;
+		max-width: 68ch;
 		margin-bottom: var(--space-2);
 		line-height: 1.55;
 	}
