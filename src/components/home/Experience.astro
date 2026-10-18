@@ -137,6 +137,10 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 		if (settled && depth !== lastDepth) scribe(Math.abs(depth - lastDepth));
 		lastDepth = depth;
 		const radius = parseFloat(getComputedStyle(timeline).getPropertyValue("--bulb")) / 2;
+		// Several dots can be reached in one frame, as when the earlier years
+		// unfold below a rail that already passes them; their bells cascade a
+		// beat apart instead of landing together.
+		let burst = 0;
 		years.forEach((year, index) => {
 			const shown = year.offsetParent !== null;
 			const centre = year.offsetTop + dotOffset;
@@ -145,7 +149,11 @@ const earlier = entries.filter(entry => Math.floor(entry.start) < (years[RECENT 
 			const reached = shown && centre <= depth;
 			const was = year.classList.contains("reached");
 			year.classList.toggle("reached", reached);
-			if (settled && shown && reached !== was) milestone(index, reached);
+			if (settled && shown && reached !== was) {
+				const delay = reached ? burst++ * 140 : 0;
+				if (delay) setTimeout(() => milestone(index, reached), delay);
+				else milestone(index, reached);
+			}
 		});
 		settled = true;
 	}
