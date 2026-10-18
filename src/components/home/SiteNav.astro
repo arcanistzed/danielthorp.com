@@ -110,10 +110,12 @@ const links = [
 	});
 
 	// The theme control lives in the menu on phones and drives the corner
-	// toggle, so both stay in sync.
+	// toggle. Its label comes from the theme itself, not the corner toggle's
+	// label, which may not be set yet when this runs.
 	const themeToggle = () => document.querySelector<HTMLButtonElement>(".theme-toggle");
 	const syncTheme = () => {
-		themeButton.textContent = themeToggle()?.getAttribute("aria-label") ?? "Switch theme";
+		const next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+		themeButton.textContent = `Switch to ${next} mode`;
 	};
 	themeButton.addEventListener("click", () => {
 		themeToggle()?.click();
@@ -383,7 +385,7 @@ const links = [
 
 		:global(html.js) .site-nav.open a.current {
 			text-decoration: underline;
-			text-decoration-color: #ff4fae;
+			text-decoration-color: var(--color-accent);
 			text-decoration-thickness: 2px;
 			text-underline-offset: 0.18em;
 		}
