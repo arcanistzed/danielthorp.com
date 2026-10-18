@@ -2,6 +2,7 @@
 import Footer from "../components/Footer.astro";
 import SoundToggle from "../components/home/SoundToggle.astro";
 import ThemeToggle from "../components/home/ThemeToggle.astro";
+import { description as defaultDescription } from "../data/site";
 import "../styles/tokens.css";
 import "../styles/base.css";
 
@@ -11,14 +12,12 @@ interface Props {
 }
 
 const site = "https://danielthorp.com";
-const defaultDescription =
-	"Daniel Thorp is a Software Engineering student at the University of Ottawa interested in technology, public policy, digital rights, and better systems.";
 
 const { title, description = defaultDescription } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, site);
-// The home page names who Daniel is, so search results can tell him apart
-// from others with the same name.
+// The home page names who Daniel is, so search results can tell this Daniel
+// Thorp apart from others with the same name.
 const pageTitle = title
 	? `${title} · Daniel Thorp`
 	: "Daniel Thorp · Software Engineering Student, University of Ottawa";

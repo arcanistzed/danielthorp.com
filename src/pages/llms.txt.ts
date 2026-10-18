@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { leadership, work, type Role } from "../data/experience";
 import { statuses } from "../data/now";
 import { categories, projects } from "../data/projects";
+import { description } from "../data/site";
 
 // A plain Markdown summary of the home page for language models and other
 // tools that read text rather than render pages (https://llmstxt.org). Built
@@ -26,7 +27,7 @@ const projectList = categories
 
 const body = `# Daniel Thorp
 
-> Daniel Thorp is a Software Engineering student at the University of Ottawa interested in technology, public policy, digital rights, and building things that work better. Bilingual in English and French, based in Ottawa, Canada.
+> ${description} Bilingual in English and French, based in Ottawa, Canada.
 
 Website: https://danielthorp.com/
 Email: daniel@danielthorp.com
