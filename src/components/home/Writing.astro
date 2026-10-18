@@ -157,7 +157,6 @@ const today = new Date().toLocaleDateString("en-CA", {
 			</p>
 		</header>
 
-
 		{
 			lead && (
 				<article class="lead">
@@ -262,16 +261,6 @@ const today = new Date().toLocaleDateString("en-CA", {
 		mix-blend-mode: multiply;
 	}
 
-	@media (prefers-color-scheme: light) {
-		:global(:root:not([data-theme="dark"])) .writing::before {
-			background:
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2560' height='640'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.003 0.38' numOctaves='2' seed='5' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.52 0 0 0 0 0.46 0 0 0 0 0.37 0 0 0 0.2 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2560' height='1280'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.008' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.38 0 0 0 0 0.27 0 0 0 0.42 -0.08'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E"),
-			url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.44 0 0 0 0 0.36 0 0 0 0.3 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-			mix-blend-mode: multiply;
-		}
-	}
-
 	.writing article,
 	.writing li {
 		font-family: var(--font-display);
@@ -305,7 +294,6 @@ const today = new Date().toLocaleDateString("en-CA", {
 		font-size: 0.85rem;
 		color: var(--color-text);
 	}
-
 
 	.disclaimer {
 		margin: var(--space-4) 0 0;

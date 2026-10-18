@@ -100,12 +100,6 @@
 	opacity: 0.35;
 }
 
-@media (prefers-color-scheme: light) {
-	:root:not([data-theme="dark"]) .contact::before {
-		opacity: 0.35;
-	}
-}
-
 .flat-inner {
 	max-width: 52rem;
 	margin: 0 auto;

@@ -805,7 +805,6 @@ const orbs = [
 		}
 	}
 
-
 	@keyframes fade-up {
 		from {
 			opacity: 0;
@@ -1012,7 +1011,6 @@ const orbs = [
 		}
 	}
 
-
 	/* Light mode: brushed aluminium instead of carbon fibre, with softer glows
 	   and dark lettering. */
 	:global(:root[data-theme="light"]) .hero {
@@ -1091,102 +1089,12 @@ const orbs = [
 		color: #0a86ab;
 	}
 
-	@media (prefers-color-scheme: light) {
-
-		/* Light mode: brushed aluminium instead of carbon fibre, with softer glows
-		   and dark lettering. */
-		:global(:root:not([data-theme="dark"])) .hero {
-			--color-hero-start: #2b2a36;
-			--color-hero-mid: #b4524a;
-			--color-hero-end: #3b2f4a;
-			color: #22222a;
-			background-color: #cfd1d6;
-		}
-
-		:global(:root:not([data-theme="dark"])) .hero::before {
-			background:
-				url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.002 0.7' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.36 0 0 0 0 0.4 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23b)'/%3E%3C/svg%3E") 0 0 / 600px 600px,
-				linear-gradient(100deg, #e9eaee, #c8cacf 30%, #eceef1 52%, #c3c5ca 75%, #dfe1e5);
-		}
-
-		:global(:root:not([data-theme="dark"])) .hero::after {
-			background:
-				linear-gradient(
-					to bottom,
-					transparent 78%,
-					color-mix(in srgb, var(--bg-about-top) 45%, transparent) 91%,
-					var(--bg-about-top) 100%
-				),
-				radial-gradient(420px circle at var(--px, 50%) var(--py, 40%), rgba(255, 255, 255, 0.4), transparent 70%),
-				linear-gradient(
-					115deg,
-					transparent 35%,
-					rgba(255, 255, 255, 0.25) 47%,
-					rgba(255, 255, 255, 0.5) 50%,
-					rgba(255, 255, 255, 0.25) 53%,
-					transparent 65%
-				),
-				radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255, 46, 160, 0.16), transparent 70%),
-				radial-gradient(ellipse 55% 45% at 100% 0%, rgba(0, 190, 230, 0.16), transparent 70%),
-				radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(40, 40, 52, 0.22));
-			background-size:
-				100% 100%,
-				100% 100%,
-				300% 100%,
-				100% 100%,
-				100% 100%,
-				100% 100%;
-			background-repeat: no-repeat;
-		}
-
-		:global(:root:not([data-theme="dark"])) .hello {
-			color: #3d3b47;
-		}
-
-		:global(:root:not([data-theme="dark"])) .orb {
-			color: #34343e;
-		}
-
-		:global(:root:not([data-theme="dark"])) .orb-inner {
-			filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
-		}
-
-
-		:global(:root:not([data-theme="dark"])) .sound-prompt {
-			color: #1f1f27;
-			background: rgba(255, 255, 255, 0.25);
-			border-color: rgba(20, 20, 30, 0.32);
-		}
-
-		:global(:root:not([data-theme="dark"])) .sound-prompt:hover,
-		:global(:root:not([data-theme="dark"])) .sound-prompt:focus-visible {
-			background: rgba(255, 255, 255, 0.45);
-			border-color: rgba(0, 134, 171, 0.5);
-		}
-
-		:global(:root:not([data-theme="dark"])) .sound-prompt svg {
-			color: #0a86ab;
-		}
-
-	}
-
 	:global(:root[data-theme="light"]) .orb:hover .orb-inner,
 	:global(:root[data-theme="light"]) .orb.near .orb-inner,
 	:global(:root[data-theme="light"]) .orb:focus-visible .orb-inner {
 		color: #0e0e14;
 		filter: drop-shadow(0 0 6px rgba(0, 170, 220, 0.55))
 			drop-shadow(0 0 14px rgba(255, 46, 160, 0.35));
-	}
-
-	@media (prefers-color-scheme: light) {
-		:global(:root:not([data-theme="dark"])) .orb:hover .orb-inner,
-		:global(:root:not([data-theme="dark"])) .orb.near .orb-inner,
-		:global(:root:not([data-theme="dark"])) .orb:focus-visible .orb-inner {
-			color: #0e0e14;
-			filter: drop-shadow(0 0 6px rgba(0, 170, 220, 0.55))
-				drop-shadow(0 0 14px rgba(255, 46, 160, 0.35));
-		}
-
 	}
 
 	@media (prefers-reduced-motion: reduce) {

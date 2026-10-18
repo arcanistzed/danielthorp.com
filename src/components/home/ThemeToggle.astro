@@ -1,18 +1,18 @@
-<!-- Apply a saved theme before the page paints. Without one, the system setting applies. -->
+<!-- Name the active theme on <html> before the page paints: dark unless the
+     visitor has picked light. Styles only ever check data-theme. -->
 <script is:inline>
+	let theme = "dark";
 	try {
-		const theme = localStorage.getItem("theme");
-		if (theme === "light" || theme === "dark") {
-			document.documentElement.dataset.theme = theme;
-			// Both theme-color tags take the chosen theme's colour, so the
-			// browser bar matches whichever one the system setting selects.
-			// data-color keeps each tag's own colour for the toggle below.
-			const metas = [...document.querySelectorAll('meta[name="theme-color"]')];
-			for (const meta of metas) meta.dataset.color = meta.content;
-			const color = metas.find(meta => meta.media.includes(theme))?.content;
-			if (color) for (const meta of metas) meta.content = color;
-		}
+		if (localStorage.getItem("theme") === "light") theme = "light";
 	} catch {}
+	document.documentElement.dataset.theme = theme;
+	// Both theme-color tags take the active theme's colour, so the browser bar
+	// matches it whatever the system setting. data-color keeps each tag's own
+	// colour for the toggle below.
+	const metas = [...document.querySelectorAll('meta[name="theme-color"]')];
+	for (const meta of metas) meta.dataset.color = meta.content;
+	const color = metas.find(meta => meta.media.includes(theme))?.content;
+	if (color) for (const meta of metas) meta.content = color;
 </script>
 
 <button class="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode">
@@ -32,18 +32,13 @@
 
 	const root = document.documentElement;
 	const button = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
-	const systemDark = matchMedia("(prefers-color-scheme: dark)");
 
-	const current = () =>
-		(root.dataset.theme as "light" | "dark" | undefined) ??
-		(systemDark.matches ? "dark" : "light");
+	const current = () => (root.dataset.theme === "light" ? "light" : "dark");
 
-	// The browser bar follows the chosen theme, not just the system setting.
-	// Each tag's own colour (saved in data-color if a saved theme already
-	// changed it) is kept so switching back can restore it.
+	// The browser bar follows the active theme, not the system setting.
 	const metas = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
 	const colors = Object.fromEntries(
-		metas.map(meta => [meta.media.includes("dark") ? "dark" : "light", meta.dataset.color ?? meta.content]),
+		metas.map(meta => [meta.media.includes("dark") ? "dark" : "light", meta.dataset.color!]),
 	);
 	function paintThemeColor(theme: "light" | "dark") {
 		const color = colors[theme];
@@ -69,7 +64,6 @@
 		click(next === "light");
 		render();
 	});
-	systemDark.addEventListener("change", render);
 	render();
 </script>
 
