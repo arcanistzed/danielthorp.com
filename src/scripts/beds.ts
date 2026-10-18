@@ -398,6 +398,130 @@ function keys(g: Graph, out: AudioNode, note: number, time: number, level: numbe
 	pluck(g, out, note, time, { type: "triangle", cutoff: 900, decay: 0.9, level: level * 0.35 });
 }
 
+/** A bright piano stab, the eurodance kind: two detuned voices with a fast decay. */
+function piano(g: Graph, out: AudioNode, notes: number[], time: number, level: number) {
+	const { ctx } = g;
+	const filter = ctx.createBiquadFilter();
+	filter.type = "lowpass";
+	filter.Q.value = 1;
+	filter.frequency.setValueAtTime(5200, time);
+	filter.frequency.exponentialRampToValueAtTime(1400, time + 0.22);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, time);
+	amp.gain.exponentialRampToValueAtTime(level, time + 0.005);
+	amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.26);
+	filter.connect(amp);
+	amp.connect(out);
+	sendTo(g, amp, 0.3);
+	const oscs: OscillatorNode[] = [];
+	for (const note of notes) {
+		for (const [type, detune] of [["sawtooth", -5], ["square", 5]] as const) {
+			const osc = ctx.createOscillator();
+			osc.type = type;
+			osc.frequency.value = hz(note);
+			osc.detune.value = detune;
+			const voice = ctx.createGain();
+			voice.gain.value = type === "square" ? 0.35 : 1;
+			osc.connect(voice);
+			voice.connect(filter);
+			osc.start(time);
+			osc.stop(time + 0.3);
+			oscs.push(osc);
+		}
+	}
+	trackVoice(amp, ...oscs);
+}
+
+/** The rave hoover: detuned saws that swoop down an octave onto the note. */
+function hoover(g: Graph, out: AudioNode, note: number, time: number, level: number) {
+	const { ctx } = g;
+	const filter = ctx.createBiquadFilter();
+	filter.type = "lowpass";
+	filter.Q.value = 2.5;
+	filter.frequency.setValueAtTime(3200, time);
+	filter.frequency.exponentialRampToValueAtTime(900, time + 1);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, time);
+	amp.gain.exponentialRampToValueAtTime(level, time + 0.02);
+	amp.gain.setValueAtTime(level, time + 0.5);
+	amp.gain.exponentialRampToValueAtTime(0.0001, time + 1.1);
+	filter.connect(amp);
+	amp.connect(out);
+	sendTo(g, amp, 0.4);
+	const oscs: OscillatorNode[] = [];
+	for (const detune of [-28, 0, 28]) {
+		const osc = ctx.createOscillator();
+		osc.type = "sawtooth";
+		osc.frequency.setValueAtTime(hz(note + 12), time);
+		osc.frequency.exponentialRampToValueAtTime(hz(note), time + 0.35);
+		osc.detune.value = detune;
+		osc.connect(filter);
+		osc.start(time);
+		osc.stop(time + 1.15);
+		oscs.push(osc);
+	}
+	trackVoice(amp, ...oscs);
+}
+
+/** The cursor's blink: a dry click on the beat. */
+const cursor = (g: Graph, out: AudioNode, time: number, level: number) =>
+	noiseBurst(g, out, time, { high: 4000, attack: 0.001, length: 0.006, level });
+
+/** One typewriter key: the hammer's thud under a bright clack. */
+function typeKey(g: Graph, out: AudioNode, time: number, level: number) {
+	noiseBurst(g, out, time, { band: 2600, attack: 0.001, length: 0.028, level });
+	const { ctx } = g;
+	const thud = ctx.createOscillator();
+	thud.type = "sine";
+	thud.frequency.setValueAtTime(190, time);
+	thud.frequency.exponentialRampToValueAtTime(90, time + 0.03);
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, time);
+	amp.gain.exponentialRampToValueAtTime(level * 1.2, time + 0.002);
+	amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.04);
+	thud.connect(amp);
+	amp.connect(out);
+	thud.start(time);
+	thud.stop(time + 0.05);
+}
+
+/** The carriage return at the end of a line: the bell, then the carriage zips back. */
+function carriageReturn(g: Graph, out: AudioNode, time: number, level: number) {
+	const { ctx } = g;
+	const ding = ctx.createOscillator();
+	ding.type = "sine";
+	ding.frequency.value = 1760;
+	const amp = ctx.createGain();
+	amp.gain.setValueAtTime(0.0001, time);
+	amp.gain.exponentialRampToValueAtTime(level, time + 0.003);
+	amp.gain.exponentialRampToValueAtTime(0.0001, time + 0.5);
+	ding.connect(amp);
+	amp.connect(out);
+	sendTo(g, amp, 0.3);
+	ding.start(time);
+	ding.stop(time + 0.55);
+	trackVoice(amp, ding);
+	const buffer = whiteNoise();
+	if (!buffer) return;
+	const zip = ctx.createBufferSource();
+	zip.buffer = buffer;
+	zip.loop = true;
+	const band = ctx.createBiquadFilter();
+	band.type = "bandpass";
+	band.Q.value = 1.5;
+	band.frequency.setValueAtTime(900, time + 0.08);
+	band.frequency.exponentialRampToValueAtTime(2400, time + 0.22);
+	const zipAmp = ctx.createGain();
+	zipAmp.gain.setValueAtTime(0.0001, time + 0.08);
+	zipAmp.gain.exponentialRampToValueAtTime(level * 0.5, time + 0.11);
+	zipAmp.gain.exponentialRampToValueAtTime(0.0001, time + 0.24);
+	zip.connect(band);
+	band.connect(zipAmp);
+	zipAmp.connect(out);
+	zip.start(time + 0.08, Math.random() * 1.5);
+	zip.stop(time + 0.26);
+}
+
 /** An endless loop of filtered noise. */
 function noiseFloor(g: Graph, out: AudioNode, type: BiquadFilterType, frequency: number, level: number) {
 	const { ctx } = g;
@@ -667,12 +791,10 @@ const BEDS: Record<string, Bed> = {
 	// the off-beats, an off-beat bass, sidechained supersaw stabs, and a
 	// riser through the last bar of every eight.
 	matrix: {
-		level: 2.9,
+		level: 3.4,
 		reverb: 0.1,
 		pump: true,
 		build(g, out, pump) {
-			const GATE = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0];
-			const BASS = [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1];
 			// A soft noise riser under the build as the grid scrolls into view,
 			// gone once it fills the screen. The real build is the layering below.
 			const { ctx } = g;
@@ -700,31 +822,44 @@ const BEDS: Record<string, Bed> = {
 					riseGain.gain.setTargetAtTime(Math.max(0, level), now, 0.15);
 					rise.frequency.setTargetAtTime(150 * 40 ** p, now, 0.15);
 				},
+				// Eurodance on a terminal, double-time on the shared grid: hats on
+				// every sixteenth, an octave-bouncing bass, piano stabs on the
+				// off-beats, a hoover on each chord change, a square-wave arpeggio
+				// and the cursor blinking on the beat. Built layer by layer: hats,
+				// bass, arpeggio, piano, clap, then the kick and the hoover.
 				step(s, t, share) {
 					const [bass, chord] = chordAt(s);
 					const i = s % BAR;
 					const loop = s % LOOP;
-					// The build, layer by layer: hats, bass, stabs, clap, then the kick.
 					if (share >= 0.85 && i % 4 === 0) kick(g, out, t, 0.34);
 					if (share >= 0.7 && (i === 4 || i === 12)) clap(g, out, t, 0.09);
-					if (share >= 0.15 && i % 4 === 2) hat(g, out, t, 0.03);
-					if (share >= 0.15 && i === 14) hat(g, out, t, 0.035, true);
+					if (share >= 0.15) {
+						if (i % 4 === 2) hat(g, out, t, 0.035, true);
+						else hat(g, out, t, i % 2 ? 0.016 : 0.022);
+						if (i % 4 === 0) cursor(g, out, t, 0.06);
+					}
 					if (share >= 0.85 && loop === 0) hat(g, out, t, 0.05, true);
-					if (share >= 0.55 && GATE[i]) {
-						stab(g, pump, [chord[0] - 12, ...chord], t, STEP * 0.65, {
-							cutoff: 1900,
-							level: 0.055,
-							voices: 3,
-							detune: 12,
+					if (share >= 0.3 && i % 2 === 0) {
+						pluck(g, out, i % 4 === 0 ? bass : bass + 12, t, {
+							cutoff: 800,
+							decay: 0.17,
+							level: 0.15,
 						});
 					}
-					if (share >= 0.35 && BASS[i]) {
-						pluck(g, out, i === 15 ? bass + 12 : bass, t, {
-							cutoff: 700,
-							decay: 0.19,
-							level: 0.16,
+					if (share >= 0.45) {
+						const ladder = [...chord, ...chord.map(n => n + 12)];
+						pluck(g, pump, ladder[i % ladder.length] + 12, t + jitter(4), {
+							type: "square",
+							cutoff: 3800,
+							decay: 0.09,
+							level: vary(0.03),
+							pan: ((i % ladder.length) / (ladder.length - 1)) * 0.6 - 0.3,
 						});
 					}
+					if (share >= 0.55 && i % 4 === 2) {
+						piano(g, pump, [chord[0] - 12, ...chord], t + jitter(6), vary(0.07, 0.1));
+					}
+					if (share >= 0.85 && s % PHRASE === 0) hoover(g, pump, chord[0] - 12, t, 0.06);
 					if (share >= 0.85 && loop === LOOP - BAR) riser(g, out, t, BAR * STEP, 0.07);
 				},
 				stop() {
@@ -738,7 +873,7 @@ const BEDS: Record<string, Bed> = {
 	// on the one, a slow wobbling dyad, and a sparse melody, all through a
 	// closed-down filter.
 	paper: {
-		level: 1,
+		level: 1.3,
 		reverb: 0.28,
 		pump: false,
 		build(g, out) {
@@ -762,13 +897,21 @@ const BEDS: Record<string, Bed> = {
 					vibrato: true,
 				}),
 			);
+			// Typing comes in bursts with pauses, like someone composing a line,
+			// and the carriage returns at the end of every bar.
+			const TYPING = [1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0];
 			return {
 				step(s, t, share) {
 					const [, chord] = chordAt(s);
+					const i = s % BAR;
 					keep(s, t);
-					if (share >= 0.4 && s % BAR === 0) {
+					if (share >= 0.4 && i === 0) {
 						for (const note of chord) keys(g, lofi, note - 12, t, 0.05);
 					}
+					if (share >= 0.4 && TYPING[i] && Math.random() > 0.2) {
+						typeKey(g, out, t + jitter(16), vary(0.05, 0.3));
+					}
+					if (share >= 0.6 && i === 15) carriageReturn(g, out, t, 0.07);
 					if (share >= 0.6 && s % 8 === 0) {
 						const note = MELODY[(s / 8) % MELODY.length];
 						if (note !== null) keys(g, lofi, note, t + jitter(18), vary(0.06), 0.7);
