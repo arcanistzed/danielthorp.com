@@ -1,5 +1,18 @@
+---
+import { Image } from "astro:assets";
+import profile from "../../assets/profile.png";
+---
+
 <section class="flat contact" id="contact" aria-labelledby="contact-title" data-bed="outro" data-sfx="echo">
 	<div class="flat-inner">
+		<Image
+			class="portrait"
+			src={profile}
+			alt="Daniel Thorp"
+			width={144}
+			height={144}
+			densities={[1, 2]}
+		/>
 		<h2 id="contact-title">Get in touch</h2>
 		<p>
 			I’m always glad to hear from people working on problems in software,
@@ -20,6 +33,16 @@
 <style>
 	.contact {
 		text-align: center;
+	}
+
+	.portrait {
+		display: block;
+		width: 9rem;
+		height: 9rem;
+		margin: 0 auto var(--space-5);
+		border-radius: 50%;
+		border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+		object-fit: cover;
 	}
 
 	p {

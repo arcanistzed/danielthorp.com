@@ -1,6 +1,6 @@
 // Regenerates the raster icons and social card in public/ from their sources.
 // The outputs are committed, so run `npm run images` after changing
-// public/og-image.svg or src/assets/favicon.png.
+// public/og-image.svg, src/assets/favicon.png, or src/assets/profile.png.
 import pngToIco from "png-to-ico";
 import sharp from "sharp";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -23,4 +23,14 @@ await sharp(favicon).resize(180, 180).png().toFile("public/apple-touch-icon.png"
 await sharp(favicon).resize(192, 192).png().toFile("public/icon-192.png");
 await sharp(favicon).resize(512, 512).png().toFile("public/icon-512.png");
 
-console.log("Generated og-image.png, favicon.ico, apple-touch-icon.png, icon-192.png, and icon-512.png");
+// A plain JPEG headshot at a fixed address for the structured data, where
+// search engines look for a photo of the person. The page itself shows the
+// optimized copy Astro builds from the same source.
+await sharp("src/assets/profile.png")
+	.resize(800, 800)
+	.jpeg({ quality: 85, mozjpeg: true })
+	.toFile("public/daniel-thorp.jpg");
+
+console.log(
+	"Generated og-image.png, favicon.ico, apple-touch-icon.png, icon-192.png, icon-512.png, and daniel-thorp.jpg",
+);
