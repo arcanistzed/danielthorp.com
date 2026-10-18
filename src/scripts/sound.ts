@@ -592,9 +592,9 @@ export function milestone(index: number, reached: boolean) {
 	if (!isEnabled() || !ctx || !master) return;
 	const notes = [81, 79, 76, 74, 72, 69, 67, 64, 62, 60];
 	const note = notes[Math.min(index, notes.length - 1)];
-	// Loud enough to ring clear over the Experience pads and arpeggio.
+	// Clear of the Experience pads and arpeggio without ringing over them.
 	const out = ctx.createGain();
-	out.gain.value = reached ? 1.4 : 0.6;
+	out.gain.value = reached ? 0.9 : 0.4;
 	out.connect(master);
 	if (delaySend) {
 		const echo = ctx.createGain();

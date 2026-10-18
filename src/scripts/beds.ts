@@ -29,8 +29,11 @@ const CHORDS: [number, number[]][] = [
 	[48, [60, 64, 67]],
 	[43, [59, 62, 67]],
 ];
+// While the hero intro plays its own chords, every bed holds the key chord
+// so the drone can stay under them without the progression fighting them.
+let holdKey = false;
 const chordAt = (step: number) =>
-	CHORDS[Math.floor(step / PHRASE) % CHORDS.length];
+	holdKey ? CHORDS[0] : CHORDS[Math.floor(step / PHRASE) % CHORDS.length];
 const hz = (note: number) => 440 * 2 ** ((note - 69) / 12);
 /** 0 to 1 and back over `period` steps, starting at 0. */
 const cycle = (step: number, period: number) =>
@@ -923,7 +926,7 @@ export function installBeds() {
 			for (const entry of live.values()) {
 				if (!entry.audible) continue;
 				entry.voice?.step?.(step, nextTime, entry.share);
-				if (entry.bed.pump && entry.pump && step % 4 === 0) duck(entry.pump, nextTime);
+				if (entry.bed.pump && entry.pump && !holdKey && step % 4 === 0) duck(entry.pump, nextTime);
 			}
 			nextTime += STEP;
 			step += 1;
@@ -1075,19 +1078,20 @@ export function installBeds() {
 	});
 
 	// Each section's share of the viewport, on an equal-power curve. While the
-	// hero intro plays its own chords the beds wait. Over the last half
-	// viewport of the page the final section takes over, since a short last
-	// section can never fill the screen on its own.
+	// hero intro plays its own chords the beds carry on underneath, pinned to
+	// the key chord and without the pump. Over the last half viewport of the
+	// page the final section takes over, since a short last section can never
+	// fill the screen on its own.
 	const root = document.documentElement;
 	const last = sections[sections.length - 1];
 	function measure() {
 		frame = 0;
 		const height = window.innerHeight;
-		const intro = root.classList.contains("intro");
+		holdKey = root.classList.contains("intro");
 		const fadeOut = Math.max(0.35, (slowUntil - performance.now()) / 2200);
 		if (glide) {
 			for (const entry of live.values()) {
-				entry.weight = intro ? 0 : entry === glide.bed ? 1 : 0;
+				entry.weight = entry === glide.bed ? 1 : 0;
 				entry.share = entry.weight;
 			}
 			apply(0.3, null, fadeOut, glide.at);
@@ -1110,8 +1114,8 @@ export function installBeds() {
 					entry.voice?.position?.(Math.max(endness, Math.min(1, Math.max(0, through))));
 				}
 			}
-			entry.weight = intro ? 0 : Math.sin((share * Math.PI) / 2);
-			entry.share = intro ? 0 : share;
+			entry.weight = Math.sin((share * Math.PI) / 2);
+			entry.share = share;
 		}
 		apply(0.35, null, fadeOut);
 	}
@@ -1187,9 +1191,26 @@ export function installBeds() {
 	};
 
 	// Scroll speed drives the music filter; it opens again when scrolling stops.
+	// And a scroll that rests partway between two sections must not leave one
+	// bed thinned out: after a moment at rest every bed's filters open, so the
+	// mix settles into a plain blend until the scroll moves again.
 	let lastY = window.scrollY;
 	let lastAt = performance.now();
 	let settle = 0;
+	let rest = 0;
+	function relax() {
+		if (glide || performance.now() < slowUntil) {
+			rest = window.setTimeout(relax, 500);
+			return;
+		}
+		const g = audio();
+		if (!g) return;
+		const now = g.ctx.currentTime;
+		for (const entry of live.values()) {
+			entry.high?.frequency.setTargetAtTime(20, now, 0.6);
+			entry.low?.frequency.setTargetAtTime(16000, now, 0.6);
+		}
+	}
 	window.addEventListener(
 		"scroll",
 		() => {
@@ -1203,6 +1224,8 @@ export function installBeds() {
 				clearTimeout(settle);
 				settle = window.setTimeout(() => setScrollSpeed(0), 180);
 			}
+			clearTimeout(rest);
+			rest = window.setTimeout(relax, 1400);
 			schedule();
 		},
 		{ passive: true },
