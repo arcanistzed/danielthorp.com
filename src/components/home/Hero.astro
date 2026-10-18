@@ -888,7 +888,10 @@ const orbs = [
 		place-items: center;
 		width: 3rem;
 		height: 3rem;
-		color: #d9d6e4;
+		/* Light in both themes: the arrow sits where the hero has already
+		   faded into the proclamation's crimson. */
+		color: #f4f0f6;
+		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
 		animation: bob 2.4s ease-in-out infinite;
 	}
 
@@ -1067,10 +1070,6 @@ const orbs = [
 
 	:global(:root[data-theme="light"]) .orb-inner {
 		filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.18));
-	}
-
-	:global(:root[data-theme="light"]) .chevron {
-		color: #3b3b46;
 	}
 
 	:global(:root[data-theme="light"]) .sound-prompt {
