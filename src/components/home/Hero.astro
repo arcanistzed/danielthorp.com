@@ -220,6 +220,27 @@ const orbs = [
 		if (SKIP_KEYS.has(event.key)) skip();
 	});
 
+	// Each icon swells slightly, then shrinks to nothing, one after another;
+	// the chevron fades with them.
+	function popOut() {
+		const items = [...hero.querySelectorAll<HTMLElement>(".orbit li")];
+		const pops = items.map((item, i) =>
+			track(
+				item.animate(
+					[
+						{ scale: 1, opacity: 1 },
+						{ scale: 1.18, opacity: 1, offset: 0.35 },
+						{ scale: 0, opacity: 0 },
+					],
+					{ duration: 380, delay: i * 45, easing: "cubic-bezier(0.5, 0, 0.75, 0)", fill: "forwards" },
+				),
+			),
+		);
+		const chevron = hero.querySelector<HTMLElement>(".chevron");
+		if (chevron) pops.push(track(chevron.animate([{ opacity: 0 }], { duration: 300, fill: "forwards" })));
+		return Promise.all(pops.map(pop => pop.finished)).catch(() => {});
+	}
+
 	async function play(askFirst: boolean) {
 		if (running) return;
 		running = true;
@@ -228,9 +249,16 @@ const orbs = [
 			sessionStorage.setItem("intro-played", "1");
 		} catch {}
 
+		// On a replay, the icons pop out of existence before the stage resets.
+		if (hero.dataset.stage === "3") {
+			await popOut();
+			if (skipped) return;
+		}
+
 		root.classList.add("intro");
 		root.classList.remove("intro-done");
 		hero.dataset.stage = "0";
+		for (const animation of anims.splice(0)) animation.cancel();
 
 		if (askFirst) {
 			await askForSound();
@@ -350,12 +378,8 @@ const orbs = [
 	const showPrompt = () => {
 		prompt.hidden = isEnabled();
 	};
-	// Turning sound on from the hero button replays the intro if it has
-	// finished; mid-intro, the intro simply carries on with sound.
-	prompt.addEventListener("click", () => {
-		setEnabled(true);
-		if (!running && !reduceMotion.matches) play(false);
-	});
+	// Turning sound on never restarts the intro; mid-intro, it carries on with sound.
+	prompt.addEventListener("click", () => setEnabled(true));
 	window.addEventListener("sound-change", showPrompt);
 	showPrompt();
 
@@ -383,12 +407,6 @@ const orbs = [
 	} else {
 		finish();
 	}
-
-	// Turning sound on from the corner button while near the top replays the intro.
-	window.addEventListener("sound-toggled-on", () => {
-		if (running || reduceMotion.matches) return;
-		if (window.scrollY < window.innerHeight / 2) play(false);
-	});
 
 	// A small extra: clicking the name replays the intro. The replay button
 	// offers the same thing to keyboard and screen-reader users.
