@@ -28,35 +28,46 @@
 		line-height: 1.6;
 	}
 
+	/* The same frosted pill as the hero's sound prompt. */
 	.email-button {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.6em;
 		padding: 0.8em 1.6em;
+		border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
 		border-radius: 999px;
 		font-family: var(--font-sans);
 		font-size: 1.05rem;
 		font-weight: 600;
 		text-decoration: none;
-		color: var(--bg-contact);
-		background: var(--color-text);
+		color: var(--color-text);
+		background: color-mix(in srgb, var(--color-text) 5%, transparent);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		transition:
-			transform var(--dur-2),
-			box-shadow var(--dur-2);
+			border-color var(--dur-2),
+			background-color var(--dur-2),
+			opacity var(--dur-2),
+			scale var(--dur-2);
 	}
 
 	.email-button svg {
-		width: 1.2em;
-		height: 1.2em;
+		width: 1.3em;
+		height: 1.3em;
+		color: var(--color-accent);
 	}
 
 	.email-button:hover,
 	.email-button:focus-visible {
-		color: var(--bg-contact);
-		transform: translateY(-1px);
-		box-shadow:
-			0 6px 20px color-mix(in srgb, var(--color-accent) 35%, transparent),
-			0 0 0 1px color-mix(in srgb, var(--color-text) 30%, transparent);
+		color: var(--color-text);
+		border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+		background: color-mix(in srgb, var(--color-text) 9%, transparent);
+	}
+
+	.email-button:active {
+		opacity: 0.7;
+		scale: 0.97;
+		background: transparent;
 	}
 
 	.address {
@@ -65,8 +76,4 @@
 		color: var(--color-muted);
 		user-select: all;
 	}
-
-
-
-
 </style>
