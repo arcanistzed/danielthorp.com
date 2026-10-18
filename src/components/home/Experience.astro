@@ -126,7 +126,8 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		const box = timeline.getBoundingClientRect();
 		const depth = Math.min(Math.max(window.innerHeight * 0.6 - box.top, 0), box.height);
 		timeline.style.setProperty("--fill", `${depth}px`);
-		const dotOffset = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.2;
+		const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+		const dotOffset = parseFloat(getComputedStyle(timeline).getPropertyValue("--dot-top")) * rem;
 		for (const year of years) {
 			year.classList.toggle("reached", !year.hidden && year.offsetTop + dotOffset <= depth);
 		}
@@ -174,6 +175,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 	   fills downward as you scroll, and each year's dot fills as it's reached. */
 	.timeline {
 		--rail: 3.1rem;
+		--dot-top: 1.2rem;
 		--fill: 0px;
 		position: relative;
 		padding-left: 4.5rem;
@@ -215,7 +217,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		position: absolute;
 		z-index: 1;
 		left: calc(var(--rail) - 4.5rem);
-		top: 1.2rem;
+		top: var(--dot-top);
 		width: 12px;
 		height: 12px;
 		translate: -50% -50%;
@@ -358,7 +360,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 
 	.points {
 		margin: 0;
-		padding: 0 var(--space-2) var(--space-5) calc(var(--space-2) + 1.2rem);
+		padding: var(--space-1) var(--space-2) var(--space-3) calc(var(--space-2) + 1.2rem);
 		max-width: 68ch;
 	}
 
@@ -368,26 +370,28 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 	}
 
 	@media (max-width: 640px) {
+		/* A slim rail at the left edge, with the year above its roles. */
 		.timeline {
-			padding-left: 0;
+			--rail: 0.4rem;
+			--dot-top: 0.7rem;
+			padding-left: 1.5rem;
 		}
 
-		.timeline::before,
-		.timeline::after,
 		.year::before {
-			display: none;
+			left: calc(var(--rail) - 1.5rem);
 		}
 
 		.year .year-label {
 			position: static;
 			width: auto;
-			margin: var(--space-4) 0 var(--space-2);
+			margin: 0 0 var(--space-1);
+			padding-left: var(--space-2);
 			text-align: left;
 		}
 
-
 		summary {
 			grid-template-columns: 1fr auto;
+			gap: var(--space-2) var(--space-3);
 		}
 
 		.role-meta {
@@ -402,7 +406,7 @@ const pct = (value: number) => `${(((value - FIRST) / (LAST - FIRST)) * 100).toF
 		}
 
 		.legend {
-			margin-left: 0;
+			margin-left: 1.5rem;
 		}
 	}
 </style>
