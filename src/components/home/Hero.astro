@@ -1,56 +1,17 @@
 ---
-import BlueskyIcon from "../icons/BlueskyIcon.astro";
-import EmailIcon from "../icons/EmailIcon.astro";
-import GitHubIcon from "../icons/GitHubIcon.astro";
-import InstagramIcon from "../icons/InstagramIcon.astro";
-import LinkedInIcon from "../icons/LinkedInIcon.astro";
-import XIcon from "../icons/XIcon.astro";
+import { email, profiles } from "../../data/social";
 
 // Positions are percentages of the hero; each icon floats with its own period.
-const orbs = [
-	{
-		label: "Email",
-		href: "mailto:daniel@danielthorp.com",
-		aria: "Send an email to Daniel Thorp",
-		icon: EmailIcon,
-		pos: "--x: 17%; --y: 30%; --mx: 16%; --my: 24%; --dur: 7.5s; --delay: -1s;",
-	},
-	{
-		label: "GitHub",
-		href: "https://github.com/arcanistzed",
-		aria: "Daniel Thorp on GitHub (opens in new tab)",
-		icon: GitHubIcon,
-		pos: "--x: 82%; --y: 24%; --mx: 84%; --my: 24%; --dur: 9s; --delay: -4s;",
-	},
-	{
-		label: "LinkedIn",
-		href: "https://www.linkedin.com/in/daniel-a-thorp/",
-		aria: "Daniel Thorp on LinkedIn (opens in new tab)",
-		icon: LinkedInIcon,
-		pos: "--x: 86%; --y: 70%; --mx: 84%; --my: 79%; --dur: 8s; --delay: -2.5s;",
-	},
-	{
-		label: "Bluesky",
-		href: "https://bsky.app/profile/danielthorp.bsky.social",
-		aria: "Daniel Thorp on Bluesky (opens in new tab)",
-		icon: BlueskyIcon,
-		pos: "--x: 13%; --y: 72%; --mx: 16%; --my: 79%; --dur: 10s; --delay: -6s;",
-	},
-	{
-		label: "Instagram",
-		href: "https://instagram.com/daniel.a.thorp",
-		aria: "Daniel Thorp on Instagram (opens in new tab)",
-		icon: InstagramIcon,
-		pos: "--x: 64%; --y: 84%; --mx: 50%; --my: 83%; --dur: 8.5s; --delay: -3.5s;",
-	},
-	{
-		label: "X",
-		href: "https://x.com/arcanistzed",
-		aria: "Daniel Thorp on X (opens in new tab)",
-		icon: XIcon,
-		pos: "--x: 38%; --y: 16%; --mx: 50%; --my: 17%; --dur: 9.5s; --delay: -5s;",
-	},
+// In order: email, GitHub, LinkedIn, Bluesky, Instagram, X.
+const positions = [
+	"--x: 17%; --y: 30%; --mx: 16%; --my: 24%; --dur: 7.5s; --delay: -1s;",
+	"--x: 82%; --y: 24%; --mx: 84%; --my: 24%; --dur: 9s; --delay: -4s;",
+	"--x: 86%; --y: 70%; --mx: 84%; --my: 79%; --dur: 8s; --delay: -2.5s;",
+	"--x: 13%; --y: 72%; --mx: 16%; --my: 79%; --dur: 10s; --delay: -6s;",
+	"--x: 64%; --y: 84%; --mx: 50%; --my: 83%; --dur: 8.5s; --delay: -3.5s;",
+	"--x: 38%; --y: 16%; --mx: 50%; --my: 17%; --dur: 9.5s; --delay: -5s;",
 ];
+const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i] }));
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title" data-bed="carbon">
