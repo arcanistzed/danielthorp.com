@@ -216,7 +216,7 @@ const today = new Date().toLocaleDateString("en-CA", {
 		</a>
 
 		<p class="disclaimer">
-			Views are my own, not those of any organization I’m part of.
+			Views are my own, not those of any organisation I’m part of.
 		</p>
 	</div>
 </section>
@@ -306,8 +306,11 @@ const today = new Date().toLocaleDateString("en-CA", {
 		color: var(--color-text);
 	}
 
+	/* Lines up with the text inside the Substack box above it (the box bleeds
+	   out by --space-3 and pads in by --space-5). */
 	.disclaimer {
 		margin: var(--space-4) 0 0;
+		padding-inline: calc(var(--space-5) - var(--space-3));
 		font-size: 0.82rem;
 		font-style: italic;
 		color: var(--color-muted);

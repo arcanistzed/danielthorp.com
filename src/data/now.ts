@@ -40,7 +40,7 @@ export const statuses: Status[] = [
 		href: "https://openmedia.org/",
 		status: "Serving",
 		detail:
-			"Serving on the Board of Directors of a Canadian digital rights organization, with responsibilities spanning governance, finance, human resources, and strategic planning.",
+			"Serving on the Board of Directors of a Canadian digital rights organisation, with responsibilities spanning governance, finance, human resources, and strategic planning.",
 	},
 	{
 		role: "COP explorer",

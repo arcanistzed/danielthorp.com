@@ -40,7 +40,7 @@ export const projects: Project[] = [
 		repo: "HacktheHill/bulk-email",
 		category: "hackthehill",
 		summary:
-			"A reusable system for composing and sending large volumes of personalized emails using React Email. I’ve refined it over several years, and it has delivered tens of thousands of messages for Hack the Hill. A version was also used to send approximately 50,000 emails during my UOSU presidential campaign.",
+			"A reusable system for composing and sending large volumes of personalised emails using React Email. I’ve refined it over several years, and it has delivered tens of thousands of messages for Hack the Hill. A version was also used to send approximately 50,000 emails during my UOSU presidential campaign.",
 		tags: ["TypeScript", "React Email"],
 	},
 	{
@@ -48,7 +48,7 @@ export const projects: Project[] = [
 		repo: "HacktheHill/track-the-hack-bot",
 		category: "hackthehill",
 		summary:
-			"Hack the Hill’s Discord bot. It spots tasks in the organizers’ server and creates them in OpenProject, schedules messages, syncs roles across servers, and handles hacker verification. I’m the main developer.",
+			"Hack the Hill’s Discord bot. It spots tasks in the organisers’ server and creates them in OpenProject, schedules messages, syncs roles across servers, and handles hacker verification. I’m the main developer.",
 		tags: ["TypeScript", "Discord"],
 	},
 	{
@@ -80,7 +80,7 @@ export const projects: Project[] = [
 		repo: "HacktheHill/photo-album",
 		category: "hackthehill",
 		summary:
-			"A lightweight photo gallery built for Hack the Hill III, featuring fast browsing, categorized albums, and clear licensing information before downloads.",
+			"A lightweight photo gallery built for Hack the Hill III, featuring fast browsing, categorised albums, and clear licensing information before downloads.",
 		tags: ["Astro", "React", "Cloudflare Workers", "R2"],
 	},
 	{

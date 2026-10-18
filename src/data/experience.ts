@@ -25,8 +25,8 @@ export const work: Role[] = [
 		org: "Canadian Forces Morale and Welfare Services",
 		dates: "May 2026 to Aug 2026",
 		points: [
-			"Analyzed the Microsoft Power Platform inventory in Power BI to assess app and flow usage, ownership, governance risk, and migration readiness across the Default Environment.",
-			"Coordinated the organization-wide rollout of updated data loss prevention policies: change management planning, documentation, stakeholder communications, and inquiry support.",
+			"Analysed the Microsoft Power Platform inventory in Power BI to assess app and flow usage, ownership, governance risk, and migration readiness across the Default Environment.",
+			"Coordinated the organisation-wide rollout of updated data loss prevention policies: change management planning, documentation, stakeholder communications, and inquiry support.",
 			"Worked with app and flow owners to confirm business purpose, usage, data sensitivity, and ownership, and documented recommendations for retention, migration, reassignment, quarantine, or deletion.",
 		],
 	},
@@ -77,10 +77,10 @@ export const work: Role[] = [
 		dates: "May 2023 to Aug 2023",
 		points: [
 			"Built interactive internal dashboards from customer usage and licensing data to support decisions.",
-			"Built a sortable, paginated, searchable PHP table of customer license data for compliance analysis.",
-			"Designed a SQL ETL pipeline that processed and analyzed more than 50,000 records.",
-			"Analyzed End User License Agreement provisions to define compliance criteria, and reported potential violations.",
-			"Refactored and modularized the existing codebase for maintainability and performance.",
+			"Built a sortable, paginated, searchable PHP table of customer licence data for compliance analysis.",
+			"Designed a SQL ETL pipeline that processed and analysed more than 50,000 records.",
+			"Analysed End User Licence Agreement provisions to define compliance criteria, and reported potential violations.",
+			"Refactored and modularised the existing codebase for maintainability and performance.",
 		],
 	},
 	{
@@ -88,7 +88,7 @@ export const work: Role[] = [
 		org: "The Forge VTT",
 		dates: "Jun 2022 to May 2023",
 		points: [
-			"Led the overhaul of the content conversion process with an automated CLI script and programmatic image manipulation for tokenization.",
+			"Led the overhaul of the content conversion process with an automated CLI script and programmatic image manipulation for tokenisation.",
 			"Improved data processing with new algorithms and regex pattern matching (about 30% better).",
 			"Worked on the backend and frontend of the company website with Node.js, Express, Vue, MongoDB, and Bootstrap.",
 			"Joined design discussions with colleagues and external partners, and provided technical customer support, including during outages.",
@@ -117,8 +117,8 @@ export const leadership: (Role & { area: Area })[] = [
 			"Led Hack the Hill II as president: 826 participants, 113 projects, and more than $95,000 raised.",
 			"Previously Board Chair and Director at Large, leading governance, oversight, and strategic direction.",
 			"Previously Vice-President of Operations, Vice-President of Governance, and President, leading strategy, chairing meetings, and representing the nonprofit externally.",
-			"As Operations Director, managed operations, finance, and administrative systems, and drafted the organization’s legal documents, policies, and procedures.",
-			"As Development Director, designed and built the event management platform (TypeScript, React, Next.js, Node.js, MySQL), the public website, and email infrastructure for more than 2,500 personalized messages, and taught workshops to more than 120 students.",
+			"As Operations Director, managed operations, finance, and administrative systems, and drafted the organisation’s legal documents, policies, and procedures.",
+			"As Development Director, designed and built the event management platform (TypeScript, React, Next.js, Node.js, MySQL), the public website, and email infrastructure for more than 2,500 personalised messages, and taught workshops to more than 120 students.",
 			"Rebuilt the Hack the Hill website in Astro, improving load speed elevenfold and reaching a perfect Lighthouse score.",
 		],
 	},
@@ -148,7 +148,7 @@ export const leadership: (Role & { area: Area })[] = [
 		dates: "Oct 2024 to present",
 		area: "civic",
 		points: [
-			"Co-founded and lead a student organization focused on technology law, digital governance, and public policy.",
+			"Co-founded and lead a student organisation focused on technology law, digital governance, and public policy.",
 			"Drafted the constitution, chair meetings, and run finances, communications, and the website.",
 			"Developing opportunities for students to engage with technology law and public policy, including discussions, workshops, and events concerning AI governance, privacy, cybersecurity, and digital rights.",
 		],
@@ -162,7 +162,7 @@ export const leadership: (Role & { area: Area })[] = [
 			"Ran the campaign’s digital infrastructure across web, email, volunteer management, and campaign systems.",
 			"Maintained the campaign website and added API-based features for real-time updates.",
 			"Built an interactive volunteer shift calendar from the volunteer-management platform’s data.",
-			"Automated volunteer onboarding by connecting JotForm, Action Network, and the volunteer platform, with personalized onboarding emails.",
+			"Automated volunteer onboarding by connecting JotForm, Action Network, and the volunteer platform, with personalised onboarding emails.",
 			"Set up email blasts and events in Action Network, and canvassed, dropped literature, and helped get out the vote.",
 		],
 	},
@@ -172,7 +172,7 @@ export const leadership: (Role & { area: Area })[] = [
 		dates: "May 2025 to Sep 2025",
 		area: "student",
 		points: [
-			"Oversaw the Society’s sub-associations and led the team organizing the uOttawa Engineering Competition, a qualifier for the Ontario Engineering Competition.",
+			"Oversaw the Society’s sub-associations and led the team organising the uOttawa Engineering Competition, a qualifier for the Ontario Engineering Competition.",
 			"Led National Engineering Month events, managed internal operations, and recorded and published officer meeting minutes.",
 			"Voting member of the Board of Directors.",
 		],
@@ -193,7 +193,7 @@ export const leadership: (Role & { area: Area })[] = [
 		dates: "May 2024 to Aug 2024",
 		area: "student",
 		points: [
-			"Chaired the national Board of Directors and organized the Federation’s first online seasonal updates meeting.",
+			"Chaired the national Board of Directors and organised the Federation’s first online seasonal updates meeting.",
 			"Created simplified bilingual agenda and motion templates.",
 		],
 	},
@@ -248,7 +248,7 @@ export const leadership: (Role & { area: Area })[] = [
 		area: "community",
 		points: [
 			"Served as Vice-President Communications, Vice-President External Affairs, and Software Engineering Academic Commissioner.",
-			"Co-organized a capture-the-flag competition and a large networking event.",
+			"Co-organised a capture-the-flag competition and a large networking event.",
 		],
 	},
 ];
