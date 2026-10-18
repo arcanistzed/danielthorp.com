@@ -276,10 +276,19 @@ function ensureContext() {
 	if (!AudioCtx) return;
 	ctx = new AudioCtx();
 
+	// Gentle glue, then a limiter so the drop's kick over the riser can never
+	// clip, whatever the levels add up to.
+	const limiter = ctx.createDynamicsCompressor();
+	limiter.threshold.value = -2;
+	limiter.knee.value = 0;
+	limiter.ratio.value = 20;
+	limiter.attack.value = 0.002;
+	limiter.release.value = 0.1;
+	limiter.connect(ctx.destination);
 	const compressor = ctx.createDynamicsCompressor();
 	compressor.threshold.value = -18;
 	compressor.ratio.value = 4;
-	compressor.connect(ctx.destination);
+	compressor.connect(limiter);
 
 	master = ctx.createGain();
 	master.gain.value = 0.5;
@@ -442,7 +451,7 @@ document.addEventListener("visibilitychange", () => {
 });
 
 export function vibrate(pattern: number | number[]) {
-	if (!enabled) return;
+	if (!isEnabled()) return;
 	try {
 		navigator.vibrate?.(pattern);
 	} catch {}

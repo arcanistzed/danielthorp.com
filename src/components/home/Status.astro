@@ -125,6 +125,7 @@ const flaps = (text: string, width: number) =>
 	function run() {
 		const rows = [...board.querySelectorAll<HTMLElement>(".row")];
 		let lastClack = 0;
+		let boardSettles = 0;
 		rows.forEach((row, r) => {
 			const flaps = [...row.querySelectorAll<HTMLElement>(".flap")];
 			let settles = 0;
@@ -152,9 +153,10 @@ const flaps = (text: string, width: number) =>
 					if (!done) setTimeout(next, 55);
 				}, start);
 			});
-			// One light tick per row as its last flap settles.
-			setTimeout(() => vibrate(8), settles);
+			boardSettles = Math.max(boardSettles, settles);
 		});
+		// One light tick as the last flap on the board settles.
+		setTimeout(() => vibrate(10), boardSettles);
 	}
 
 	if (!still) {

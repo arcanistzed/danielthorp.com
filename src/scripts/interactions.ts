@@ -69,14 +69,16 @@ export function installInteractionSounds() {
 	});
 
 	// The phone menu's overlay: the music goes backstage while it is open,
-	// and opening and closing each get a light tap under their click.
+	// and opening and closing each get a light tap under their click. A close
+	// caused by tapping a link gets none, since the glide taps on arrival.
+	let lastLinkClick = 0;
 	window.addEventListener("menu-open", () => {
 		setMuffled(true);
 		vibrate(8);
 	});
 	window.addEventListener("menu-close", () => {
 		setMuffled(false);
-		vibrate(8);
+		if (performance.now() - lastLinkClick > 150) vibrate(8);
 	});
 
 	document.addEventListener("click", event => {
@@ -85,6 +87,7 @@ export function installInteractionSounds() {
 		if (!link) return;
 		const href = link.getAttribute("href") ?? "";
 		if (href.startsWith("#")) {
+			lastLinkClick = performance.now();
 			const target = href.length > 1 ? document.getElementById(href.slice(1)) : null;
 			whoosh(target ? target.getBoundingClientRect().top > 0 : true);
 		} else if (flavour(link) === "paper") {

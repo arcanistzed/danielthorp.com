@@ -18,7 +18,7 @@
 </button>
 
 <script>
-	import { isEnabled, setEnabled, chord } from "../../scripts/sound";
+	import { isEnabled, setEnabled, chord, vibrate } from "../../scripts/sound";
 
 	const button = document.querySelector<HTMLButtonElement>(".sound-toggle")!;
 	const render = () => {
@@ -38,6 +38,8 @@
 			window.dispatchEvent(new Event("sound-toggled-on"));
 		} else {
 			chord([60, 67, 72, 76], 1.8);
+			// Sound is on: one tap under the finger with the chord.
+			vibrate(12);
 		}
 	});
 	window.addEventListener("sound-change", render);

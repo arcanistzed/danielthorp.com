@@ -61,6 +61,8 @@ interface Voice {
 	position?(p: number): void;
 	/** How much of the viewport the bed's section holds, 0 to 1, as it scrolls in. */
 	approach?(p: number): void;
+	/** Where the pointer is over the section, 0 to 1 across and down. */
+	pointer?(x: number, y: number): void;
 	stop(): void;
 }
 
@@ -480,8 +482,18 @@ const BEDS: Record<string, Bed> = {
 		pump: true,
 		build(g, out, pump) {
 			const floor = noiseFloor(g, out, "lowpass", 420, 0.035);
+			// The pad follows the pointer like the hero's highlight does: left to
+			// right across the stereo field, brighter toward the top.
+			const { ctx } = g;
+			const tone = ctx.createBiquadFilter();
+			tone.type = "lowpass";
+			tone.frequency.value = 2400;
+			tone.Q.value = 0.7;
+			const place = ctx.createStereoPanner();
+			tone.connect(place);
+			place.connect(pump);
 			const keep = padKeeper((start, end, chord, step) => {
-				pad(g, pump, [chord[0] - 12, ...chord], start, end, {
+				pad(g, tone, [chord[0] - 12, ...chord], start, end, {
 					cutoff: 500 + 1600 * cycle(step, LOOP * 2),
 					attack: 2.4,
 					release: 3,
@@ -502,6 +514,11 @@ const BEDS: Record<string, Bed> = {
 			return {
 				step(s, t) {
 					keep(s, t);
+				},
+				pointer(x, y) {
+					const now = ctx.currentTime;
+					place.pan.setTargetAtTime((x - 0.5) * 0.9, now, 0.25);
+					tone.frequency.setTargetAtTime(600 * 6 ** (1 - y), now, 0.3);
 				},
 				stop() {
 					floor?.stop();
@@ -1191,6 +1208,30 @@ export function installBeds() {
 		{ passive: true },
 	);
 	window.addEventListener("resize", schedule);
+
+	// Beds that listen to the pointer get its position over their section.
+	for (const [, entry] of live) {
+		for (const section of entry.sections) {
+			let pending = 0;
+			section.addEventListener(
+				"pointermove",
+				event => {
+					if (pending || event.pointerType !== "mouse") return;
+					pending = requestAnimationFrame(() => {
+						pending = 0;
+						const voice = entry.voice;
+						if (!voice?.pointer) return;
+						const rect = section.getBoundingClientRect();
+						voice.pointer(
+							Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)),
+							Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height)),
+						);
+					});
+				},
+				{ passive: true },
+			);
+		}
+	}
 	// The hero adds and removes the "intro" class on <html>.
 	new MutationObserver(schedule).observe(root, { attributes: true, attributeFilter: ["class"] });
 
