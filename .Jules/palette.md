@@ -1,0 +1,3 @@
+## 2024-10-17 - Skip-to-content Link
+**Learning:** For visually hidden but focusable elements (like skip-to-content links), use a specific class like `.skip-link` for focus styles (`:focus`, `:focus-visible`) rather than globally modifying `.sr-only:focus`, which can unintentionally reveal other screen-reader-only elements when they receive focus. The target element (`<main>`) must have `tabindex="-1"` and `:focus { outline: none; }` to ensure programmatic focus works without awkward visual rings.
+**Action:** Always pair visually hidden focusable elements with specific target styling, and ensure jump targets have `tabindex="-1"` and outline removal.
