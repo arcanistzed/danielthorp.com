@@ -225,11 +225,13 @@ const structuredData = {
 	</head>
 
 	<body>
+		<!-- Skip to content link for accessibility -->
+		<a href="#content" class="skip-link sr-only">Skip to content</a>
 		<!-- Page navigation goes first so it leads the tab order. -->
 		<slot name="nav" />
 		<ThemeToggle />
 		<SoundToggle />
-		<main id="content">
+		<main id="content" tabindex="-1">
 			<slot />
 		</main>
 
