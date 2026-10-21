@@ -70,6 +70,30 @@ a:hover {
 	border: 0;
 }
 
+.skip-link:focus,
+.skip-link:focus-visible {
+	position: fixed;
+	top: var(--space-4);
+	left: var(--space-4);
+	width: auto;
+	height: auto;
+	padding: var(--space-2) var(--space-4);
+	margin: 0;
+	clip: auto;
+	white-space: normal;
+	z-index: 100;
+	background: var(--color-bg);
+	color: var(--color-text);
+	border: 1px solid var(--color-rule);
+	border-radius: var(--radius-1);
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+	text-decoration: none;
+}
+
+#content:focus {
+	outline: none;
+}
+
 :focus-visible {
 	outline: 2px solid var(--color-accent);
 	outline-offset: 2px;
