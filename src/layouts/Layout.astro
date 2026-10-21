@@ -1,4 +1,5 @@
 ---
+import { Font } from "astro:assets";
 import Footer from "../components/Footer.astro";
 import SoundToggle from "../components/home/SoundToggle.astro";
 import ThemeToggle from "../components/home/ThemeToggle.astro";
@@ -138,7 +139,7 @@ const structuredData = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en-CA">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -174,6 +175,8 @@ const structuredData = {
 			content="https://danielthorp.com/og-image.png"
 		/>
 		<meta name="twitter:image:alt" content={ogImageAlt} />
+		<meta name="twitter:creator" content="@arcanistzed" />
+		<meta name="twitter:creator" content="@arcanistzed" />
 
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
@@ -186,17 +189,19 @@ const structuredData = {
 			href="https://arcanistzed.substack.com/feed"
 		/>
 
-		<!-- Theme color -->
+		<!-- Theme color: the hero's carbon fibre, or its brushed aluminium. -->
 		<meta
 			name="theme-color"
-			content="#0a0b0d"
+			content="#18181a"
 			media="(prefers-color-scheme: dark)"
 		/>
 		<meta
 			name="theme-color"
-			content="#ffffff"
+			content="#cfd1d6"
 			media="(prefers-color-scheme: light)"
 		/>
+
+		<Font cssVariable="--font-display" preload={[{ weight: 600, style: "normal", subset: "latin" }]} />
 
 		<!-- Structured data -->
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
@@ -213,7 +218,8 @@ const structuredData = {
 					seen = sessionStorage.getItem("intro-played") === "1";
 				} catch {}
 				const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-				if (!seen && !still) root.classList.add("intro");
+				// A link straight to a section shows that section, not the intro.
+				if (!seen && !still && !location.hash) root.classList.add("intro");
 			})();
 		</script>
 	</head>

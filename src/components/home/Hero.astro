@@ -15,6 +15,8 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title" data-bed="carbon">
+	<span class="sheen" aria-hidden="true"></span>
+	<span class="glow" aria-hidden="true"></span>
 	<h1 id="hero-title" class="sr-only">Daniel Thorp</h1>
 	<p class="sr-only">Hello! My name is Daniel.</p>
 	<p class="sr-only" lang="fr">Bonjour! Je m’appelle Daniel.</p>
@@ -173,12 +175,23 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 	}
 
 	const SKIP_KEYS = new Set([
-		"ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home", " ", "Escape", "Tab",
+		"ArrowDown", "ArrowUp", "PageDown", "PageUp", "End", "Home", " ", "Escape",
 	]);
 	window.addEventListener("wheel", skip, { passive: true });
 	window.addEventListener("touchmove", skip, { passive: true });
 	window.addEventListener("keydown", event => {
-		if (SKIP_KEYS.has(event.key)) skip();
+		if (event.key === "Tab") {
+			// Tabbing to the sound prompt keeps the intro; tabbing out of the hero skips it.
+			setTimeout(() => {
+				if (!hero.contains(document.activeElement)) skip();
+			});
+			return;
+		}
+		if (!SKIP_KEYS.has(event.key)) return;
+		// Space on a button presses the button; only Escape skips from a control.
+		const onControl = (event.target as Element | null)?.closest("button, a, input, select, textarea");
+		if (onControl && event.key !== "Escape") return;
+		skip();
 	});
 
 	// Each icon swells slightly, then shrinks to nothing, one after another;
@@ -527,19 +540,6 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 				var(--bg-about-top) 100%
 			),
 			radial-gradient(
-				420px circle at var(--px, 50%) var(--py, 40%),
-				rgba(255, 255, 255, 0.09),
-				transparent 70%
-			),
-			linear-gradient(
-				115deg,
-				transparent 35%,
-				rgba(220, 228, 255, 0.07) 47%,
-				rgba(255, 255, 255, 0.12) 50%,
-				rgba(220, 228, 255, 0.07) 53%,
-				transparent 65%
-			),
-			radial-gradient(
 				ellipse 60% 50% at 0% 100%,
 				rgba(255, 46, 160, 0.2),
 				transparent 70%
@@ -554,36 +554,54 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 				transparent 55%,
 				rgba(0, 0, 0, 0.55)
 			);
-		background-size:
-			100% 100%,
-			100% 100%,
-			300% 100%,
-			100% 100%,
-			100% 100%,
-			100% 100%;
-		background-repeat: no-repeat;
+	}
+
+	/* The sheen and the cursor highlight are their own layers moved with
+	   transforms, so neither repaints the hero: the sheen is three screens
+	   wide and slides, and the highlight follows the pointer. Both sit
+	   between the weave and the glows. */
+	.sheen,
+	.glow {
+		position: absolute;
+		z-index: -1;
+		pointer-events: none;
+		will-change: transform;
+	}
+
+	.sheen {
+		top: 0;
+		bottom: 0;
+		left: 0;
+		width: 300%;
+		background: linear-gradient(
+			115deg,
+			transparent 35%,
+			rgba(220, 228, 255, 0.07) 47%,
+			rgba(255, 255, 255, 0.12) 50%,
+			rgba(220, 228, 255, 0.07) 53%,
+			transparent 65%
+		);
 		animation: sheen 14s ease-in-out infinite alternate;
 	}
 
 	@keyframes sheen {
 		from {
-			background-position:
-				0 0,
-				0 0,
-				100% 0,
-				0 0,
-				0 0,
-				0 0;
+			transform: translateX(-66.667%);
 		}
 		to {
-			background-position:
-				0 0,
-				0 0,
-				0% 0,
-				0 0,
-				0 0,
-				0 0;
+			transform: none;
 		}
+	}
+
+	.glow {
+		top: -420px;
+		left: -420px;
+		width: 840px;
+		height: 840px;
+		border-radius: 50%;
+		background: radial-gradient(circle, rgba(255, 255, 255, 0.09), transparent 70%);
+		transform: translate(var(--px, 50vw), var(--py, 40vh));
+		transition: transform 80ms linear;
 	}
 
 	/* Final state; also what visitors see without JavaScript or with reduced motion. */
@@ -742,7 +760,8 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 		clip-path: none;
 	}
 
-	.replay[hidden] {
+	.replay[hidden],
+	:global(html.intro:not(.intro-done)) .replay {
 		display: none;
 	}
 
@@ -999,26 +1018,24 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 				color-mix(in srgb, var(--bg-about-top) 45%, transparent) 91%,
 				var(--bg-about-top) 100%
 			),
-			radial-gradient(420px circle at var(--px, 50%) var(--py, 40%), rgba(255, 255, 255, 0.4), transparent 70%),
-			linear-gradient(
-				115deg,
-				transparent 35%,
-				rgba(255, 255, 255, 0.25) 47%,
-				rgba(255, 255, 255, 0.5) 50%,
-				rgba(255, 255, 255, 0.25) 53%,
-				transparent 65%
-			),
 			radial-gradient(ellipse 60% 50% at 0% 100%, rgba(255, 46, 160, 0.16), transparent 70%),
 			radial-gradient(ellipse 55% 45% at 100% 0%, rgba(0, 190, 230, 0.16), transparent 70%),
 			radial-gradient(ellipse 90% 80% at 50% 50%, transparent 55%, rgba(40, 40, 52, 0.22));
-		background-size:
-			100% 100%,
-			100% 100%,
-			300% 100%,
-			100% 100%,
-			100% 100%,
-			100% 100%;
-		background-repeat: no-repeat;
+	}
+
+	:global(:root[data-theme="light"]) .sheen {
+		background: linear-gradient(
+			115deg,
+			transparent 35%,
+			rgba(255, 255, 255, 0.25) 47%,
+			rgba(255, 255, 255, 0.5) 50%,
+			rgba(255, 255, 255, 0.25) 53%,
+			transparent 65%
+		);
+	}
+
+	:global(:root[data-theme="light"]) .glow {
+		background: radial-gradient(circle, rgba(255, 255, 255, 0.4), transparent 70%);
 	}
 
 	:global(:root[data-theme="light"]) .hello {
@@ -1062,7 +1079,7 @@ const orbs = [email, ...profiles].map((link, i) => ({ ...link, pos: positions[i]
 		.chevron,
 		.first,
 		.last,
-		.hero::after {
+		.sheen {
 			animation: none;
 		}
 	}

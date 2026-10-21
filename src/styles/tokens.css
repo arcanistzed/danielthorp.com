@@ -28,9 +28,7 @@
 	--font-sans:
 		ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
 		"Helvetica Neue", Arial, sans-serif;
-	--font-display:
-		"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino,
-		"Times New Roman", serif;
+	/* --font-display is set by Astro's font pipeline (see astro.config.mjs). */
 	--font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;
 
 	/* Spacing scale */

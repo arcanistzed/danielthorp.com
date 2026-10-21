@@ -170,6 +170,8 @@ const years = [...new Set(entries.map(entry => Math.floor(entry.start)))];
 	}
 
 	:global(:root[data-theme="light"]) .experience {
+		/* Muted text needs more weight on maple to keep AA contrast. */
+		--color-muted: #4f4f5a;
 		--brass: #9a6b22;
 		--brass-hi: #c89a48;
 		--brass-lo: #6c4812;

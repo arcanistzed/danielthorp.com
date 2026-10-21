@@ -5,10 +5,12 @@ import { ROLE_WIDTH as ROLE, STATUS_WIDTH as STATUS, statuses, updatedFallback }
 // The date the status file last changed, so the board can't silently go stale.
 let updated = updatedFallback;
 try {
-	const iso = execSync("git log -1 --format=%cs -- src/data/now.ts", {
-		encoding: "utf8",
-		stdio: ["ignore", "pipe", "ignore"],
-	}).trim();
+	const git = (command: string) =>
+		execSync(command, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+	// A shallow clone (as some build services make) only has the latest
+	// commit, whose date says nothing about this file; keep the fallback then.
+	const shallow = git("git rev-parse --is-shallow-repository") === "true";
+	const iso = shallow ? "" : git("git log -1 --format=%cs -- src/data/now.ts");
 	if (iso) {
 		updated = new Date(`${iso}T12:00:00`).toLocaleDateString("en-CA", {
 			year: "numeric",
@@ -335,9 +337,9 @@ const flaps = (text: string, width: number) =>
 			white-space: normal;
 		}
 
-		/* 18 flaps must fit in a 375px-wide phone's board. */
+		/* 18 flaps fit a 375px phone at 0.85rem; only narrower screens shrink them. */
 		.flaps {
-			font-size: 0.7rem;
+			font-size: clamp(0.7rem, 3.6vw, 0.85rem);
 		}
 	}
 

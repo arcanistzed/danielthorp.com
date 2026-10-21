@@ -4,8 +4,8 @@
 	"description": "Daniel Thorp is a Software Engineering student at the University of Ottawa interested in technology, public policy, digital rights, and better systems.",
 	"start_url": "/",
 	"display": "browser",
-	"background_color": "#0a0b0d",
-	"theme_color": "#0a0b0d",
+	"background_color": "#18181a",
+	"theme_color": "#18181a",
 	"icons": [
 		{
 			"src": "/icon-192.png",

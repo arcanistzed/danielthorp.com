@@ -13,6 +13,8 @@ export const categories: [Category, string][] = [
 export interface Project {
 	name: string;
 	repo: string;
+	/** Where the project is live, if it is public and running. */
+	url?: string;
 	category: Category;
 	summary: string;
 	tags: string[];

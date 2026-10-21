@@ -24,7 +24,8 @@ run `npm run images` and commit the results.
   last commit, and the build fails if a role or status is too long for the
   board.
 - Experience: `src/data/experience.ts`.
-- Projects: `src/data/projects.ts`. Only public repositories are listed.
+- Projects: `src/data/projects.ts`. Only public repositories are listed; add
+  `url` for a live site.
 - Writing (the "Opinion" section) is fetched from the Substack feed at build
   time, with a fallback list of the newest posts in
   `src/components/home/Writing.astro`. Update that list when you publish.

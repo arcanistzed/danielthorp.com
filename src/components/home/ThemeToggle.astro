@@ -86,7 +86,9 @@
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
 		cursor: pointer;
-		transition: opacity 700ms ease;
+		transition:
+			opacity 700ms ease,
+			visibility 0s;
 	}
 
 	.theme-toggle:hover {
@@ -106,7 +108,13 @@
 
 	:global(html.intro:not(.intro-done)) .theme-toggle {
 		opacity: 0;
+		visibility: hidden;
 		pointer-events: none;
+	}
+
+	/* The phone menu's overlay covers the page, but the controls stay on top of it. */
+	:global(html.menu-open) .theme-toggle {
+		z-index: 41;
 	}
 
 	/* Phones: the menu button takes the corner, so this sits left of sound. */

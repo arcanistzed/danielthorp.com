@@ -36,8 +36,10 @@ function detectTier(): Tier {
 		deviceMemory?: number;
 		connection?: { saveData?: boolean };
 	};
+	// Only Chromium reports deviceMemory; a missing value is unknown, not low,
+	// or every Safari and Firefox visitor would lose the reverb.
 	const cores = nav.hardwareConcurrency ?? 4;
-	const memory = nav.deviceMemory ?? 4;
+	const memory = nav.deviceMemory ?? Infinity;
 	if (cores <= 2 || memory <= 2 || nav.connection?.saveData) return "none";
 	const phone = matchMedia("(pointer: coarse)").matches;
 	if (cores <= 4 || memory <= 4 || phone) return "lite";

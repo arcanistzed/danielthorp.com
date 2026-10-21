@@ -29,19 +29,7 @@ import { categories, projects } from "../../data/projects";
 						<details>
 							<summary>
 								<span class="card-head">
-									<a
-										class="card-title"
-										href={`https://github.com/${project.repo}`}
-										target="_blank"
-										rel="noopener noreferrer"
-										title="Open on GitHub"
-									>
-										{project.name}
-										<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
-											<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-										</svg>
-										<span class="sr-only"> on GitHub (opens in new tab)</span>
-									</a>
+									<span class="card-title">{project.name}</span>
 									<span class="card-meta">
 										{project.tags.join(" · ")}
 									</span>
@@ -51,6 +39,24 @@ import { categories, projects } from "../../data/projects";
 								</svg>
 							</summary>
 							<p class="card-summary">{project.summary}</p>
+							<p class="card-links">
+								<a href={`https://github.com/${project.repo}`} target="_blank" rel="noopener noreferrer">
+									<span class="prompt" aria-hidden="true">$ </span>source
+									<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+										<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+									<span class="sr-only">{project.name} on GitHub (opens in new tab)</span>
+								</a>
+								{project.url && (
+									<a href={project.url} target="_blank" rel="noopener noreferrer">
+										<span class="prompt" aria-hidden="true">$ </span>live site
+										<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+											<path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+										</svg>
+										<span class="sr-only">{project.name} (opens in new tab)</span>
+									</a>
+								)}
+							</p>
 						</details>
 					</li>
 				))
@@ -91,7 +97,8 @@ import { categories, projects } from "../../data/projects";
 	}
 
 	:global(:root[data-theme="light"]) .projects {
-		--term: #1a7f37;
+		/* Dark enough for the selected filter's pale text to keep AA contrast. */
+		--term: #1a7634;
 	}
 
 	.projects h2 {
@@ -212,22 +219,39 @@ import { categories, projects } from "../../data/projects";
 		gap: 0.2rem;
 	}
 
-	/* The title opens the project; the rest of the card expands it. */
 	.card-title {
-		justify-self: start;
+		font-weight: 600;
+		font-size: 1.05rem;
+	}
+
+	/* Commands at the bottom of the card open the source and the live site. */
+	.card-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2) var(--space-3);
+		margin: 0;
+		padding: 0 var(--space-4) var(--space-4);
+	}
+
+	.card-links a {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3em;
-		font-weight: 600;
-		font-size: 1.05rem;
-		color: inherit;
+		padding: 0.3em 0.7em;
+		border: 1px solid var(--term-dim);
+		border-radius: 2px;
+		font-size: 0.85rem;
+		color: var(--color-text);
 		text-decoration: none;
-		text-underline-offset: 0.2em;
+		transition:
+			border-color var(--dur-2),
+			background-color var(--dur-2);
 	}
 
-	.card-title:hover,
-	.card-title:focus-visible {
-		text-decoration: underline;
+	.card-links a:hover,
+	.card-links a:focus-visible {
+		border-color: var(--term);
+		background: color-mix(in srgb, var(--term) 10%, transparent);
 	}
 
 	.arrow {
@@ -239,8 +263,8 @@ import { categories, projects } from "../../data/projects";
 			transform var(--dur-2);
 	}
 
-	.card-title:hover .arrow,
-	.card-title:focus-visible .arrow {
+	.card-links a:hover .arrow,
+	.card-links a:focus-visible .arrow {
 		color: var(--color-text);
 		transform: translate(1px, -1px);
 	}
@@ -263,7 +287,7 @@ import { categories, projects } from "../../data/projects";
 
 	.card-summary {
 		margin: 0;
-		padding: 0 var(--space-4) var(--space-5);
+		padding: 0 var(--space-4) var(--space-4);
 		max-width: 68ch;
 		line-height: 1.6;
 	}

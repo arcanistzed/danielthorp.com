@@ -20,7 +20,7 @@ const year = new Date().getFullYear();
 		}
 	</ul>
 	<p class="fine-print">
-		&copy; {year} Daniel Thorp
+		&copy; <span class="year">{year}</span> Daniel Thorp
 		<span aria-hidden="true">·</span>
 		Views are my own
 		<span aria-hidden="true">·</span>
@@ -29,6 +29,12 @@ const year = new Date().getFullYear();
 		</a>
 	</p>
 </footer>
+
+<script>
+	// The build is only redone when content changes, so the year is set here.
+	const year = document.querySelector(".site-footer .year");
+	if (year) year.textContent = String(new Date().getFullYear());
+</script>
 
 <style>
 	.profiles {

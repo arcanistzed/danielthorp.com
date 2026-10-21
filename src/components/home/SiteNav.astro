@@ -77,6 +77,13 @@ const links = [
 
 	// A click with detail 0 came from the keyboard (Enter or Space).
 	toggle.addEventListener("click", event => setOpen(!isOpen(), { keyboard: event.detail === 0 }));
+	// The corner buttons sit outside the nav; a key press on them while the
+	// menu is open should still close it or stay in the loop.
+	for (const button of document.querySelectorAll<HTMLElement>(".theme-toggle, .sound-toggle")) {
+		button.addEventListener("keydown", event => {
+			if (isOpen()) nav.dispatchEvent(new KeyboardEvent("keydown", event));
+		});
+	}
 
 	// A link closes the menu, then the page glides to its section.
 	for (const link of links) {
@@ -96,7 +103,9 @@ const links = [
 			return;
 		}
 		if (event.key !== "Tab") return;
-		const items: HTMLElement[] = [toggle, ...links];
+		// The theme and sound buttons stay above the open menu, so they are in the loop.
+		const corner = [...document.querySelectorAll<HTMLElement>(".theme-toggle, .sound-toggle")];
+		const items: HTMLElement[] = [toggle, ...corner, ...links];
 		const i = items.indexOf(document.activeElement as HTMLElement);
 		const next = event.shiftKey
 			? items[(i - 1 + items.length) % items.length]
@@ -180,7 +189,9 @@ const links = [
 		z-index: 20;
 		font-family: var(--font-sans);
 		font-size: 0.9rem;
-		transition: opacity 700ms ease;
+		transition:
+			opacity 700ms ease,
+			visibility 0s;
 	}
 
 	ul {
@@ -261,6 +272,7 @@ const links = [
 	/* Hidden while the intro plays. */
 	:global(html.intro:not(.intro-done)) .site-nav {
 		opacity: 0;
+		visibility: hidden;
 		pointer-events: none;
 	}
 

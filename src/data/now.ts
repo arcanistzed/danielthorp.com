@@ -61,7 +61,7 @@ export const statuses: Status[] = [
 		role: "President",
 		where: "uOttawa Digital Policy Association",
 		href: "https://uodpa-apnuo.org/",
-		status: "Co-founded",
+		status: "Leading",
 		detail: "A student association for digital policy, which I co-founded.",
 	},
 ];
