@@ -8,7 +8,8 @@ export default defineConfig({
   site: 'https://danielthorp.com',
   // The site is rebuilt only when its content changes (a commit or a new
   // Substack post), so the build time is when the page last changed.
-  integrations: [sitemap({ lastmod: new Date() })],
+  // Talk slides are for projecting, not for search results.
+  integrations: [sitemap({ lastmod: new Date(), filter: (page) => !page.includes('/talks/') })],
   // The display serif for the hero and headings, fetched from Fontsource at
   // build time and served from this site, so the name looks the same on every
   // platform. Layout.astro preloads the upright Latin file, since the name is
