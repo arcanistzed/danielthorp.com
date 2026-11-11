@@ -75,7 +75,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						}
 					</svg>
 				</div>
-				<p class="hint" id="hint" data-a>Right arrow or Space to advance. F for full screen.</p>
 			</section>
 
 			<!-- UN Open Source Week -->
@@ -83,8 +82,12 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				<img class="photo" src={hall.src} alt="A full conference chamber at United Nations headquarters, with a screen reading Welcome to Open Source Week." />
 				<div class="photo-text">
 					<p class="where" data-a>UN Open Source Week, New York, 23 to 25 June 2026</p>
-					<h2 data-a>What surprised me was how much of it was about governments.</h2>
-					<p class="note" data-a>More than 1,400 participants from over 100 countries, by the organisers' count.</p>
+					<h2 data-a>I went to New York with two questions.</h2>
+					<ol class="asked">
+						<li data-a>Can open source advance Canada's interests as a middle power?</li>
+						<li data-a>Where is Canada on promoting it?</li>
+					</ol>
+					<p class="body" data-step="1">I came home with far more answers to the first than to the second.</p>
 				</div>
 			</section>
 
@@ -151,7 +154,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 			<!-- Signal: content and metadata -->
 			<section class="slide" aria-label="Privacy and metadata">
 				<h2 data-a>Privacy is what never gets collected.</h2>
-				<svg class="wire" viewBox="0 0 1660 540" role="img" aria-label="Two phones exchange an end-to-end encrypted message through a service. The service can still see metadata.">
+				<svg class="wire" viewBox="0 0 1660 580" role="img" aria-label="Two phones exchange an end-to-end encrypted message through a service. Most services could keep the metadata. Signal is designed not to.">
 					<path class="lane draw" pathLength="1" d="M210,170 H1450" style="--d: 0.7s"></path>
 					<g data-a="pop">
 						<rect class="device" x="60" y="40" width="150" height="270" rx="26"></rect>
@@ -181,9 +184,10 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					<text class="wire-cyan" x="1205" y="140" data-a>encrypted end to end</text>
 					<g data-step="1">
 						<path class="leak draw" pathLength="1" d="M830,270 V392" style="--d: 0.15s"></path>
-						<rect class="meta" x="360" y="392" width="940" height="120" rx="18"></rect>
-						<text class="wire-rose" x="830" y="442">Metadata the service can see</text>
+						<rect class="meta" x="360" y="392" width="940" height="168" rx="18"></rect>
+						<text class="wire-rose" x="830" y="442">Metadata a messaging service could keep</text>
 						<text class="wire-small wire-small-light" x="830" y="486">who you talk to, when, how often, which groups</text>
+						<text class="wire-small wire-small-cyan" x="830" y="530">Signal is designed not to keep it</text>
 					</g>
 				</svg>
 				<p class="note" data-step="2">
@@ -351,9 +355,10 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					<div>
 						<h2 data-a>Being able to read the code is worth less if you can't run it.</h2>
 						<p class="body" data-a>
-							Google began rolling out developer verification on certified Android devices in September 2026. An
-							app from an unregistered developer now needs developer options, a restart, a confirmation and a
-							24&#8209;hour wait, or a cable and ADB.
+							In September 2026 Google began enforcing developer verification on certified Android devices in
+							Brazil, Indonesia, Singapore and Thailand. The rest of the world is planned for 2027. Where it
+							applies, an unregistered app needs developer options, a restart, a confirmation and a
+							24&#8209;hour wait, or ADB.
 						</p>
 						<p class="caveat" data-step="1">
 							A system you can't inspect, modify or leave puts the platform in charge, not you.
@@ -377,8 +382,15 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 
 			<!-- Policy -->
 			<section class="slide" aria-label="What Canada could do">
-				<h2 data-a>What Canada could do next.</h2>
+				<h2 data-a>What I came back thinking Canada needs to do.</h2>
 				<ol class="agenda">
+					<li data-a>
+						<h3>Show up</h3>
+						<p>
+							Take a seat where open source and AI are governed, and listen to the countries that have dealt
+							with this for longer.
+						</p>
+					</li>
 					<li data-a>
 						<h3>Coordinate</h3>
 						<p>
@@ -403,12 +415,19 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 
 			<!-- Close -->
 			<section class="slide slide-close" aria-label="Closing">
-				<p class="closing" data-a>
-					Whether the code is public is the easy question. The harder one is who gets to make decisions about the
-					systems we depend on, and who can keep them secure.
-				</p>
-				<p class="body" data-step="1">
-					Where to start: reproduce a bug, write the test, and stay for the maintenance.
+				<ol class="asked asked-close">
+					<li data-a>
+						Can open source advance Canada's interests?
+						<span class="answer" data-step="1">Yes, through cooperation with other countries, not isolation.</span>
+					</li>
+					<li data-a>
+						Where is Canada?
+						<span class="answer" data-step="2">Noticeably missing from the conversation.</span>
+					</li>
+				</ol>
+				<p class="closing" data-step="3">We can't be part of the conversation if we aren't sitting at the table.</p>
+				<p class="body" data-step="4">
+					Where you can start: reproduce a bug, write the test, and stay for the maintenance.
 				</p>
 				<p class="byline" data-a>Thank you. Daniel Thorp, danielthorp.com</p>
 			</section>
@@ -534,10 +553,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					if (document.fullscreenElement) document.exitFullscreen();
 					else document.documentElement.requestFullscreen?.().catch(() => {});
 				} else handled = false;
-				if (handled) {
-					event.preventDefault();
-					document.getElementById("hint")?.classList.add("gone");
-				}
+				if (handled) event.preventDefault();
 			});
 
 			// The stage is 1920 by 1080; scale it to fit whatever screen this is.
@@ -872,19 +888,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				color: var(--quiet);
 			}
 
-			.hint {
-				position: absolute;
-				left: 130px;
-				bottom: 64px;
-				font-size: 24px;
-				color: var(--quiet);
-				transition: opacity 0.5s;
-			}
-
-			.hint.gone {
-				opacity: 0 !important;
-			}
-
 			/* Layout */
 			.cols {
 				display: grid;
@@ -974,7 +977,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				position: absolute;
 				inset: 0;
 				background:
-					linear-gradient(to top, rgba(14, 14, 16, 0.96) 0%, rgba(14, 14, 16, 0.86) 34%, rgba(14, 14, 16, 0.25) 62%, transparent 80%),
+					linear-gradient(to top, rgba(14, 14, 16, 0.96) 0%, rgba(14, 14, 16, 0.88) 46%, rgba(14, 14, 16, 0.4) 68%, transparent 88%),
 					linear-gradient(to right, rgba(14, 14, 16, 0.5), transparent 60%);
 			}
 
@@ -985,8 +988,49 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				gap: 24px;
 			}
 
-			.photo-text .where {
+			.photo-text .where,
+			.photo-text .body {
 				margin: 0;
+			}
+
+			.photo-text .body {
+				color: var(--lilac);
+			}
+
+			/* The two questions the talk opens and closes on. They are numbered
+			   because the close answers them in the same order. */
+			.asked {
+				display: grid;
+				gap: 14px;
+				counter-reset: asked;
+				font-family: var(--font-display);
+				font-size: 50px;
+				line-height: 1.2;
+			}
+
+			.asked li {
+				counter-increment: asked;
+				display: grid;
+				grid-template-columns: 70px 1fr;
+			}
+
+			.asked li::before {
+				content: counter(asked) ".";
+				color: var(--lilac);
+			}
+
+			.asked-close {
+				gap: 44px;
+				font-size: 58px;
+			}
+
+			.answer {
+				grid-column: 2;
+				display: block;
+				margin-top: 10px;
+				font-family: var(--font-sans);
+				font-size: 44px;
+				color: var(--lilac);
 			}
 
 			@keyframes settle {
@@ -1090,6 +1134,10 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 
 			.wire-small-light {
 				fill: var(--color-text);
+			}
+
+			.wire-small-cyan {
+				fill: var(--cyan);
 			}
 
 			.wire-cyan {
@@ -1342,8 +1390,8 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 			/* Agenda */
 			.agenda {
 				display: grid;
-				grid-template-columns: repeat(3, 1fr);
-				gap: 60px;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 48px;
 				margin-top: 16px;
 			}
 
@@ -1354,7 +1402,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 
 			.agenda h3 {
 				font-family: var(--font-display);
-				font-size: 60px;
+				font-size: 52px;
 				font-weight: 600;
 				line-height: 1.1;
 				letter-spacing: -0.015em;
@@ -1362,13 +1410,13 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 
 			.agenda p {
 				margin-top: 22px;
-				font-size: 34px;
+				font-size: 31px;
 				text-wrap: pretty;
 			}
 
 			/* Close */
 			.closing {
-				font-size: 78px;
+				font-size: 70px;
 				line-height: 1.14;
 				max-width: 1560px;
 			}
