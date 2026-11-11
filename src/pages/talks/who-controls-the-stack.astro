@@ -11,8 +11,6 @@ import hall from "../../assets/talks/un-open-source-week.jpg";
 const title = "Who controls the stack?";
 const subtitle = "Open source, privacy and digital sovereignty";
 
-// Title slide: the layers the talk walks through, top to bottom.
-const layers = ["The app", "The platform", "The cloud", "The law", "The maintainers"];
 ---
 
 <!doctype html>
@@ -45,7 +43,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						<p class="subtitle" data-a>{subtitle}</p>
 						<p class="byline" data-a>Daniel Thorp</p>
 					</div>
-					<svg class="stack" viewBox="0 0 900 820" role="img" aria-label="A stack of five layers: the app, the platform, the cloud, the law and the maintainers.">
+					<svg class="stack" viewBox="0 0 640 820" role="img" aria-label="A stack of five layers.">
 						<defs>
 							<linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
 								<stop offset="0" stop-color="#8b7cf6" stop-opacity="0.55"></stop>
@@ -53,10 +51,8 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 							</linearGradient>
 						</defs>
 						{
-							layers
-								.map((label, i) => ({ label, cy: 150 + i * 125 }))
-								.reverse()
-								.map(({ label, cy }) => (
+							[650, 525, 400, 275, 150]
+								.map((cy) => (
 									<g data-a="drop">
 										<path
 											class="plate-side"
@@ -66,10 +62,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 											class="plate-top"
 											d={`M320,${cy - 110} L580,${cy} L320,${cy + 110} L60,${cy} Z`}
 										/>
-										<line class="plate-lead" x1="590" y1={cy + 12} x2="640" y2={cy + 12} />
-										<text class="plate-label" x="656" y={cy + 24}>
-											{label}
-										</text>
 									</g>
 								))
 						}
@@ -120,10 +112,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						<p class="body" data-a>
 							Almost nobody reads the code. What matters is that someone can, and that anyone can patch it or fork it
 							without asking the vendor.
-						</p>
-						<p class="caveat" data-step="1">
-							A public repository doesn't prove that anyone has audited it, that it's patched, or that the binary
-							you run was built from it.
 						</p>
 					</div>
 					<svg class="loop" viewBox="0 0 760 700" role="img" aria-label="A cycle: inspect, adapt, fork or replace.">
@@ -244,10 +232,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						Can we keep operating if the vendor changes the terms?
 					</li>
 				</ul>
-				<p class="note" data-a>
-					How speakers at UN Open Source Week 2026 framed it. They did not mean isolation, or building everything
-					yourself.
-				</p>
 			</section>
 
 			<!-- Schleswig-Holstein -->
@@ -276,7 +260,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					<li><strong>Estonia</strong> X-Road data exchange</li>
 				</ul>
 				<p class="note" data-a>
-					European Commission Open Source Observatory, February 2026. This is one state, not all of Germany.
+					European Commission Open Source Observatory, February 2026
 				</p>
 			</section>
 
@@ -314,10 +298,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						data would never reach US authorities without France's consent.
 					</p>
 				</div>
-				<p class="note" data-step="2">
-					A demand still needs valid US legal process, and it only reaches data the provider can produce. Who holds
-					the keys matters.
-				</p>
 			</section>
 
 			<!-- AI and maintainers -->
@@ -344,8 +324,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					<li>Burnout and slower patches</li>
 				</ol>
 				<p class="note" data-a>
-					Linux Foundation Research survey, October 2026. These are estimates and reported experience, not a count
-					of every pull request.
+					Linux Foundation Research, October 2026
 				</p>
 			</section>
 
@@ -362,7 +341,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						</p>
 						<p class="caveat" data-step="1">
 							A system you can't inspect, modify or leave puts the platform in charge, not you.
-							<span class="credit">My summary of the lock-in Cory Doctorow describes in Enshittification</span>
 						</p>
 					</div>
 					<svg class="phone" viewBox="0 0 420 640" role="img" aria-label="A phone showing a clock and a 24-hour wait.">
@@ -374,7 +352,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 					</svg>
 				</div>
 				<ol class="history" data-step="2">
-					<li><span class="when">2010</span> Michael Geist proposes openness as a principle of Canada's digital strategy</li>
+					<li><span class="when">2010</span> Openness proposed as a principle of Canada's digital strategy</li>
 					<li><span class="when">2024</span> Repair and interoperability exceptions become law</li>
 					<li><span class="when">2026</span> Encryption and app installation are still contested</li>
 				</ol>
@@ -407,10 +385,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 						<p>Protect interoperability, strong encryption and the right to install software on a device you own.</p>
 					</li>
 				</ol>
-				<p class="note" data-a>
-					An office decides how government takes part in open source. A maintenance fund pays for the shared code
-					everyone uses. Germany runs both.
-				</p>
 			</section>
 
 			<!-- Close -->
@@ -429,7 +403,7 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				<p class="body" data-step="4">
 					Where you can start: reproduce a bug, write the test, and stay for the maintenance.
 				</p>
-				<p class="byline" data-a>Thank you. Daniel Thorp, danielthorp.com</p>
+				<p class="thanks" data-a>Thank you.</p>
 			</section>
 
 			<div class="progress" aria-hidden="true"><span id="bar"></span></div>
@@ -881,13 +855,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				text-wrap: pretty;
 			}
 
-			.credit {
-				display: block;
-				margin-top: 12px;
-				font-size: 26px;
-				color: var(--quiet);
-			}
-
 			/* Layout */
 			.cols {
 				display: grid;
@@ -943,15 +910,6 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				stroke: rgba(236, 235, 240, 0.3);
 				stroke-width: 2;
 				stroke-linejoin: round;
-			}
-
-			.plate-lead {
-				stroke: rgba(236, 235, 240, 0.4);
-				stroke-width: 2;
-			}
-
-			.plate-label {
-				font-size: 34px;
 			}
 
 			/* The hall: the photograph fills the slide and settles as it arrives. */
@@ -1427,8 +1385,10 @@ const layers = ["The app", "The platform", "The cloud", "The law", "The maintain
 				max-width: none;
 			}
 
-			.slide-close .byline {
-				margin-top: 0;
+			.thanks {
+				font-family: var(--font-display);
+				font-size: 50px;
+				color: var(--quiet);
 			}
 
 			/* Where we are */
