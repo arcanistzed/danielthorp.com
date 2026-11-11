@@ -115,14 +115,12 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						</p>
 					</div>
 					<svg class="loop" viewBox="0 0 760 700" role="img" aria-label="A cycle: inspect, adapt, fork or replace.">
-						<defs>
-							<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-								<path d="M0,0 L10,5 L0,10 Z" fill="#c9b8ff"></path>
-							</marker>
-						</defs>
-						<path class="flow draw" pathLength="1" d="M478,196 Q600,280 606,412" marker-end="url(#arrow)" style="--d: 0.7s"></path>
-						<path class="flow draw" pathLength="1" d="M498,566 Q380,622 262,566" marker-end="url(#arrow)" style="--d: 1s"></path>
-						<path class="flow draw" pathLength="1" d="M154,412 Q160,280 282,196" marker-end="url(#arrow)" style="--d: 1.3s"></path>
+						<path class="flow draw" pathLength="1" d="M478,196 Q600,280 606,412" style="--d: 0.7s"></path>
+						<g transform="translate(606,412) rotate(87.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 0.7s"></path></g>
+						<path class="flow draw" pathLength="1" d="M498,566 Q380,622 262,566" style="--d: 1s"></path>
+						<g transform="translate(262,566) rotate(205.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1s"></path></g>
+						<path class="flow draw" pathLength="1" d="M154,412 Q160,280 282,196" style="--d: 1.3s"></path>
+						<g transform="translate(282,196) rotate(-34.5)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1.3s"></path></g>
 						<g data-a="pop">
 							<circle class="node" cx="380" cy="130" r="104"></circle>
 							<text class="node-label" x="380" y="143">Inspect</text>
@@ -256,7 +254,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				<ul class="strip" data-step="1">
 					<li><strong>Germany</strong> ZenDiS, openDesk, openCode, Sovereign Tech Agency</li>
 					<li><strong>France</strong> DINUM and La Suite numérique</li>
-					<li><strong>Switzerland</strong> Source disclosure by statute since 2024</li>
+					<li><strong>Switzerland</strong> Army Cyber Command is moving to openDesk. About 3,000 federal staff follow by 2027.</li>
 					<li><strong>Estonia</strong> X-Road data exchange</li>
 				</ul>
 				<p class="note" data-a>
@@ -268,11 +266,6 @@ const subtitle = "Open source, privacy and digital sovereignty";
 			<section class="slide" aria-label="Canada and the CLOUD Act">
 				<h2 data-a>A Canadian data centre is a location. Sovereignty is control.</h2>
 				<svg class="reach" viewBox="0 0 1660 320" role="img" aria-label="A data centre in Canada run by a provider under United States law. A CLOUD Act demand to the provider reaches the data.">
-					<defs>
-						<marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-							<path d="M0,0 L10,5 L0,10 Z" fill="#e39b91"></path>
-						</marker>
-					</defs>
 					<path class="tie draw" pathLength="1" d="M560,220 H1100" style="--d: 0.6s"></path>
 					<g data-a="pop">
 						<rect class="box" x="40" y="140" width="520" height="160" rx="18"></rect>
@@ -284,7 +277,8 @@ const subtitle = "Open source, privacy and digital sovereignty";
 					</g>
 					<text class="wire-small" x="830" y="262" data-a>operated by</text>
 					<g data-step="1">
-						<path class="demand draw" pathLength="1" d="M1360,136 C1360,-10 300,-10 300,130" marker-end="url(#arrow-rose)" style="--d: 0.1s"></path>
+						<path class="demand draw" pathLength="1" d="M1360,136 C1360,-10 300,-10 300,130" style="--d: 0.1s"></path>
+						<g transform="translate(300,132) rotate(90)"><path class="tip tip-rose" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 0.1s"></path></g>
 						<text class="wire-rose" x="830" y="92">CLOUD Act demand</text>
 					</g>
 				</svg>
@@ -749,9 +743,38 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				animation: none;
 			}
 
+			/* A drawn line stays drawn while its slide fades out. */
+			.slide.is-leaving .draw {
+				stroke-dashoffset: 0;
+			}
+
 			@keyframes draw {
 				to {
 					stroke-dashoffset: 0;
+				}
+			}
+
+			/* An arrowhead arrives as its line finishes drawing, never before. */
+			.tip {
+				fill: var(--lilac);
+			}
+
+			.tip-rose {
+				fill: var(--rose);
+			}
+
+			.slide.is-active .tip {
+				animation: tip-in 0.3s var(--ease) both;
+				animation-delay: calc(var(--d, 0.5s) + 0.8s);
+			}
+
+			.slide.is-active [data-step]:not(.on) .tip {
+				animation: none;
+			}
+
+			@keyframes tip-in {
+				from {
+					opacity: 0;
 				}
 			}
 
@@ -1227,7 +1250,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 			/* Other countries */
 			.strip {
 				display: grid;
-				grid-template-columns: 1.5fr 1fr 1.2fr 0.9fr;
+				grid-template-columns: 1.3fr 0.9fr 1.6fr 0.8fr;
 				gap: 40px;
 				padding-top: 32px;
 				border-top: 2px solid rgba(201, 184, 255, 0.3);
@@ -1393,6 +1416,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				.slide.is-active [data-a],
 				.slide.is-leaving [data-a],
 				.slide.is-active .draw,
+				.slide.is-active .tip,
 				.slide-photo.is-active .photo {
 					animation: none;
 				}
