@@ -389,18 +389,8 @@ const subtitle = "Open source, privacy and digital sovereignty";
 
 			<!-- Close -->
 			<section class="slide slide-close" aria-label="Closing">
-				<ol class="asked asked-close">
-					<li data-a>
-						Can open source advance Canada's interests?
-						<span class="answer" data-step="1">Yes, through cooperation with other countries, not isolation.</span>
-					</li>
-					<li data-a>
-						Where is Canada?
-						<span class="answer" data-step="2">Noticeably missing from the conversation.</span>
-					</li>
-				</ol>
-				<p class="closing" data-step="3">We can't be part of the conversation if we aren't sitting at the table.</p>
-				<p class="body" data-step="4">
+				<p class="closing" data-a>We can't be part of the conversation if we aren't sitting at the table.</p>
+				<p class="body" data-step="1">
 					Where you can start: reproduce a bug, write the test, and stay for the maintenance.
 				</p>
 				<p class="thanks" data-a>Thank you.</p>
@@ -977,27 +967,6 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				color: var(--lilac);
 			}
 
-			.asked-close {
-				gap: 44px;
-				font-size: 58px;
-			}
-
-			.answer {
-				grid-column: 2;
-				display: block;
-				margin-top: 10px;
-				font-family: var(--font-sans);
-				font-size: 44px;
-				color: var(--lilac);
-			}
-
-			@keyframes settle {
-				from {
-					opacity: 0;
-					transform: scale(1.06);
-				}
-			}
-
 			/* Scales */
 			.rings {
 				max-height: 760px;
@@ -1374,7 +1343,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 
 			/* Close */
 			.closing {
-				font-size: 70px;
+				font-size: 84px;
 				line-height: 1.14;
 				max-width: 1560px;
 			}
