@@ -87,7 +87,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 			<section class="slide" aria-label="One problem at three scales">
 				<div class="cols">
 					<div>
-						<h2 data-a>Privacy and sovereignty are one problem at different scales.</h2>
+						<h2 data-a>Privacy and digital sovereignty are questions of control at different scales.</h2>
 						<p class="body" data-step="1">
 							Who controls it? Who can audit it? Who keeps it running when someone else changes the rules, and who
 							pays to maintain it?
@@ -115,12 +115,12 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						</p>
 					</div>
 					<svg class="loop" viewBox="0 0 760 700" role="img" aria-label="A cycle: inspect, adapt, fork or replace.">
-						<path class="flow draw" pathLength="1" d="M478,196 Q600,280 606,412" style="--d: 0.7s"></path>
-						<g transform="translate(606,412) rotate(87.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 0.7s"></path></g>
-						<path class="flow draw" pathLength="1" d="M498,566 Q380,622 262,566" style="--d: 1s"></path>
-						<g transform="translate(262,566) rotate(205.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1s"></path></g>
-						<path class="flow draw" pathLength="1" d="M154,412 Q160,280 282,196" style="--d: 1.3s"></path>
-						<g transform="translate(282,196) rotate(-34.5)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1.3s"></path></g>
+						<path class="flow draw" pathLength="1" d="M478,196 Q600,280 606,412" style="--d: 1.2s"></path>
+						<g transform="translate(606,412) rotate(87.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1.2s"></path></g>
+						<path class="flow draw" pathLength="1" d="M498,566 Q380,622 262,566" style="--d: 1.55s"></path>
+						<g transform="translate(262,566) rotate(205.4)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1.55s"></path></g>
+						<path class="flow draw" pathLength="1" d="M154,412 Q160,280 282,196" style="--d: 1.9s"></path>
+						<g transform="translate(282,196) rotate(-34.5)"><path class="tip" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 1.9s"></path></g>
 						<g data-a="pop">
 							<circle class="node" cx="380" cy="130" r="104"></circle>
 							<text class="node-label" x="380" y="143">Inspect</text>
@@ -139,9 +139,9 @@ const subtitle = "Open source, privacy and digital sovereignty";
 
 			<!-- Signal: content and metadata -->
 			<section class="slide" aria-label="Privacy and metadata">
-				<h2 data-a>Privacy is what never gets collected.</h2>
-				<svg class="wire" viewBox="0 0 1660 580" role="img" aria-label="Two phones exchange an end-to-end encrypted message through a service. Most services could keep the metadata. Signal is designed not to.">
-					<path class="lane draw" pathLength="1" d="M210,170 H1450" style="--d: 0.7s"></path>
+				<h2 data-a>Signal is built to know almost nothing about you.</h2>
+				<svg class="wire" viewBox="0 0 1660 580" role="img" aria-label="Two phones exchange an end-to-end encrypted message through Signal. Most services could keep the metadata. Signal is designed not to.">
+					<path class="lane draw" pathLength="1" d="M210,170 H1450" style="--d: 1.3s; --len: 1.4s"></path>
 					<g data-a="pop">
 						<rect class="device" x="60" y="40" width="150" height="270" rx="26"></rect>
 						<line class="device-line" x1="110" y1="278" x2="160" y2="278"></line>
@@ -155,7 +155,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						<rect class="server" x="700" y="70" width="260" height="200" rx="18"></rect>
 						<line class="server-line" x1="730" y1="120" x2="930" y2="120"></line>
 						<line class="server-line" x1="730" y1="220" x2="930" y2="220"></line>
-						<text class="wire-label" x="830" y="182">The service</text>
+						<text class="wire-label" x="830" y="182">Signal</text>
 					</g>
 					<g data-a="pop">
 						<rect class="device" x="1450" y="40" width="150" height="270" rx="26"></rect>
@@ -166,19 +166,19 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						</g>
 						<text class="wire-small" x="1525" y="356">holds a key</text>
 					</g>
-					<text class="wire-cyan" x="455" y="140" data-a>Message content</text>
-					<text class="wire-cyan" x="1205" y="140" data-a>encrypted end to end</text>
-					<g data-step="1">
-						<path class="leak draw" pathLength="1" d="M830,270 V392" style="--d: 0.15s"></path>
-						<rect class="meta" x="360" y="392" width="940" height="168" rx="18"></rect>
-						<text class="wire-rose" x="830" y="442">Metadata a messaging service could keep</text>
-						<text class="wire-small wire-small-light" x="830" y="486">who you talk to, when, how often, which groups</text>
-						<text class="wire-small wire-small-cyan" x="830" y="530">Signal is designed not to keep it</text>
+					<text class="wire-cyan late" x="455" y="140" data-a style="--late: 1.7s">Message content</text>
+					<text class="wire-cyan late" x="1205" y="140" data-a style="--late: 2.3s">encrypted end to end</text>
+					<g class="step-draw" data-step="1">
+						<path class="leak draw" pathLength="1" d="M830,270 V392" style="--d: 0.1s; --len: 0.7s"></path>
+						<rect class="meta after" x="360" y="392" width="940" height="168" rx="18" style="--d: 0.65s"></rect>
+						<text class="wire-rose after" x="830" y="442" style="--d: 0.85s">Metadata a messaging service could keep</text>
+						<text class="wire-small wire-small-light after" x="830" y="486" style="--d: 1.05s">who you talk to, when, how often, which groups</text>
+						<text class="wire-small wire-small-cyan after" x="830" y="530" style="--d: 1.9s">Signal is designed not to keep it</text>
 					</g>
 				</svg>
 				<p class="note" data-step="2">
-					Signal publishes its client and server code. Its published replies to government requests show how little
-					it holds, such as when an account was created and when it last connected.
+					Signal is open source, run by a nonprofit and funded by donations. WhatsApp uses the same encryption
+					protocol, with an advertising company behind it.
 				</p>
 			</section>
 
@@ -266,7 +266,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 			<section class="slide" aria-label="Canada and the CLOUD Act">
 				<h2 data-a>A Canadian data centre is a location. Sovereignty is control.</h2>
 				<svg class="reach" viewBox="0 0 1660 320" role="img" aria-label="A data centre in Canada run by a provider under United States law. A CLOUD Act demand to the provider reaches the data.">
-					<path class="tie draw" pathLength="1" d="M560,220 H1100" style="--d: 0.6s"></path>
+					<path class="tie draw" pathLength="1" d="M560,220 H1100" style="--d: 1.1s"></path>
 					<g data-a="pop">
 						<rect class="box" x="40" y="140" width="520" height="160" rx="18"></rect>
 						<text class="wire-label" x="300" y="232">Data centre in Canada</text>
@@ -275,11 +275,11 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						<rect class="box" x="1100" y="140" width="520" height="160" rx="18"></rect>
 						<text class="wire-label" x="1360" y="232">Provider under US law</text>
 					</g>
-					<text class="wire-small" x="830" y="262" data-a>operated by</text>
-					<g data-step="1">
-						<path class="demand draw" pathLength="1" d="M1360,136 C1360,-10 300,-10 300,130" style="--d: 0.1s"></path>
-						<g transform="translate(300,132) rotate(90)"><path class="tip tip-rose" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 0.1s"></path></g>
-						<text class="wire-rose" x="830" y="92">CLOUD Act demand</text>
+					<text class="wire-small late" x="830" y="262" data-a style="--late: 1.8s">operated by</text>
+					<g class="step-draw" data-step="1">
+						<path class="demand draw" pathLength="1" d="M1360,136 C1360,-10 300,-10 300,130" style="--d: 0.1s; --len: 1.7s"></path>
+						<g transform="translate(300,132) rotate(90)"><path class="tip tip-rose" d="M-24,-11 L0,0 L-24,11 Z" style="--d: 0.75s"></path></g>
+						<text class="wire-rose after" x="830" y="92" style="--d: 0.7s">CLOUD Act demand</text>
 					</g>
 				</svg>
 				<div class="cols cols-even" data-step="2">
@@ -292,6 +292,30 @@ const subtitle = "Open source, privacy and digital sovereignty";
 						is subject to a foreign country's laws, Canada will not have full sovereignty over its data.
 					</p>
 				</div>
+			</section>
+
+			<!-- Open AI as a third option -->
+			<section class="slide" aria-label="Open AI as a third option">
+				<h2 data-a>Can open AI give middle powers a third option?</h2>
+				<ul class="options">
+					<li data-a>Depend on a few American companies</li>
+					<li data-a>Depend on a few Chinese companies</li>
+					<li class="third" data-step="1">
+						<svg viewBox="0 0 300 150" aria-hidden="true">
+							<path class="link draw" pathLength="1" d="M150,75 L40,28 M150,75 L260,28 M150,75 L40,122 M150,75 L260,122 M150,75 L150,14" style="--d: 0.3s; --len: 0.9s"></path>
+							<circle class="hub" cx="150" cy="75" r="26"></circle>
+							<circle class="peer" cx="40" cy="28" r="13"></circle>
+							<circle class="peer" cx="260" cy="28" r="13"></circle>
+							<circle class="peer" cx="40" cy="122" r="13"></circle>
+							<circle class="peer" cx="260" cy="122" r="13"></circle>
+							<circle class="peer" cx="150" cy="14" r="13"></circle>
+						</svg>
+						Build and run open models with other countries
+					</li>
+				</ul>
+				<p class="body" data-step="2">
+					Open weights are a start. Control also takes the training code, the compute and people who can run it.
+				</p>
 			</section>
 
 			<!-- AI and maintainers -->
@@ -735,12 +759,36 @@ const subtitle = "Open source, privacy and digital sovereignty";
 			}
 
 			.slide.is-active .draw {
-				animation: draw 1.1s var(--ease) both;
+				animation: draw var(--len, 1.1s) var(--ease) both;
 				animation-delay: var(--d, 0.5s);
 			}
 
 			.slide.is-active [data-step]:not(.on) .draw {
 				animation: none;
+			}
+
+			/* A label that waits for the line it names. */
+			.slide.is-active [data-a].late {
+				animation-delay: var(--late);
+			}
+
+			/* A diagram's reveal: its connector draws first, then what it points
+			   to arrives, so the eye follows the line to the new piece. */
+			.step-draw[data-step] {
+				transform: none;
+				transition: opacity 0.25s;
+			}
+
+			.slide.is-active .step-draw.on .after {
+				animation: piece-rise 0.7s var(--ease) both;
+				animation-delay: var(--d, 0.6s);
+			}
+
+			@keyframes piece-rise {
+				from {
+					opacity: 0;
+					transform: translate3d(0, 18px, 0);
+				}
 			}
 
 			/* A drawn line stays drawn while its slide fades out. */
@@ -1265,6 +1313,56 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				color: var(--color-text);
 			}
 
+			/* Three options: two kinds of dependence, and the one worth building. */
+			.options {
+				display: grid;
+				grid-template-columns: 1fr 1fr 1.25fr;
+				gap: 44px;
+				align-items: stretch;
+			}
+
+			.options li {
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-end;
+				gap: 28px;
+				min-height: 330px;
+				padding: 40px;
+				border: 2px solid rgba(236, 235, 240, 0.22);
+				border-radius: 20px;
+				background: rgba(236, 235, 240, 0.03);
+				font-family: var(--font-display);
+				font-size: 46px;
+				line-height: 1.15;
+				color: var(--quiet);
+			}
+
+			.options .third {
+				border-color: var(--lilac);
+				background: rgba(139, 124, 246, 0.14);
+				color: var(--color-text);
+			}
+
+			.options svg {
+				width: 300px;
+			}
+
+			.link {
+				fill: none;
+				stroke: rgba(201, 184, 255, 0.7);
+				stroke-width: 3;
+			}
+
+			.hub {
+				fill: var(--violet);
+			}
+
+			.peer {
+				fill: #141416;
+				stroke: var(--lilac);
+				stroke-width: 3;
+			}
+
 			/* Cause and effect */
 			.chain {
 				display: flex;
@@ -1417,6 +1515,7 @@ const subtitle = "Open source, privacy and digital sovereignty";
 				.slide.is-leaving [data-a],
 				.slide.is-active .draw,
 				.slide.is-active .tip,
+				.slide.is-active .step-draw.on .after,
 				.slide-photo.is-active .photo {
 					animation: none;
 				}
